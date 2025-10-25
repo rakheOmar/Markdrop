@@ -32,7 +32,11 @@ export default function NotFoundPage() {
                 </Button>
 
                 <Button asChild variant="outline">
-                  <a href="https://github.com/rakheOmar/Markdrop/issues" target="_blank" rel="noopener noreferrer">
+                  <a
+                    href="https://github.com/rakheOmar/Markdrop/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <AlertCircle /> Report an Issue
                   </a>
                 </Button>

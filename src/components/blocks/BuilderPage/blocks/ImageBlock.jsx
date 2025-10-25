@@ -105,8 +105,9 @@ export default function ImageBlock({ block, onUpdate }) {
       </div>
       {block.content && (
         <p
-          className={`mt-3 ${align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"
-            }`}
+          className={`mt-3 ${
+            align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"
+          }`}
         >
           <img
             src={block.content}
