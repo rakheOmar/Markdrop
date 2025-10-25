@@ -90,11 +90,11 @@ const blocksToMarkdown = (blocks) => {
             imageMarkdown = `![${block.alt || ""}](${block.content})`;
           }
 
-          // Wrap with alignment div if not left
+          // Wrap with alignment p tag if not left
           if (align === "center") {
-            return `<div align="center">\n\n${imageMarkdown}\n\n</div>`;
+            return `<p align="center">\n\n${imageMarkdown}\n\n</p>`;
           } else if (align === "right") {
-            return `<div align="right">\n\n${imageMarkdown}\n\n</div>`;
+            return `<p align="right">\n\n${imageMarkdown}\n\n</p>`;
           }
           return imageMarkdown;
         }

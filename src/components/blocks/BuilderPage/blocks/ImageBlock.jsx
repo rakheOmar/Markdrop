@@ -104,10 +104,9 @@ export default function ImageBlock({ block, onUpdate }) {
         </div>
       </div>
       {block.content && (
-        <div
-          className={`mt-3 ${
-            align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"
-          }`}
+        <p
+          className={`mt-3 ${align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"
+            }`}
         >
           <img
             src={block.content}
@@ -119,7 +118,7 @@ export default function ImageBlock({ block, onUpdate }) {
               e.target.style.display = "none";
             }}
           />
-        </div>
+        </p>
       )}
     </div>
   );

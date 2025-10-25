@@ -1,5 +1,4 @@
-import { GithubIcon, Mail01Icon, NewTwitterIcon } from "hugeicons-react";
-import { Heart } from "lucide-react";
+import { GithubIcon, Mail01Icon, NewTwitterIcon, FavouriteIcon } from "hugeicons-react";
 import markdropIconDark from "@/assets/markdrop_icon_dark.svg";
 import markdropIconLight from "@/assets/markdrop_icon_light.svg";
 import { useTheme } from "@/components/ThemeProvider";
@@ -20,13 +19,13 @@ export default function Footer() {
 
         <div className="flex items-center gap-2 text-sm text-[#6b7280] dark:text-[#9ca3af]">
           <span>Created with</span>
-          <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+          <FavouriteIcon size={15} />
           <span>by rakheOmar</span>
         </div>
 
         <div className="flex items-center gap-4">
           <a
-            href="https://github.com/rakheOmar"
+            href="https://github.com/rakheOmar/Markdrop"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[#6b7280] dark:text-[#9ca3af] hover:text-black dark:hover:text-white transition-colors"
@@ -44,7 +43,7 @@ export default function Footer() {
             <NewTwitterIcon size={20} />
           </a>
           <a
-            href="mailto:rakheomar@example.com"
+            href="mailto:rakheomar@outlook.com"
             className="text-[#6b7280] dark:text-[#9ca3af] hover:text-black dark:hover:text-white transition-colors"
             aria-label="Email"
           >
