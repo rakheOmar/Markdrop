@@ -51,13 +51,14 @@ pnpm clean
 
 - Keep PRs focused on a single feature or fix
 - Write clear descriptions of what your PR does
+- Include screenshots of the issue fixed with output/fix
 - Reference any related issues
 - Ensure all checks pass
 - Be responsive to feedback
 
 ## Code Style
 
-- Use TypeScript for type safety
+- Use Javascript for type safety
 - Follow React best practices
 - Keep components small and focused
 - Use meaningful variable and function names
