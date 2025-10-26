@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { CheckIcon, CopyIcon } from "lucide-react";
 
 // Helper to convert blocks to markdown
 const blocksToMarkdown = (blocks) => {
@@ -436,6 +438,7 @@ const markdownToBlocks = (markdown) => {
 
 export default function Raw({ blocks = [], onBlocksChange }) {
   const [markdown, setMarkdown] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     setMarkdown(blocksToMarkdown(blocks));
@@ -455,8 +458,58 @@ export default function Raw({ blocks = [], onBlocksChange }) {
     }
   };
 
+  const copyMarkdown = async () => {
+  try {
+    
+    if (!navigator.clipboard) {
+      const textArea = document.createElement("textarea");
+      textArea.value = markdown;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try 
+      {
+        setIsCopied(true);
+        toast.success("Markdown copied to clipboard");
+        setTimeout(() => setIsCopied(false), 2000);
+      } 
+      catch (err) 
+      {
+        console.error('Fallback copy failed:', err);
+        toast.error("Failed to copy");
+      }
+      
+      document.body.removeChild(textArea);
+      return;
+    }
+
+    await navigator.clipboard.writeText(markdown);
+    setIsCopied(true);
+    toast.success("Markdown copied to clipboard");
+    setTimeout(() => setIsCopied(false), 2000);
+  } catch (error) {
+    console.error('Copy failed:', error);
+    toast.error("Failed to copy markdown");
+  }
+};
+
   return (
     <div className="w-full min-h-[500px] rounded-lg p-4">
+      <div className="flex items-center justify-end gap-2 mb-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={copyMarkdown}
+          aria-label="Copy markdown to clipboard"
+          className="flex items-center gap-2"
+        >
+          {isCopied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+          <span className="text-sm">{isCopied ? "Copied" : "Copy to Clipboard"}</span>
+        </Button>
+      </div>
       <Textarea
         value={markdown}
         onChange={handleChange}
