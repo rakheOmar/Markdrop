@@ -143,6 +143,7 @@ export default function Dashboard() {
     const saved = localStorage.getItem("markdown-blocks");
     return saved ? JSON.parse(saved) : [];
   });
+  const [isImporting, setIsImporting] = useState(false);
   const [history, setHistory] = useState([[]]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [activeId, setActiveId] = useState(null);
@@ -150,6 +151,26 @@ export default function Dashboard() {
   useEffect(() => {
     localStorage.setItem("markdown-blocks", JSON.stringify(blocks));
   }, [blocks]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Detect Ctrl+Z (Windows) or Command+Z (Mac) for Undo
+      if ((event.ctrlKey || event.metaKey) && event.key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        handleUndo();
+      }
+      // Detect Ctrl+Y (Windows) or Command+Y (Mac) for Redo
+      else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
+        event.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [history, historyIndex]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -261,6 +282,7 @@ export default function Dashboard() {
       const file = e.target.files?.[0];
       if (!file) return;
 
+       setIsImporting(true);
       try {
         const text = await file.text();
         const newBlocks = markdownToBlocks(text);
@@ -270,6 +292,9 @@ export default function Dashboard() {
       } catch (error) {
         toast.error("Failed to import file");
         console.log(error);
+      }
+      finally{
+        setIsImporting(false);
       }
     };
     input.click();
@@ -672,6 +697,12 @@ export default function Dashboard() {
             </div>
           </div>
         </SidebarInset>
+        {isImporting && (
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-t-transparent border-primary"></div>
+            <span className="ml-3 font-medium">Importing...</span>
+          </div>
+        )}
 
         <DragOverlay>
           {activeId ? (
