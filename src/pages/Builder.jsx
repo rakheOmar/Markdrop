@@ -152,6 +152,26 @@ export default function Dashboard() {
     localStorage.setItem("markdown-blocks", JSON.stringify(blocks));
   }, [blocks]);
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Detect Ctrl+Z (Windows) or Command+Z (Mac) for Undo
+      if ((event.ctrlKey || event.metaKey) && event.key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        handleUndo();
+      }
+      // Detect Ctrl+Y (Windows) or Command+Y (Mac) for Redo
+      else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
+        event.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [history, historyIndex]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
