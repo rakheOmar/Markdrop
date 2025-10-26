@@ -1,50 +1,14 @@
-import {
-  closestCenter,
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import {
-  CheckSquare,
-  Code,
-  FileDown,
-  FileUp,
-  Heading1,
-  Heading2,
-  Heading3,
-  Heading4,
-  Heading5,
-  Heading6,
-  Image,
-  Link,
-  List,
-  ListOrdered,
-  Minus,
-  Quote,
-  RefreshCcw,
-  RotateCcw,
-  RotateCw,
-  Shield,
-  Sparkles,
-  Table,
-  Type,
-  Video,
-} from "lucide-react";
+import { closestCenter, DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
+import { CheckSquare, Code, FileDown, FileUp, Heading1, Heading2, Heading3, Heading4, Heading5, Heading6, Image, Link, List, ListOrdered, Minus, Quote, RefreshCcw, RotateCcw, RotateCw, Shield, Sparkles, Table, Type, Video } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
-import { ModeToggle } from "@/components/ModeToggle";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const WATERMARK = "\n\n---\n\nMade by Markdrop — https://github.com/Aujasyarajput18/Markdrop\n";
 
 const blocksToMarkdown = (blocks) => {
-  return blocks
+  const content = blocks
     .map((block) => {
       switch (block.type) {
         case "h1":
@@ -78,8 +42,6 @@ const blocksToMarkdown = (blocks) => {
         case "image": {
           const align = block.align || "left";
           let imageMarkdown;
-
-          // If width or height is specified, use HTML img tag
           if (block.width || block.height) {
             const attrs = [`src="${block.content}"`];
             if (block.alt) attrs.push(`alt="${block.alt}"`);
@@ -89,8 +51,6 @@ const blocksToMarkdown = (blocks) => {
           } else {
             imageMarkdown = `![${block.alt || ""}](${block.content})`;
           }
-
-          // Wrap with alignment p tag if not left
           if (align === "center") {
             return `<p align="center">\n\n${imageMarkdown}\n\n</p>`;
           } else if (align === "right") {
@@ -108,26 +68,16 @@ const blocksToMarkdown = (blocks) => {
           const color = block.badgeColor || "blue";
           let url = `https://img.shields.io/badge/${encodeURIComponent(label)}-${encodeURIComponent(message)}-${color}`;
           const params = [];
-          if (block.style && block.style !== "flat") {
-            params.push(`style=${block.style}`);
-          }
-          if (block.logo) {
-            params.push(`logo=${encodeURIComponent(block.logo)}`);
-          }
-          if (params.length > 0) {
-            url += `?${params.join("&")}`;
-          }
+          if (block.style && block.style !== "flat") params.push(`style=${block.style}`);
+          if (block.logo) params.push(`logo=${encodeURIComponent(block.logo)}`);
+          if (params.length > 0) url += `?${params.join("&")}`;
           return `![${label}: ${message}](${url})`;
         }
         case "skill-icons": {
           const icons = block.icons || "js,html,css";
           let url = `https://skillicons.dev/icons?i=${icons}`;
-          if (block.theme && block.theme !== "dark") {
-            url += `&theme=${block.theme}`;
-          }
-          if (block.perLine && block.perLine !== "15") {
-            url += `&perline=${block.perLine}`;
-          }
+          if (block.theme && block.theme !== "dark") url += `&theme=${block.theme}`;
+          if (block.perLine && block.perLine !== "15") url += `&perline=${block.perLine}`;
           return `![Skill Icons](${url})`;
         }
         default:
@@ -135,6 +85,8 @@ const blocksToMarkdown = (blocks) => {
       }
     })
     .join("\n\n");
+
+  return `${content}${WATERMARK}`;
 };
 
 export default function Dashboard() {
@@ -152,11 +104,7 @@ export default function Dashboard() {
   }, [blocks]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 3,
-      },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 3 } })
   );
 
   const getBlockIcon = (blockType) => {
@@ -247,7 +195,7 @@ export default function Dashboard() {
       a.download = "document.md";
       a.click();
       URL.revokeObjectURL(url);
-      toast.success("Markdown exported!");
+      toast.success("Markdown exported with watermark!");
     } else {
       toast.info(`${format.toUpperCase()} export coming soon!`);
     }
@@ -260,7 +208,6 @@ export default function Dashboard() {
     input.onchange = async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
-
       try {
         const text = await file.text();
         const newBlocks = markdownToBlocks(text);
@@ -280,166 +227,90 @@ export default function Dashboard() {
     const blocks = [];
     let i = 0;
     let blockCounter = 0;
-
-    const generateUniqueId = () => {
-      return `${Date.now()}-${blockCounter++}-${Math.random().toString(36).substr(2, 9)}`;
-    };
+    const generateUniqueId = () => `${Date.now()}-${blockCounter++}-${Math.random().toString(36).substr(2, 9)}`;
 
     while (i < lines.length) {
       const line = lines[i];
-
-      if (line.startsWith("```")) {
+      if (line.startsWith("```") ) {
         const language = line.replace("```", "").trim() || "javascript";
         const codeLines = [];
         i++;
-        while (i < lines.length && !lines[i].startsWith("```")) {
+        while (i < lines.length && !lines[i].startsWith("```") ) {
           codeLines.push(lines[i]);
           i++;
         }
-        blocks.push({
-          id: generateUniqueId(),
-          type: "code",
-          content: `\`\`\`${language}\n${codeLines.join("\n")}\n\`\`\``,
-        });
+        blocks.push({ id: generateUniqueId(), type: "code", content: "```" + language + "\n" + codeLines.join("\n") + "\n```" });
         i++;
-      } else if (line.match(/^<img\s+[^>]*>/)) {
-        // Parse img tag with attributes
+      } else if (line.match(/^<img[^>]*>/)) {
         const srcMatch = line.match(/src=["']([^"']+)["']/);
         const altMatch = line.match(/alt=["']([^"']+)["']/);
         const widthMatch = line.match(/width=["']([^"']+)["']/);
         const heightMatch = line.match(/height=["']([^"']+)["']/);
-
-        blocks.push({
-          id: generateUniqueId(),
-          type: "image",
-          content: srcMatch ? srcMatch[1] : "",
-          alt: altMatch ? altMatch[1] : "",
-          width: widthMatch ? widthMatch[1] : "",
-          height: heightMatch ? heightMatch[1] : "",
-          align: "left",
-        });
+        blocks.push({ id: generateUniqueId(), type: "image", content: srcMatch ? srcMatch[1] : "", alt: altMatch ? altMatch[1] : "", width: widthMatch ? widthMatch[1] : "", height: heightMatch ? heightMatch[1] : "", align: "left" });
         i++;
       } else if (line.match(/^<(\w+)[^>]*>/)) {
         const tagMatch = line.match(/^<(\w+)[^>]*>/);
         const tagName = tagMatch[1];
         const closingTag = `</${tagName}>`;
-
         if (line.includes(closingTag)) {
-          blocks.push({
-            id: generateUniqueId(),
-            type: "html",
-            content: line,
-          });
+          blocks.push({ id: generateUniqueId(), type: "html", content: line });
           i++;
         } else {
           const htmlLines = [line];
           i++;
-
           while (i < lines.length && !lines[i].includes(closingTag)) {
             htmlLines.push(lines[i]);
             i++;
           }
-
           if (i < lines.length && lines[i].includes(closingTag)) {
             htmlLines.push(lines[i]);
             i++;
           }
-
-          blocks.push({
-            id: generateUniqueId(),
-            type: "html",
-            content: htmlLines.join("\n"),
-          });
+          blocks.push({ id: generateUniqueId(), type: "html", content: htmlLines.join("\n") });
         }
       } else if (line.startsWith("# ")) {
-        blocks.push({
-          id: generateUniqueId(),
-          type: "h1",
-          content: line.slice(2),
-        });
+        blocks.push({ id: generateUniqueId(), type: "h1", content: line.slice(2) });
         i++;
       } else if (line.startsWith("## ")) {
-        blocks.push({
-          id: generateUniqueId(),
-          type: "h2",
-          content: line.slice(3),
-        });
+        blocks.push({ id: generateUniqueId(), type: "h2", content: line.slice(3) });
         i++;
       } else if (line.startsWith("### ")) {
-        blocks.push({
-          id: generateUniqueId(),
-          type: "h3",
-          content: line.slice(4),
-        });
+        blocks.push({ id: generateUniqueId(), type: "h3", content: line.slice(4) });
         i++;
       } else if (line.startsWith("#### ")) {
-        blocks.push({
-          id: generateUniqueId(),
-          type: "h4",
-          content: line.slice(5),
-        });
+        blocks.push({ id: generateUniqueId(), type: "h4", content: line.slice(5) });
         i++;
       } else if (line.startsWith("##### ")) {
-        blocks.push({
-          id: generateUniqueId(),
-          type: "h5",
-          content: line.slice(6),
-        });
+        blocks.push({ id: generateUniqueId(), type: "h5", content: line.slice(6) });
         i++;
       } else if (line.startsWith("###### ")) {
-        blocks.push({
-          id: generateUniqueId(),
-          type: "h6",
-          content: line.slice(7),
-        });
+        blocks.push({ id: generateUniqueId(), type: "h6", content: line.slice(7) });
         i++;
       } else if (line.startsWith("> ")) {
-        blocks.push({
-          id: generateUniqueId(),
-          type: "blockquote",
-          content: line.slice(2),
-        });
+        blocks.push({ id: generateUniqueId(), type: "blockquote", content: line.slice(2) });
         i++;
       } else if (line === "---") {
         blocks.push({ id: generateUniqueId(), type: "separator", content: "" });
         i++;
       } else if (line.trim()) {
-        blocks.push({
-          id: generateUniqueId(),
-          type: "paragraph",
-          content: line,
-        });
+        blocks.push({ id: generateUniqueId(), type: "paragraph", content: line });
         i++;
       } else {
         i++;
       }
     }
-
     return blocks;
   };
 
-  const handleDragStart = (event) => {
-    setActiveId(event.active.id);
-  };
-
-  const handleDragOver = (event) => {
-    // Just for visual feedback - don't update state here
-  };
-
+  const handleDragStart = (event) => { setActiveId(event.active.id); };
+  const handleDragOver = () => {};
   const handleDragEnd = (event) => {
     const { over, active } = event;
     setActiveId(null);
-
-    // If no drop target or dropped back on sidebar, do nothing
-    if (!over || over.id === "sidebar") {
-      return;
-    }
-
-    // Handle reordering existing blocks
+    if (!over || over.id === "sidebar") return;
     if (over && active.id !== over.id && blocks.find((b) => b.id === active.id)) {
       const oldIndex = blocks.findIndex((b) => b.id === active.id);
       const newIndex = blocks.findIndex((b) => b.id === over.id);
-
       if (oldIndex !== -1 && newIndex !== -1) {
         const newBlocks = arrayMove(blocks, oldIndex, newIndex);
         setBlocks(newBlocks);
@@ -447,13 +318,10 @@ export default function Dashboard() {
       }
       return;
     }
-
-    // Handle adding new blocks from sidebar
     if (over) {
       const isExistingBlock = blocks.find((b) => b.id === active.id);
       if (!isExistingBlock) {
         const blockType = active.id;
-
         const defaultContent = {
           h1: "Heading 1",
           h2: "Heading 2",
@@ -472,12 +340,10 @@ export default function Dashboard() {
           image: "",
           video: "",
           link: "",
-          table:
-            "| Header 1 | Header 2 |\n|----------|----------|\n| Add text..   | Add text..   |",
+          table: "| Header 1 | Header 2 |\n|----------|----------|\n| Add text..   | Add text..   |",
           "shield-badge": "",
           "skill-icons": "",
         };
-
         const newBlock = {
           id: Date.now().toString(),
           type: blockType,
@@ -485,212 +351,11 @@ export default function Dashboard() {
           ...(blockType === "image" && { alt: "", width: "", height: "", align: "left" }),
           ...(blockType === "video" && { title: "" }),
           ...(blockType === "link" && { url: "" }),
-          ...(blockType === "shield-badge" && {
-            label: "build",
-            message: "passing",
-            badgeColor: "brightgreen",
-            style: "flat",
-            logo: "",
-          }),
-          ...(blockType === "skill-icons" && {
-            icons: "js,html,css",
-            theme: "dark",
-            perLine: "15",
-          }),
+          ...(blockType === "shield-badge" && { label: "build", message: "passing", badgeColor: "brightgreen", style: "flat", logo: "" }),
+          ...(blockType === "skill-icons" && { icons: "js,html,css", theme: "dark", perLine: "15" }),
         };
-
         let newBlocks;
-        // If dropped on editor-dropzone or no specific block, add to end
         if (over.id === "editor-dropzone" || !blocks.find((b) => b.id === over.id)) {
           newBlocks = [...blocks, newBlock];
         } else {
-          // Insert at the position of the block it was dropped on
-          const overIndex = blocks.findIndex((b) => b.id === over.id);
-          newBlocks = [...blocks.slice(0, overIndex + 1), newBlock, ...blocks.slice(overIndex + 1)];
-        }
-
-        setBlocks(newBlocks);
-        saveToHistory(newBlocks);
-      }
-    }
-  };
-
-  const handleDragCancel = () => {
-    setActiveId(null);
-  };
-
-  const handleBlockUpdate = (blockId, updatedBlock) => {
-    const newBlocks = blocks.map((b) => (b.id === blockId ? updatedBlock : b));
-    setBlocks(newBlocks);
-  };
-
-  const handleBlockDelete = (blockId) => {
-    const newBlocks = blocks.filter((b) => b.id !== blockId);
-    setBlocks(newBlocks);
-    saveToHistory(newBlocks);
-    toast.success("Block deleted");
-  };
-
-  const handleBlocksChange = (newBlocks) => {
-    setBlocks(newBlocks);
-    saveToHistory(newBlocks);
-  };
-
-  const getStats = () => {
-    const markdown = blocksToMarkdown(blocks);
-    const words = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
-    const characters = markdown.length;
-    const readingTime = Math.ceil(words / 200);
-    return { words, characters, readingTime };
-  };
-
-  const stats = getStats();
-
-  return (
-    <SidebarProvider>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
-      >
-        <AppSidebar />
-
-        <SidebarInset>
-          <header className="relative flex h-16 shrink-0 items-center justify-between px-4 border-b">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="h-4" />
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>
-                  <span className="font-semibold text-foreground">{stats.readingTime}</span> min
-                  read
-                </span>
-                <span>
-                  <span className="font-semibold text-foreground">{stats.words}</span> words
-                </span>
-                <span>
-                  <span className="font-semibold text-foreground">{stats.characters}</span> chars
-                </span>
-              </div>
-            </div>
-
-            {/* Center: Tabs */}
-            <div className="absolute left-1/2 transform -translate-x-1/2">
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList>
-                  <TabsTrigger value="editor">Editor</TabsTrigger>
-                  <TabsTrigger value="raw">Raw</TabsTrigger>
-                  <TabsTrigger value="preview">Preview</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-
-            {/* Right: Actions */}
-            <div className="flex items-center gap-2 ml-auto">
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Reset"
-                onClick={handleReset}
-                disabled={blocks.length === 0}
-              >
-                <RefreshCcw className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Undo"
-                onClick={handleUndo}
-                disabled={historyIndex === 0}
-              >
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Redo"
-                onClick={handleRedo}
-                disabled={historyIndex === history.length - 1}
-              >
-                <RotateCw className="h-4 w-4" />
-              </Button>
-
-              <Separator orientation="vertical" className="h-4" />
-
-              <Button variant="outline" size="sm" onClick={handleImport} className="gap-1.5">
-                <FileUp className="w-4 h-4" /> Import
-              </Button>
-
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleExport("md")}
-                  disabled={blocks.length === 0}
-                  className="gap-1.5"
-                >
-                  <FileDown className="w-4 h-4" /> .md
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleExport("pdf")}
-                  disabled={blocks.length === 0}
-                  className="gap-1.5"
-                >
-                  <FileDown className="w-4 h-4" /> .pdf
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleExport("html")}
-                  disabled={blocks.length === 0}
-                  className="gap-1.5"
-                >
-                  <FileDown className="w-4 h-4" /> .html
-                </Button>
-              </div>
-
-              <Separator orientation="vertical" className="h-4" />
-              <ModeToggle />
-            </div>
-          </header>
-
-          {/* Main Content */}
-          <div className="flex flex-1 flex-col pt-0 gap-4">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-              <DashboardHome
-                activeTab={activeTab}
-                blocks={blocks}
-                onBlocksChange={handleBlocksChange}
-                onBlockUpdate={handleBlockUpdate}
-                onBlockDelete={handleBlockDelete}
-              />
-            </div>
-          </div>
-        </SidebarInset>
-
-        <DragOverlay>
-          {activeId ? (
-            <div className="bg-background border border-border rounded-md px-3 py-2 shadow-lg cursor-grabbing min-w-[200px]">
-              <div className="flex items-center gap-2">
-                {(() => {
-                  const Icon = getBlockIcon(activeId);
-                  return <Icon className="h-4 w-4 text-muted-foreground" />;
-                })()}
-                <span className="text-sm font-medium text-foreground">
-                  {blocks.find((b) => b.id === activeId)
-                    ? "Moving block..."
-                    : getBlockLabel(activeId)}
-                </span>
-              </div>
-            </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
-    </SidebarProvider>
-  );
-}
+          const overIndex = blocks.findIndex((
