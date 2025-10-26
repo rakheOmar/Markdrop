@@ -18,7 +18,7 @@ const hiddenLayoutRoutes = ["/login", "/signup", "/builder", "/"];
 const definedRoutes = ["/", "/about", "/contact", "/builder", "/login", "/signup", "/user-profile"];
 const noPaddingRoutes = ["/"];
 
-const Layout = ({ children }) => {
+const _Layout = ({ children }) => {
   const location = useLocation();
   const isDefinedRoute = definedRoutes.some((route) =>
     route.includes(":")
