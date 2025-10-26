@@ -106,25 +106,6 @@ The application will be available at `http://localhost:4173/`
 6. **Export**: Download your finished markdown in various formats
 ---
 
-## 🏗️ Project Structure
-
-```
-src/
-├── components/           # Reusable UI components
-│   ├── blocks/          # Page-specific component blocks
-│   │   ├── BuilderPage/ # Markdown editor components
-│   │   ├── Home/        # Landing page components
-│   │   └── Navbar/      # Navigation components
-│   └── ui/              # Shadcn/UI components
-├── config/              # Configuration files
-├── context/             # React context providers
-├── hooks/               # Custom React hooks
-├── lib/                 # Utility libraries and services
-├── pages/               # Route components
-└── assets/              # Static assets (images, icons)
-```
-
----
 
 ## 🛠️ Development
 
