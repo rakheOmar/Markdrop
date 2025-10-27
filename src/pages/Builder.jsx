@@ -42,6 +42,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import FileTabs from "@/components/ui/filetabs";
+import {useFiles} from "@/context/FileContext";
 
 const blocksToMarkdown = (blocks) => {
   return blocks
@@ -139,10 +141,14 @@ const blocksToMarkdown = (blocks) => {
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("editor");
-  const [blocks, setBlocks] = useState(() => {
-    const saved = localStorage.getItem("markdown-blocks");
-    return saved ? JSON.parse(saved) : [];
-  });
+  // const [blocks, setBlocks] = useState(() => {
+  //   const saved = localStorage.getItem("markdown-blocks");
+  //   return saved ? JSON.parse(saved) : [];
+  // });
+  const {files, addFile, switchFile, updateFileBlocks} = useFiles();
+  const activeFile= files.find((f)=> f.isActive);
+  const blocks = activeFile?.blocks || [];
+
   const [isImporting, setIsImporting] = useState(false);
   const [history, setHistory] = useState([[]]);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -278,18 +284,29 @@ export default function Dashboard() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".md,.markdown,.txt";
+    input.multiple= true;
+
     input.onchange = async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
 
       setIsImporting(true);
       try {
+        for(let i=0;i<files.length;i++){
+        const file=files[i];
         const text = await file.text();
         const newBlocks = markdownToBlocks(text);
-        setBlocks(newBlocks);
-        saveToHistory(newBlocks);
-        toast.success("Markdown imported!");
+
+        addFile({
+          name: file.name,
+          content: text,
+          blocks: newBlocks,
+        });
+        //saveToHistory((prev)=>[...prev, ...newBlocks]);
+      }
+        toast.success(`${files.length} Markdown file(s) imported!`);
       } catch (error) {
+        console.error(error);
         toast.error("Failed to import file");
         console.log(error);
       } finally {
@@ -686,6 +703,7 @@ export default function Dashboard() {
           {/* Main Content */}
           <div className="flex flex-1 flex-col pt-0 gap-4">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+              <FileTabs/>
               <DashboardHome
                 activeTab={activeTab}
                 blocks={blocks}
