@@ -1,5 +1,5 @@
 import { Moon, Sun } from "lucide-react";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 
@@ -9,7 +9,6 @@ export function ModeToggle() {
   const [isToggling, setIsToggling] = useState(false);
 
   useEffect(() => {
-    
     setOptimisticTheme(theme);
   }, [theme]);
 
@@ -66,7 +65,7 @@ export function ModeToggle() {
 
   return (
     <Button
-      style = {{cursor: "pointer"}}
+      style={{ cursor: "pointer" }}
       variant="outline"
       size="icon"
       onClick={toggleTheme}
@@ -82,5 +81,5 @@ export function ModeToggle() {
       )}
       <span className="sr-only">Toggle theme</span>
     </Button>
-);
+  );
 }
