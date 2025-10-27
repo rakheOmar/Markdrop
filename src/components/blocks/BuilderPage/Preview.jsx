@@ -23,7 +23,7 @@ const blocksToMarkdown = (blocks) => {
         case "blockquote":
           return `> ${block.content}`;
         case "code":
-          return `\n${block.content}`;
+          return block.content;
         case "ul":
           return block.content;
         case "ol":
@@ -181,13 +181,20 @@ export default function Preview({ blocks = [] }) {
                 </code>
               ) : (
                 <code
-                  className="block bg-muted p-4 rounded-md my-4 overflow-x-auto text-sm font-mono"
+                  className="block bg-transparent p-0 text-sm font-mono whitespace-pre-wrap"
                   {...props}
                 >
                   {children}
                 </code>
               ),
-            pre: ({ children }) => <>{children}</>,
+            pre: ({ children, ...props }) => (
+              <pre
+                className="bg-muted p-4 rounded-md my-4 overflow-x-auto text-sm font-mono whitespace-pre-wrap"
+                {...props}
+              >
+                {children}
+              </pre>
+            ),
             blockquote: ({ ...props }) => (
               <blockquote
                 className="border-l-4 border-border pl-4 my-4 text-muted-foreground"
