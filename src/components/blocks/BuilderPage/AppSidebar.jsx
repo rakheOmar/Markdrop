@@ -44,7 +44,9 @@ function DraggableItem({ id, title, icon: Icon, isCollapsed }) {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={`flex items-center gap-2 py-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors cursor-grab active:cursor-grabbing ${isCollapsed ? "justify-center mx-0 px-0" : "px-3 mx-2"}`}
+      className={`flex items-center gap-2 py-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors cursor-grab active:cursor-grabbing ${
+        isCollapsed ? "justify-center mx-0 px-0" : "px-3 mx-2"
+      }`}
       style={{
         opacity: isDragging ? 0.5 : 1,
       }}
@@ -100,19 +102,21 @@ export default function AppSidebar({ ...props }) {
   return (
     <Sidebar collapsible="icon" {...props} ref={setNodeRef}>
       <SidebarHeader className="flex items-center justify-center px-4 py-2 border-b h-16">
-        {!isCollapsed ? (
-          <img
-            src={isDarkMode ? markdropLogoDark : markdropLogoLight}
-            alt="Markdrop"
-            className="h-8 w-auto"
-          />
-        ) : (
-          <img
-            src={isDarkMode ? markdropIconDark : markdropIconLight}
-            alt="Markdrop"
-            className="h-6 w-6"
-          />
-        )}
+        <a href="/">
+          {!isCollapsed ? (
+            <img
+              src={isDarkMode ? markdropLogoDark : markdropLogoLight}
+              alt="Markdrop"
+              className="h-8 w-auto"
+            />
+          ) : (
+            <img
+              src={isDarkMode ? markdropIconDark : markdropIconLight}
+              alt="Markdrop"
+              className="h-6 w-6"
+            />
+          )}
+        </a>
       </SidebarHeader>
 
       <SidebarContent>
