@@ -282,7 +282,7 @@ export default function Dashboard() {
       const file = e.target.files?.[0];
       if (!file) return;
 
-       setIsImporting(true);
+      setIsImporting(true);
       try {
         const text = await file.text();
         const newBlocks = markdownToBlocks(text);
@@ -292,8 +292,7 @@ export default function Dashboard() {
       } catch (error) {
         toast.error("Failed to import file");
         console.log(error);
-      }
-      finally{
+      } finally {
         setIsImporting(false);
       }
     };

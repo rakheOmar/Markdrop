@@ -1,13 +1,22 @@
 import { Moon, Sun } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 
 export function ModeToggle() {
   const { theme, setTheme } = useTheme();
+  const [optimisticTheme, setOptimisticTheme] = useState(theme);
+  const [isToggling, setIsToggling] = useState(false);
+
+  useEffect(() => {
+    setOptimisticTheme(theme);
+  }, [theme]);
 
   const toggleTheme = useCallback(() => {
+    if (isToggling) return;
     const newTheme = theme === "dark" ? "light" : "dark";
+    setOptimisticTheme(newTheme);
+    setIsToggling(true);
 
     const styleId = `theme-transition-${Date.now()}`;
     const style = document.createElement("style");
@@ -21,7 +30,7 @@ export function ModeToggle() {
           animation: none;
         }
         ::view-transition-new(root) {
-          animation: circle-expand 0.4s ease-out;
+          animation: circle-expand 0.35s ease-out;
           transform-origin: top right;
         }
         @keyframes circle-expand {
@@ -38,34 +47,37 @@ export function ModeToggle() {
     style.textContent = css;
     document.head.appendChild(style);
 
+    // remove sooner so it doesn't block future toggles
     setTimeout(() => {
       const styleEl = document.getElementById(styleId);
       if (styleEl) {
         styleEl.remove();
       }
-    }, 3000);
+      setIsToggling(false);
+    }, 700);
 
     if ("startViewTransition" in document) {
-      document.startViewTransition(() => {
-        setTheme(newTheme);
-      });
+      document.startViewTransition(() => setTheme(newTheme));
     } else {
       setTheme(newTheme);
     }
-  }, [theme, setTheme]);
+  }, [theme, setTheme, isToggling]);
 
   return (
     <Button
+      style={{ cursor: "pointer" }}
       variant="outline"
       size="icon"
       onClick={toggleTheme}
-      className="relative overflow-hidden transition-all h-7.5 w-7.5 "
-      aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+      className="relative overflow-hidden transition-transform active:scale-95 hover:scale-110 h-8 w-8"
+      aria-label={`Switch to ${optimisticTheme === "light" ? "dark" : "light"} theme`}
+      aria-pressed={optimisticTheme === "dark"}
+      title={`Switch to ${optimisticTheme === "light" ? "dark" : "light"} theme`}
     >
-      {theme === "light" ? (
-        <Sun className="h-[1.2rem] w-[1.2rem]" />
+      {optimisticTheme === "light" ? (
+        <Sun className="h-[1.1rem] w-[1.1rem]" />
       ) : (
-        <Moon className="h-[1.2rem] w-[1.2rem]" />
+        <Moon className="h-[1.1rem] w-[1.1rem]" />
       )}
       <span className="sr-only">Toggle theme</span>
     </Button>

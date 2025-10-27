@@ -25,9 +25,10 @@ export default function Navbar() {
               key={link.href}
               to={link.href}
               className={`font-semibold relative transition-colors duration-500 ease-in-out
-                ${currentPath === link.href
-                  ? "text-black dark:text-white"
-                  : "text-[#9b9b9b] dark:text-[#a0a0a0] hover:text-black dark:hover:text-white"
+                ${
+                  currentPath === link.href
+                    ? "text-black dark:text-white"
+                    : "text-[#9b9b9b] dark:text-[#a0a0a0] hover:text-black dark:hover:text-white"
                 }`}
             >
               {link.label}
