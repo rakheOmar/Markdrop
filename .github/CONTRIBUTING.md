@@ -2,11 +2,19 @@
 
 Thanks for your interest in contributing! We appreciate all contributions, big or small.
 
-## Getting Started
+## Prerequisites
+
+Before you begin, make sure you have the following installed:
+
+- **Node.js** (v22.19.0 or higher) - [Download here](https://nodejs.org/)
+- **npm** (v11.5.1 or higher) - Comes with Node.js
+- **Git** (v2.50.1 or higher) - [Download here](https://git-scm.com/)
+
+## Getting Started  
 
 1. Fork the repository
 2. Clone your fork: `git clone https://github.com/rakheOmar/Markdrop.git`
-3. Install dependencies: `pnpm install`
+3. Install dependencies: `npm install`
 4. Create a branch: `git checkout -b feature/your-feature-name`
 
 ## Development
@@ -14,7 +22,7 @@ Thanks for your interest in contributing! We appreciate all contributions, big o
 Start the development server:
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 The app will be available at `http://localhost:3000`
@@ -25,27 +33,68 @@ We use Biome for linting and formatting. Before committing:
 
 **Linting:**
 ```bash
-pnpm lint
+npm run lint
 ```
 
 **Formatting:**
 ```bash
-pnpm format
+npm run format
 ```
 
 **Or run both:**
 ```bash
-pnpm clean
+npm run clean
 ```
 
 ## Making Changes
 
 1. Make your changes in your feature branch
 2. Test your changes thoroughly
-3. Run `pnpm clean` to ensure code quality
-4. Commit with a clear message describing your changes
+3. Run `npm run clean` to ensure code quality
+4. Commit with a clear message following our commit conventions (see below)
 5. Push to your fork
 6. Open a pull request
+
+## Commit Message Conventions
+
+We follow the Conventional Commits specification for clear and consistent commit messages:
+
+**Format:**
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, missing semicolons, etc.)
+- `refactor`: Code refactoring without changing functionality
+- `perf`: Performance improvements
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks (dependencies, build config, etc.)
+- `ci`: CI/CD changes
+
+**Examples:**
+```bash
+feat(builder): add drag and drop support for blocks
+fix(editor): resolve markdown rendering issue
+docs: update installation instructions
+chore(deps): update dependencies
+ci: add automated testing workflow
+```
+
+**Scope** (optional): The area of the codebase affected (e.g., `builder`, `editor`, `ui`, `deps`)
+
+**Breaking Changes:**
+Add `!` after the type/scope or include `BREAKING CHANGE:` in the footer:
+```bash
+feat(api)!: change response format
+```
 
 ## Pull Request Guidelines
 
@@ -66,9 +115,22 @@ pnpm clean
 
 ## Project Structure
 
-- `/src/components` - Reusable UI components
-- `/src/pages` - Page components
-- `/src/lib` - Utility functions and helpers
+```
+📁 Markdrop
+└── 📁src
+    ├── 📁assets       — Images, icons, and static files
+    ├── 📁components   — Reusable UI components
+    │   ├── 📁blocks   — Block components
+    │   └── 📁ui       — Shadcn/UI components
+    ├── 📁config       — Configuration files
+    ├── 📁context      — React context providers
+    ├── 📁hooks        — Custom React hooks
+    ├── 📁lib          — Utility functions and helpers
+    ├── 📁pages        — Page components
+    ├── App.jsx        — Main app component
+    ├── index.css      — Root styles
+    └── main.jsx       — App entry point
+```
 
 ## Need Help?
 
