@@ -84,7 +84,9 @@ const blocksToMarkdown = (blocks) => {
               const label = badge.label;
               const message = badge.message;
               const color = badge.color || "blue";
-              let url = `https://img.shields.io/badge/${encodeURIComponent(label)}-${encodeURIComponent(message)}-${color}`;
+              let url = `https://img.shields.io/badge/${encodeURIComponent(
+                label
+              )}-${encodeURIComponent(message)}-${color}`;
               const params = [];
               if (badge.style && badge.style !== "flat") {
                 params.push(`style=${badge.style}`);
@@ -125,6 +127,309 @@ const blocksToMarkdown = (blocks) => {
           }
           return markdown;
         }
+        case "github-stats": {
+          const stats = block.stats || [];
+          const align = block.align || "left";
+
+          if (stats.length === 0) return "";
+
+          const badgesMarkdown = stats
+            .filter((stat) => stat.username && stat.repo)
+            .map((stat) => {
+              const { type, username, repo, label } = stat;
+              const baseUrl = "https://img.shields.io/github";
+
+              switch (type) {
+                case "stars":
+                  return `![${label}](${baseUrl}/stars/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )})`;
+                case "forks":
+                  return `![${label}](${baseUrl}/forks/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )})`;
+                case "issues":
+                  return `![${label}](${baseUrl}/issues/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )})`;
+                case "pull-requests":
+                  return `![${label}](${baseUrl}/issues-pr/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )})`;
+                case "license":
+                  return `![${label}](${baseUrl}/license/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )})`;
+                case "last-commit":
+                  return `![${label}](${baseUrl}/last-commit/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )})`;
+                case "repo-size":
+                  return `![${label}](${baseUrl}/repo-size/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )})`;
+                case "languages":
+                  return `![${label}](${baseUrl}/languages/top/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )})`;
+                default:
+                  return "";
+              }
+            })
+            .filter(Boolean)
+            .join(" ");
+
+          if (align === "center") {
+            return `<div align="center">\n\n${badgesMarkdown}\n\n</div>`;
+          } else if (align === "right") {
+            return `<div align="right">\n\n${badgesMarkdown}\n\n</div>`;
+          }
+          return badgesMarkdown;
+        }
+        case "social-badges": {
+          const badges = block.badges || [];
+          const align = block.align || "left";
+
+          if (badges.length === 0) return "";
+
+          const badgesMarkdown = badges
+            .filter((badge) => badge.username)
+            .map((badge) => {
+              const { type, username, label } = badge;
+              const baseUrl = "https://img.shields.io";
+
+              switch (type) {
+                case "twitter":
+                  return `![${label}](${baseUrl}/twitter/follow/${username}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=twitter&logoColor=white)`;
+                case "youtube":
+                  return `![${label}](${baseUrl}/youtube/channel/subscribers/${username}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=youtube&logoColor=red)`;
+                case "discord":
+                  return `![${label}](${baseUrl}/discord/${username}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=discord&logoColor=white)`;
+                case "twitch":
+                  return `![${label}](${baseUrl}/twitch/status/${username}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=twitch&logoColor=white)`;
+                case "instagram":
+                  return `![${label}](${baseUrl}/instagram/followers/${username}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=instagram&logoColor=white)`;
+                case "linkedin":
+                  return `![${label}](${baseUrl}/linkedin/followers/${username}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=linkedin&logoColor=white)`;
+                case "github":
+                  return `![${label}](${baseUrl}/github/followers/${username}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=github&logoColor=white)`;
+                case "reddit":
+                  return `![${label}](${baseUrl}/reddit/user-karma/${username}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=reddit&logoColor=white)`;
+                default:
+                  return "";
+              }
+            })
+            .filter(Boolean)
+            .join(" ");
+
+          if (align === "center") {
+            return `<div align="center">\n\n${badgesMarkdown}\n\n</div>`;
+          } else if (align === "right") {
+            return `<div align="right">\n\n${badgesMarkdown}\n\n</div>`;
+          }
+          return badgesMarkdown;
+        }
+        case "dev-metrics": {
+          const metrics = block.metrics || [];
+          const align = block.align || "left";
+
+          if (metrics.length === 0) return "";
+
+          const metricsMarkdown = metrics
+            .filter((metric) => {
+              const needsPackage = [
+                "npm-downloads",
+                "npm-version",
+                "pypi-downloads",
+                "pypi-version",
+                "docker-pulls",
+                "docker-stars",
+              ].includes(metric.type);
+              const needsRepo = [
+                "codecov",
+                "coveralls",
+                "travis-ci",
+                "github-actions",
+              ].includes(metric.type);
+              return (
+                (needsPackage && metric.package) ||
+                (needsRepo && metric.username && metric.repo)
+              );
+            })
+            .map((metric) => {
+              const { type, package: pkg, label, username, repo } = metric;
+              const baseUrl = "https://img.shields.io";
+
+              switch (type) {
+                case "npm-downloads":
+                  return `![${label}](${baseUrl}/npm/dm/${pkg}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=npm&logoColor=white)`;
+                case "npm-version":
+                  return `![${label}](${baseUrl}/npm/v/${pkg}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=npm&logoColor=white)`;
+                case "pypi-downloads":
+                  return `![${label}](${baseUrl}/pypi/dm/${pkg}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=pypi&logoColor=white)`;
+                case "pypi-version":
+                  return `![${label}](${baseUrl}/pypi/v/${pkg}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=pypi&logoColor=white)`;
+                case "codecov":
+                  return `![${label}](${baseUrl}/codecov/c/github/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=codecov&logoColor=white)`;
+                case "coveralls":
+                  return `![${label}](${baseUrl}/coveralls/github/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=coveralls&logoColor=white)`;
+                case "travis-ci":
+                  return `![${label}](${baseUrl}/travis-ci/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=travis-ci&logoColor=white)`;
+                case "github-actions":
+                  return `![${label}](${baseUrl}/github/workflows/status/${username}/${repo}/main?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=github-actions&logoColor=white)`;
+                case "docker-pulls":
+                  return `![${label}](${baseUrl}/docker/pulls/${pkg}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=docker&logoColor=white)`;
+                case "docker-stars":
+                  return `![${label}](${baseUrl}/docker/stars/${pkg}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=docker&logoColor=white)`;
+                default:
+                  return "";
+              }
+            })
+            .filter(Boolean)
+            .join(" ");
+
+          if (align === "center") {
+            return `<div align="center">\n\n${metricsMarkdown}\n\n</div>`;
+          } else if (align === "right") {
+            return `<div align="right">\n\n${metricsMarkdown}\n\n</div>`;
+          }
+          return metricsMarkdown;
+        }
+        case "doc-badges": {
+          const badges = block.badges || [];
+          const align = block.align || "left";
+
+          if (badges.length === 0) return "";
+
+          const badgesMarkdown = badges
+            .filter((badge) => {
+              const badgeType = [
+                "stars",
+                "forks",
+                "issues",
+                "license",
+                "last-commit",
+                "repo-size",
+                "languages",
+                "contributors",
+              ].includes(badge.type);
+              const needsRepo = badgeType;
+              return (
+                (needsRepo && badge.username && badge.repo) ||
+                (!needsRepo && badge.label)
+              );
+            })
+            .map((badge) => {
+              const { type, username, repo, label } = badge;
+              const baseUrl = "https://img.shields.io";
+
+              switch (type) {
+                case "stars":
+                  return `![${label}](${baseUrl}/github/stars/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=github&logoColor=white)`;
+                case "forks":
+                  return `![${label}](${baseUrl}/github/forks/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=github&logoColor=white)`;
+                case "issues":
+                  return `![${label}](${baseUrl}/github/issues/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=github&logoColor=white)`;
+                case "license":
+                  return `![${label}](${baseUrl}/github/license/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=github&logoColor=white)`;
+                case "last-commit":
+                  return `![${label}](${baseUrl}/github/last-commit/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=github&logoColor=white)`;
+                case "repo-size":
+                  return `![${label}](${baseUrl}/github/repo-size/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=github&logoColor=white)`;
+                case "languages":
+                  return `![${label}](${baseUrl}/github/languages/top/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=github&logoColor=white)`;
+                case "contributors":
+                  return `![${label}](${baseUrl}/github/contributors/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                    label
+                  )}&logo=github&logoColor=white)`;
+                case "gitbook":
+                  return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                    label
+                  )}&message=GitBook&color=3884FF&logo=gitbook&logoColor=white&style=flat-square)`;
+                case "notion":
+                  return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                    label
+                  )}&message=Notion&color=000000&logo=notion&logoColor=white&style=flat-square)`;
+                case "confluence":
+                  return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                    label
+                  )}&message=Confluence&color=172B4D&logo=confluence&logoColor=white&style=flat-square)`;
+                case "docusaurus":
+                  return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                    label
+                  )}&message=Docusaurus&color=2E8555&logo=docusaurus&logoColor=white&style=flat-square)`;
+                case "mkdocs":
+                  return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                    label
+                  )}&message=MkDocs&color=000000&logo=markdown&logoColor=white&style=flat-square)`;
+                case "sphinx":
+                  return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                    label
+                  )}&message=Sphinx&color=4B8B3B&logo=sphinx&logoColor=white&style=flat-square)`;
+                default:
+                  return "";
+              }
+            })
+            .filter(Boolean)
+            .join(" ");
+
+          if (align === "center") {
+            return `<div align="center">\n\n${badgesMarkdown}\n\n</div>`;
+          } else if (align === "right") {
+            return `<div align="right">\n\n${badgesMarkdown}\n\n</div>`;
+          }
+          return badgesMarkdown;
+        }
         default:
           return block.content;
       }
@@ -164,13 +469,22 @@ export default function Preview({ blocks = [] }) {
                     />
                   ),
                   h3: ({ ...props }) => (
-                    <h3 className="text-xl font-semibold mt-6 mb-2" {...props} />
+                    <h3
+                      className="text-xl font-semibold mt-6 mb-2"
+                      {...props}
+                    />
                   ),
                   h4: ({ ...props }) => (
-                    <h4 className="text-lg font-semibold mt-6 mb-2" {...props} />
+                    <h4
+                      className="text-lg font-semibold mt-6 mb-2"
+                      {...props}
+                    />
                   ),
                   h5: ({ ...props }) => (
-                    <h5 className="text-base font-semibold mt-6 mb-2" {...props} />
+                    <h5
+                      className="text-base font-semibold mt-6 mb-2"
+                      {...props}
+                    />
                   ),
                   h6: ({ ...props }) => (
                     <h6
@@ -178,15 +492,25 @@ export default function Preview({ blocks = [] }) {
                       {...props}
                     />
                   ),
-                  p: ({ ...props }) => <p className="text-base leading-7 mb-4" {...props} />,
-                  ul: ({ ...props }) => <ul className="list-disc ml-6 mb-4 space-y-2" {...props} />,
+                  p: ({ ...props }) => (
+                    <p className="text-base leading-7 mb-4" {...props} />
+                  ),
+                  ul: ({ ...props }) => (
+                    <ul className="list-disc ml-6 mb-4 space-y-2" {...props} />
+                  ),
                   ol: ({ ...props }) => (
-                    <ol className="list-decimal ml-6 mb-4 space-y-2" {...props} />
+                    <ol
+                      className="list-decimal ml-6 mb-4 space-y-2"
+                      {...props}
+                    />
                   ),
                   li: ({ ...props }) => <li className="text-base" {...props} />,
                   code: ({ inline, children, ...props }) =>
                     inline ? (
-                      <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                      <code
+                        className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono"
+                        {...props}
+                      >
                         {children}
                       </code>
                     ) : (
@@ -211,7 +535,9 @@ export default function Preview({ blocks = [] }) {
                       {...props}
                     />
                   ),
-                  hr: ({ ...props }) => <hr className="my-8 border-border border-t-4" {...props} />,
+                  hr: ({ ...props }) => (
+                    <hr className="my-8 border-border border-t-4" {...props} />
+                  ),
                   img: ({ src, alt, ...props }) => {
                     if (!src) return null;
                     return (
@@ -238,12 +564,19 @@ export default function Preview({ blocks = [] }) {
                   },
                   table: ({ ...props }) => (
                     <div className="overflow-x-auto my-4">
-                      <table className="border-collapse border border-border" {...props} />
+                      <table
+                        className="border-collapse border border-border"
+                        {...props}
+                      />
                     </div>
                   ),
-                  thead: ({ ...props }) => <thead className="bg-muted" {...props} />,
+                  thead: ({ ...props }) => (
+                    <thead className="bg-muted" {...props} />
+                  ),
                   tbody: ({ ...props }) => <tbody {...props} />,
-                  tr: ({ ...props }) => <tr className="border-b border-border" {...props} />,
+                  tr: ({ ...props }) => (
+                    <tr className="border-b border-border" {...props} />
+                  ),
                   th: ({ ...props }) => (
                     <th
                       className="border border-border px-4 py-2 text-left font-semibold"

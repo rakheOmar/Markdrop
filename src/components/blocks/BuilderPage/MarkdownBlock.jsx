@@ -5,6 +5,8 @@ import { memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import BlockquoteBlock from "./blocks/BlockquoteBlock";
 import CodeBlock from "./blocks/CodeBlock";
+import DevMetricsBlock from "./blocks/DevMetricsBlock";
+import GitHubStatsBlock from "./blocks/GitHubStatsBlock";
 import HeadingBlock from "./blocks/HeadingBlock";
 
 import ImageBlock from "./blocks/ImageBlock";
@@ -14,11 +16,25 @@ import ParagraphBlock from "./blocks/ParagraphBlock";
 import SeparatorBlock from "./blocks/SeparatorBlock";
 import ShieldBadgeBlock from "./blocks/ShieldBadgeBlock";
 import SkillIconsBlock from "./blocks/SkillIconsBlock";
+import SocialBadgesBlock from "./blocks/SocialBadgesBlock";
+import DocumentationBadgesBlock from "./blocks/DocumentationBadgesBlock";
 import TableBlock from "./blocks/TableBlock";
 import VideoBlock from "./blocks/VideoBlock";
 
-const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, onBlockAdd }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+const MarkdownBlock = memo(function MarkdownBlock({
+  block,
+  onUpdate,
+  onDelete,
+  onBlockAdd,
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: block.id,
   });
 
@@ -71,6 +87,14 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
         return <ShieldBadgeBlock block={block} onUpdate={onUpdate} />;
       case "skill-icons":
         return <SkillIconsBlock block={block} onUpdate={onUpdate} />;
+      case "github-stats":
+        return <GitHubStatsBlock block={block} onUpdate={onUpdate} />;
+      case "social-badges":
+        return <SocialBadgesBlock block={block} onUpdate={onUpdate} />;
+      case "dev-metrics":
+        return <DevMetricsBlock block={block} onUpdate={onUpdate} />;
+      case "doc-badges":
+        return <DocumentationBadgesBlock block={block} onUpdate={onUpdate} />;
       default:
         if (listTypes.includes(block.type)) {
           return <ListBlock block={block} onUpdate={onUpdate} />;
