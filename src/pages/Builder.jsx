@@ -137,7 +137,6 @@ const blocksToMarkdown = (blocks) => {
 
 ///////////////////////////////////
 
-
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("editor");
   const [blocks, setBlocks] = useState(() => {
@@ -560,174 +559,172 @@ export default function Dashboard() {
     setBlocks(newBlocks);
     saveToHistory(newBlocks);
   };
-///////////////////////////////////////////////////////////////////////////
-
+  ///////////////////////////////////////////////////////////////////////////
 
   const getStats = () => {
-  const markdown = blocksToMarkdown(blocks);
-  const words = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
-  const characters = markdown.length;
-  const readingTime = Math.ceil(words / 200);
-  return { words, characters, readingTime };
-};
+    const markdown = blocksToMarkdown(blocks);
+    const words = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
+    const characters = markdown.length;
+    const readingTime = Math.ceil(words / 200);
+    return { words, characters, readingTime };
+  };
 
-const stats = getStats();
+  const stats = getStats();
 
-return (
-  <SidebarProvider>
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      <AppSidebar />
+  return (
+    <SidebarProvider>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <AppSidebar />
 
-      <SidebarInset>
-        {/* Header */}
-        <header className="relative flex h-16 items-center px-4 border-b">
-          {/* Left: Sidebar + Stats */}
-          <div className="flex items-center gap-3">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="h-4" />
-            <div className="flex items-center gap-4 text-sm text-muted-foreground flex-shrink-0 min-w-0">
-              <span>
-                <span className="font-semibold text-foreground">{stats.readingTime}</span> min read
-              </span>
-              <span>
-                <span className="font-semibold text-foreground">{stats.words}</span> words
-              </span>
-              <span>
-                <span className="font-semibold text-foreground">{stats.characters}</span> chars
-              </span>
-            </div>
-          </div>
-
-          {/* Center: Tabs */}
-          <div className="flex justify-center flex-1">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="editor">Editor</TabsTrigger>
-                <TabsTrigger value="raw">Raw</TabsTrigger>
-                <TabsTrigger value="preview">Preview</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Reset"
-              onClick={handleReset}
-              disabled={blocks.length === 0}
-            >
-              <RefreshCcw className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Undo"
-              onClick={handleUndo}
-              disabled={historyIndex === 0}
-            >
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Redo"
-              onClick={handleRedo}
-              disabled={historyIndex === history.length - 1}
-            >
-              <RotateCw className="h-4 w-4" />
-            </Button>
-
-            <Separator orientation="vertical" className="h-4" />
-
-            <Button variant="outline" size="sm" onClick={handleImport} className="gap-1.5">
-              <FileUp className="w-4 h-4" /> Import
-            </Button>
-
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExport("md")}
-                disabled={blocks.length === 0}
-                className="gap-1.5"
-              >
-                <FileDown className="w-4 h-4" /> .md
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExport("pdf")}
-                disabled={blocks.length === 0}
-                className="gap-1.5"
-              >
-                <FileDown className="w-4 h-4" /> .pdf
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExport("html")}
-                disabled={blocks.length === 0}
-                className="gap-1.5"
-              >
-                <FileDown className="w-4 h-4" /> .html
-              </Button>
+        <SidebarInset>
+          {/* Header */}
+          <header className="relative flex h-16 items-center px-4 border-b">
+            {/* Left: Sidebar + Stats */}
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="h-4" />
+              <div className="flex items-center gap-4 text-sm text-muted-foreground flex-shrink-0 min-w-0">
+                <span>
+                  <span className="font-semibold text-foreground">{stats.readingTime}</span> min
+                  read
+                </span>
+                <span>
+                  <span className="font-semibold text-foreground">{stats.words}</span> words
+                </span>
+                <span>
+                  <span className="font-semibold text-foreground">{stats.characters}</span> chars
+                </span>
+              </div>
             </div>
 
-            <Separator orientation="vertical" className="h-4" />
-            <ModeToggle />
-          </div>
-        </header>
+            {/* Center: Tabs */}
+            <div className="flex justify-center flex-1">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList>
+                  <TabsTrigger value="editor">Editor</TabsTrigger>
+                  <TabsTrigger value="raw">Raw</TabsTrigger>
+                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
 
-        {/* Main Content */}
-        <div className="flex flex-1 flex-col pt-0 gap-4">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <DashboardHome
-              activeTab={activeTab}
-              blocks={blocks}
-              onBlocksChange={handleBlocksChange}
-              onBlockUpdate={handleBlockUpdate}
-              onBlockDelete={handleBlockDelete}
-            />
-          </div>
-        </div>
-      </SidebarInset>
+            {/* Right: Actions */}
+            <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Reset"
+                onClick={handleReset}
+                disabled={blocks.length === 0}
+              >
+                <RefreshCcw className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Undo"
+                onClick={handleUndo}
+                disabled={historyIndex === 0}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Redo"
+                onClick={handleRedo}
+                disabled={historyIndex === history.length - 1}
+              >
+                <RotateCw className="h-4 w-4" />
+              </Button>
 
-      {isImporting && (
-        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="animate-spin rounded-full h-10 w-10 border-4 border-t-transparent border-primary"></div>
-          <span className="ml-3 font-medium">Importing...</span>
-        </div>
-      )}
+              <Separator orientation="vertical" className="h-4" />
 
-      <DragOverlay>
-        {activeId ? (
-          <div className="bg-background border border-border rounded-md px-3 py-2 shadow-lg cursor-grabbing min-w-[200px]">
-            <div className="flex items-center gap-2">
-              {(() => {
-                const Icon = getBlockIcon(activeId);
-                return <Icon className="h-4 w-4 text-muted-foreground" />;
-              })()}
-              <span className="text-sm font-medium text-foreground">
-                {blocks.find((b) => b.id === activeId)
-                  ? "Moving block..."
-                  : getBlockLabel(activeId)}
-              </span>
+              <Button variant="outline" size="sm" onClick={handleImport} className="gap-1.5">
+                <FileUp className="w-4 h-4" /> Import
+              </Button>
+
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExport("md")}
+                  disabled={blocks.length === 0}
+                  className="gap-1.5"
+                >
+                  <FileDown className="w-4 h-4" /> .md
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExport("pdf")}
+                  disabled={blocks.length === 0}
+                  className="gap-1.5"
+                >
+                  <FileDown className="w-4 h-4" /> .pdf
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExport("html")}
+                  disabled={blocks.length === 0}
+                  className="gap-1.5"
+                >
+                  <FileDown className="w-4 h-4" /> .html
+                </Button>
+              </div>
+
+              <Separator orientation="vertical" className="h-4" />
+              <ModeToggle />
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <div className="flex flex-1 flex-col pt-0 gap-4">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+              <DashboardHome
+                activeTab={activeTab}
+                blocks={blocks}
+                onBlocksChange={handleBlocksChange}
+                onBlockUpdate={handleBlockUpdate}
+                onBlockDelete={handleBlockDelete}
+              />
             </div>
           </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
-  </SidebarProvider>
-);
+        </SidebarInset>
 
+        {isImporting && (
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-t-transparent border-primary"></div>
+            <span className="ml-3 font-medium">Importing...</span>
+          </div>
+        )}
 
+        <DragOverlay>
+          {activeId ? (
+            <div className="bg-background border border-border rounded-md px-3 py-2 shadow-lg cursor-grabbing min-w-[200px]">
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const Icon = getBlockIcon(activeId);
+                  return <Icon className="h-4 w-4 text-muted-foreground" />;
+                })()}
+                <span className="text-sm font-medium text-foreground">
+                  {blocks.find((b) => b.id === activeId)
+                    ? "Moving block..."
+                    : getBlockLabel(activeId)}
+                </span>
+              </div>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+    </SidebarProvider>
+  );
 }
