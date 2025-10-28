@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import Navbar from "@/components/blocks/Navbar/Navbar";
 import ChatBotButton from "@/components/ChatBotButton";
 import Footer from "@/components/Footer";
+import { PWAStatus, SWStatus } from "@/components/PWAStatus";
 import AboutPage from "@/pages/AboutPage";
 import Builder from "@/pages/Builder";
 import ContactPage from "@/pages/ContactUs";
@@ -42,19 +43,23 @@ const _Layout = ({ children }) => {
 function App() {
   return (
     <Router>
-      <Routes>
-        // UNPROTECTED
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/builder" element={<Builder />} />
-        <Route path="*" element={<NotFoundPage />} />
-        // AUTH
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        // PROTECTED
-        <Route path="/user-profile/:id" element={<UserProfile />} />
-      </Routes>
+      <_Layout>
+        <Routes>
+          // UNPROTECTED
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/builder" element={<Builder />} />
+          <Route path="*" element={<NotFoundPage />} />
+          // AUTH
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          // PROTECTED
+          <Route path="/user-profile/:id" element={<UserProfile />} />
+        </Routes>
+        <PWAStatus />
+        <SWStatus />
+      </_Layout>
     </Router>
   );
 }
