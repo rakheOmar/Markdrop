@@ -54,99 +54,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const blocksToMarkdown = (blocks) => {
-  return blocks
-    .map((block) => {
-      switch (block.type) {
-        case "h1":
-          return `# ${block.content}`;
-        case "h2":
-          return `## ${block.content}`;
-        case "h3":
-          return `### ${block.content}`;
-        case "h4":
-          return `#### ${block.content}`;
-        case "h5":
-          return `##### ${block.content}`;
-        case "h6":
-          return `###### ${block.content}`;
-        case "paragraph":
-          return block.content;
-        case "blockquote":
-          return `> ${block.content}`;
-        case "code":
-          return block.content;
-
-        case "ul":
-          return block.content;
-        case "ol":
-          return block.content;
-        case "task-list":
-          return block.content;
-        case "separator":
-          return "---";
-        case "image": {
-          const align = block.align || "left";
-          let imageMarkdown;
-
-          // If width or height is specified, use HTML img tag
-          if (block.width || block.height) {
-            const attrs = [`src="${block.content}"`];
-            if (block.alt) attrs.push(`alt="${block.alt}"`);
-            if (block.width) attrs.push(`width="${block.width}"`);
-            if (block.height) attrs.push(`height="${block.height}"`);
-            imageMarkdown = `<img ${attrs.join(" ")} />`;
-          } else {
-            imageMarkdown = `![${block.alt || ""}](${block.content})`;
-          }
-
-          // Wrap with alignment p tag if not left
-          if (align === "center") {
-            return `<p align="center">\n\n${imageMarkdown}\n\n</p>`;
-          } else if (align === "right") {
-            return `<p align="right">\n\n${imageMarkdown}\n\n</p>`;
-          }
-          return imageMarkdown;
-        }
-        case "link":
-          return `[${block.content}](${block.url || ""})`;
-        case "table":
-          return block.content;
-        case "shield-badge": {
-          const label = block.label || "label";
-          const message = block.message || "message";
-          const color = block.badgeColor || "blue";
-          let url = `https://img.shields.io/badge/${encodeURIComponent(label)}-${encodeURIComponent(message)}-${color}`;
-          const params = [];
-          if (block.style && block.style !== "flat") {
-            params.push(`style=${block.style}`);
-          }
-          if (block.logo) {
-            params.push(`logo=${encodeURIComponent(block.logo)}`);
-          }
-          if (params.length > 0) {
-            url += `?${params.join("&")}`;
-          }
-          return `![${label}: ${message}](${url})`;
-        }
-        case "skill-icons": {
-          const icons = block.icons || "js,html,css";
-          let url = `https://skillicons.dev/icons?i=${icons}`;
-          if (block.theme && block.theme !== "dark") {
-            url += `&theme=${block.theme}`;
-          }
-          if (block.perLine && block.perLine !== "15") {
-            url += `&perline=${block.perLine}`;
-          }
-          return `![Skill Icons](${url})`;
-        }
-        default:
-          return block.content;
-      }
-    })
-    .join("\n\n");
-};
+import { exportToPDF, exportToHTML, exportToMarkdown, blocksToMarkdown } from "@/lib/exportUtils";
 
 export default function Dashboard() {
   const { theme, setTheme } = useTheme();
@@ -281,19 +189,45 @@ export default function Dashboard() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const handleExport = (format) => {
-    const markdown = blocksToMarkdown(blocks);
-    if (format === "md") {
-      const blob = new Blob([markdown], { type: "text/markdown" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "document.md";
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success("Markdown exported!");
-    } else {
-      toast.info(`${format.toUpperCase()} export coming soon!`);
+  const handleExport = async (format) => {
+    if (blocks.length === 0) {
+      toast.error("No content to export");
+      return;
+    }
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `markdrop-document-${timestamp}`;
+
+    try {
+      switch (format) {
+        case "md":
+          exportToMarkdown(blocks, `${filename}.md`);
+          toast.success("Markdown exported!");
+          break;
+        case "html":
+          exportToHTML(blocks, `${filename}.html`);
+          toast.success("HTML exported!");
+          break;
+        case "pdf":
+          await exportToPDF(blocks, `${filename}.pdf`);
+          toast.success("PDF exported!");
+          break;
+        default:
+          toast.error(`Unsupported format: ${format}`);
+      }
+    } catch (error) {
+      console.error(`Export error for ${format}:`, error);
+      toast.error(`Failed to export ${format.toUpperCase()}`);
+    }
+  };
+
+  const handleCopyMarkdown = async () => {
+    try {
+      const markdown = blocksToMarkdown(blocks);
+      await navigator.clipboard.writeText(markdown);
+      toast.success("Markdown copied to clipboard!");
+    } catch (error) {
+      toast.error("Failed to copy to clipboard");
     }
   };
 
