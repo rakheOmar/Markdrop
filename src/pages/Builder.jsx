@@ -12,7 +12,6 @@ import { arrayMove } from "@dnd-kit/sortable";
 import {
   CheckSquare,
   Code,
-  Copy,
   FileDown,
   FileUp,
   Heading1,
@@ -39,7 +38,7 @@ import {
   Type,
   Video,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
@@ -78,8 +77,7 @@ const blocksToMarkdown = (blocks) => {
           return `> ${block.content}`;
         case "code":
           return block.content;
-        case "html":
-          return block.content;
+
         case "ul":
           return block.content;
         case "ol":
@@ -166,26 +164,6 @@ export default function Dashboard() {
     localStorage.setItem("markdown-blocks", JSON.stringify(blocks));
   }, [blocks]);
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      // Detect Ctrl+Z (Windows) or Command+Z (Mac) for Undo
-      if ((event.ctrlKey || event.metaKey) && event.key === "z" && !event.shiftKey) {
-        event.preventDefault();
-        handleUndo();
-      }
-      // Detect Ctrl+Y (Windows) or Command+Y (Mac) for Redo
-      else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
-        event.preventDefault();
-        handleRedo();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [history, historyIndex]);
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -237,7 +215,7 @@ export default function Dashboard() {
       paragraph: "Paragraph",
       blockquote: "Blockquote",
       code: "Code Block",
-      html: "HTML Block",
+
       ul: "Bullet List",
       ol: "Numbered List",
       "task-list": "Task List",
@@ -265,19 +243,39 @@ export default function Dashboard() {
     toast.success("Editor reset");
   };
 
-  const handleUndo = () => {
+  const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
       setBlocks(history[historyIndex - 1]);
     }
-  };
+  }, [historyIndex, history]);
 
-  const handleRedo = () => {
+  const handleRedo = useCallback(() => {
     if (historyIndex < history.length - 1) {
       setHistoryIndex(historyIndex + 1);
       setBlocks(history[historyIndex + 1]);
     }
-  };
+  }, [historyIndex, history]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Detect Ctrl+Z (Windows) or Command+Z (Mac) for Undo
+      if ((event.ctrlKey || event.metaKey) && event.key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        handleUndo();
+      }
+      // Detect Ctrl+Y (Windows) or Command+Y (Mac) for Redo
+      else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
+        event.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleUndo, handleRedo]);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -299,16 +297,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleCopyMarkdown = async () => {
-    const markdown = blocksToMarkdown(blocks);
-    try {
-      await navigator.clipboard.writeText(markdown);
-      toast.success("Markdown copied to clipboard!");
-    } catch (error) {
-      toast.error("Failed to copy to clipboard");
-    }
-  };
-
   const handleImport = () => {
     const input = document.createElement("input");
     input.type = "file";
@@ -324,9 +312,8 @@ export default function Dashboard() {
         setBlocks(newBlocks);
         saveToHistory(newBlocks);
         toast.success("Markdown imported!");
-      } catch (error) {
+      } catch {
         toast.error("Failed to import file");
-        console.log(error);
       } finally {
         setIsImporting(false);
       }
@@ -378,38 +365,6 @@ export default function Dashboard() {
           align: "left",
         });
         i++;
-      } else if (line.match(/^<(\w+)[^>]*>/)) {
-        const tagMatch = line.match(/^<(\w+)[^>]*>/);
-        const tagName = tagMatch[1];
-        const closingTag = `</${tagName}>`;
-
-        if (line.includes(closingTag)) {
-          blocks.push({
-            id: generateUniqueId(),
-            type: "html",
-            content: line,
-          });
-          i++;
-        } else {
-          const htmlLines = [line];
-          i++;
-
-          while (i < lines.length && !lines[i].includes(closingTag)) {
-            htmlLines.push(lines[i]);
-            i++;
-          }
-
-          if (i < lines.length && lines[i].includes(closingTag)) {
-            htmlLines.push(lines[i]);
-            i++;
-          }
-
-          blocks.push({
-            id: generateUniqueId(),
-            type: "html",
-            content: htmlLines.join("\n"),
-          });
-        }
       } else if (line.startsWith("# ")) {
         blocks.push({
           id: generateUniqueId(),
@@ -523,7 +478,7 @@ export default function Dashboard() {
           paragraph: "",
           blockquote: "",
           code: "```javascript\n// Your code here\n```",
-          html: "",
+
           ul: "- Item 1\n- Item 2\n- Item 3",
           ol: "1. First item\n2. Second item\n3. Third item",
           "task-list": "- [ ] Task 1\n- [x] Task 2\n- [ ] Task 3",

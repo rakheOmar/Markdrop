@@ -1,6 +1,5 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import {
-  CheckSquare,
   Code2,
   Heading1,
   Heading2,
@@ -86,7 +85,7 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       paragraph: "",
       blockquote: "",
       code: "```javascript\n// Your code here\n```",
-      html: "",
+
       ul: "- Item 1\n- Item 2\n- Item 3",
       ol: "1. First item\n2. Second item\n3. Third item",
       "task-list": "- [ ] Task 1\n- [x] Task 2\n- [ ] Task 3",
@@ -154,13 +153,11 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       { title: "Separator", key: "separator", icon: Minus },
       { title: "Blockquote", key: "blockquote", icon: Quote },
       { title: "Code Block", key: "code", icon: Code2 },
-      { title: "HTML Block", key: "html", icon: Code2 },
     ],
     lists: [
       { title: "Ordered List", key: "ol", icon: OrderedList },
       { title: "Unordered List", key: "ul", icon: UnorderedList },
       { title: "Task List", key: "task-list", icon: ListChecks },
-      { title: "Checklist", key: "checklist", icon: CheckSquare },
     ],
     media: [
       { title: "Image", key: "image", icon: Image },

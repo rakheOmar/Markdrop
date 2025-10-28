@@ -1,5 +1,5 @@
-import { Bold, Code, Italic, Strikethrough, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Bold, Code, Italic, Plus, Strikethrough, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -56,9 +56,13 @@ const generateMarkdown = (items, type) => {
 };
 
 export default function ListBlock({ block, onUpdate }) {
+  const blockId = block.id;
+  const blockType = block.type;
+  const blockContent = block.content;
+
   const initializedRef = useRef(false);
   const [items, setItems] = useState(() => {
-    const parsed = parseList(block.content, block.type);
+    const parsed = parseList(blockContent, blockType);
     return parsed.length > 0
       ? parsed
       : [{ id: "0", text: "", indent: 0, checked: false, number: 1 }];
@@ -67,50 +71,45 @@ export default function ListBlock({ block, onUpdate }) {
   const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
   const [activeInputRef, setActiveInputRef] = useState(null);
 
-  useEffect(() => {
+  // Memoize the markdown generation to prevent unnecessary recalculations
+  const markdown = useMemo(() => generateMarkdown(items, blockType), [items, blockType]);
+
+  // Use useCallback to prevent function recreation on every render
+  const handleUpdate = useCallback(() => {
     if (!initializedRef.current) {
       initializedRef.current = true;
       return;
     }
-    const markdown = generateMarkdown(items, block.type);
-    onUpdate(block.id, { ...block, content: markdown });
-  }, [items, block, onUpdate]);
+    onUpdate(blockId, { ...block, content: markdown });
+  }, [blockId, block, markdown, onUpdate]);
 
-  const updateItem = (id, updates) => {
+  // Only update when markdown actually changes
+  useEffect(() => {
+    if (markdown !== blockContent) {
+      handleUpdate();
+    }
+  }, [markdown, blockContent, handleUpdate]);
+
+  const updateItem = useCallback((id, updates) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...updates } : item)));
-  };
+  }, []);
 
-  const _addItem = () => {
+  const addItem = useCallback(() => {
     const newId = Date.now().toString();
-    const lastNumber = items.length > 0 ? items[items.length - 1].number || items.length : 0;
-    setItems((prev) => [
-      ...prev,
-      { id: newId, text: "", indent: 0, checked: false, number: lastNumber + 1 },
-    ]);
-  };
+    setItems((prev) => {
+      const lastNumber = prev.length > 0 ? prev[prev.length - 1].number || prev.length : 0;
+      return [...prev, { id: newId, text: "", indent: 0, checked: false, number: lastNumber + 1 }];
+    });
+  }, []);
 
-  const removeItem = (id) => {
-    if (items.length <= 1) return;
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  };
+  const removeItem = useCallback((id) => {
+    setItems((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((item) => item.id !== id);
+    });
+  }, []);
 
-  const _increaseIndent = (id) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id && item.indent < 3 ? { ...item, indent: item.indent + 1 } : item
-      )
-    );
-  };
-
-  const _decreaseIndent = (id) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id && item.indent > 0 ? { ...item, indent: item.indent - 1 } : item
-      )
-    );
-  };
-
-  const handleSelect = (e, itemId) => {
+  const handleSelect = useCallback((e, itemId) => {
     const input = e.target;
     const start = input.selectionStart;
     const end = input.selectionEnd;
@@ -126,27 +125,42 @@ export default function ListBlock({ block, onUpdate }) {
     } else {
       setShowToolbar(false);
     }
-  };
+  }, []);
 
-  const wrapSelection = (prefix, suffix = prefix) => {
-    if (!activeInputRef) return;
+  const wrapSelection = useCallback(
+    (prefix, suffix = prefix) => {
+      if (!activeInputRef) return;
 
-    const { input, itemId } = activeInputRef;
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
-    const item = items.find((i) => i.id === itemId);
-    const selectedText = item.text.substring(start, end);
-    const newText =
-      item.text.substring(0, start) + prefix + selectedText + suffix + item.text.substring(end);
+      const { input, itemId } = activeInputRef;
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const item = items.find((i) => i.id === itemId);
+      if (!item) return;
 
-    updateItem(itemId, { text: newText });
-    setShowToolbar(false);
+      const selectedText = item.text.substring(start, end);
+      const newText =
+        item.text.substring(0, start) + prefix + selectedText + suffix + item.text.substring(end);
 
-    setTimeout(() => {
-      input.focus();
-      input.setSelectionRange(start + prefix.length, end + prefix.length);
-    }, 0);
-  };
+      updateItem(itemId, { text: newText });
+      setShowToolbar(false);
+
+      setTimeout(() => {
+        input.focus();
+        input.setSelectionRange(start + prefix.length, end + prefix.length);
+      }, 0);
+    },
+    [activeInputRef, items, updateItem]
+  );
+
+  const handleKeyDown = useCallback(
+    (e, itemId) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addItem();
+      }
+    },
+    [addItem]
+  );
 
   return (
     <>
@@ -200,23 +214,24 @@ export default function ListBlock({ block, onUpdate }) {
               className="flex items-center gap-2 flex-1"
               style={{ paddingLeft: `${item.indent * 24}px` }}
             >
-              {block.type === "task-list" && (
+              {blockType === "task-list" && (
                 <Checkbox
                   checked={item.checked}
                   onCheckedChange={(checked) => updateItem(item.id, { checked })}
                 />
               )}
-              {block.type === "ol" && (
+              {blockType === "ol" && (
                 <span className="text-sm font-medium text-muted-foreground w-6">
                   {item.number || index + 1}.
                 </span>
               )}
-              {block.type === "ul" && <span className="text-muted-foreground">•</span>}
+              {blockType === "ul" && <span className="text-muted-foreground">•</span>}
 
               <Input
                 value={item.text}
                 onChange={(e) => updateItem(item.id, { text: e.target.value })}
                 onSelect={(e) => handleSelect(e, item.id)}
+                onKeyDown={(e) => handleKeyDown(e, item.id)}
                 onBlur={() => setTimeout(() => setShowToolbar(false), 200)}
                 placeholder="List item..."
                 className="border-0 h-9 px-3 py-2 focus-visible:ring-1 shadow-none bg-transparent"
@@ -234,6 +249,18 @@ export default function ListBlock({ block, onUpdate }) {
             </Button>
           </div>
         ))}
+
+        <div className="flex items-center gap-2 mt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={addItem}
+            className="h-8 px-2 text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add item
+          </Button>
+        </div>
       </div>
     </>
   );

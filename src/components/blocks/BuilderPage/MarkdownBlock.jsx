@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import BlockquoteBlock from "./blocks/BlockquoteBlock";
 import CodeBlock from "./blocks/CodeBlock";
 import HeadingBlock from "./blocks/HeadingBlock";
-import HtmlBlock from "./blocks/HtmlBlock";
+
 import ImageBlock from "./blocks/ImageBlock";
 import LinkBlock from "./blocks/LinkBlock";
 import ListBlock from "./blocks/ListBlock";
@@ -56,8 +56,7 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
         return <BlockquoteBlock block={block} onUpdate={onUpdate} />;
       case "code":
         return <CodeBlock block={block} onUpdate={onUpdate} />;
-      case "html":
-        return <HtmlBlock block={block} onUpdate={onUpdate} />;
+
       case "separator":
         return <SeparatorBlock />;
       case "image":
