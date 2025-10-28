@@ -15,14 +15,14 @@ export default function HeroSection() {
             hoverFillColor="#000000"
           />
         </div>
-        <div className="relative z-10 flex items-center justify-center h-full">
-          <div className="text-center space-y-4">
-            <h1 className="text-5xl font-bold tracking-tight">
+        <div className="relative z-10 flex items-center justify-center h-full px-4 md:px-8">
+          <div className="text-center space-y-3 md:space-y-4 max-w-4xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
               Turn Ideas Into
               <br />
               Beautiful Markdown
             </h1>
-            <p className="text-xl text-[#6b7280] dark:text-[#9ca3af]">
+            <p className="text-base sm:text-lg md:text-xl text-[#6b7280] dark:text-[#9ca3af] px-4 sm:px-0">
               The easiest way to create professional .md files—just write naturally
             </p>
           </div>

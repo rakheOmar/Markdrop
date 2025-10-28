@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Trash2 } from "lucide-react";
+import { memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import BlockquoteBlock from "./blocks/BlockquoteBlock";
 import CodeBlock from "./blocks/CodeBlock";
@@ -16,10 +17,24 @@ import SkillIconsBlock from "./blocks/SkillIconsBlock";
 import TableBlock from "./blocks/TableBlock";
 import VideoBlock from "./blocks/VideoBlock";
 
-export default function MarkdownBlock({ block, onUpdate, onDelete }) {
+const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, onBlockAdd }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
   });
+
+  const handleDelete = useCallback(() => {
+    onDelete(block.id);
+  }, [onDelete, block.id]);
+
+  const handleDoubleClick = useCallback(
+    (e) => {
+      // Prevent event bubbling to parent
+      e.stopPropagation();
+      // Add a new block after this one
+      onBlockAdd(block.id);
+    },
+    [onBlockAdd, block.id]
+  );
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -66,37 +81,43 @@ export default function MarkdownBlock({ block, onUpdate, onDelete }) {
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="group relative rounded-lg border border-transparent hover:border-muted-foreground/20 transition-all p-3"
-    >
-      {/* Hover controls */}
-      <div className="absolute -left-10 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 cursor-grab active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-4 w-4" />
-        </Button>
-      </div>
+    <div className="relative mx-12">
+      <div
+        ref={setNodeRef}
+        style={style}
+        onDoubleClick={handleDoubleClick}
+        className="group relative rounded-lg border border-transparent hover:border-muted-foreground/20 transition-all p-3 touch-manipulation"
+      >
+        {/* Controls - always visible on mobile, hover on desktop */}
+        <div className="absolute -left-12 top-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 md:h-7 md:w-7 cursor-grab active:cursor-grabbing touch-manipulation"
+            {...attributes}
+            {...listeners}
+            style={{ touchAction: "none" }}
+          >
+            <GripVertical className="h-5 w-5 md:h-4 md:w-4" />
+          </Button>
+        </div>
 
-      <div className="absolute -right-10 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 text-destructive hover:text-destructive"
-          onClick={() => onDelete(block.id)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
+        <div className="absolute -right-12 top-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 md:h-7 md:w-7 text-destructive hover:text-destructive touch-manipulation"
+            onClick={handleDelete}
+          >
+            <Trash2 className="h-5 w-5 md:h-4 md:w-4" />
+          </Button>
+        </div>
 
-      {/* Block content */}
-      <div className="w-full">{renderBlock()}</div>
+        {/* Block content */}
+        <div className="w-full block-content">{renderBlock()}</div>
+      </div>
     </div>
   );
-}
+});
+
+export default MarkdownBlock;

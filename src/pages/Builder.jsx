@@ -2,14 +2,17 @@ import {
   closestCenter,
   DndContext,
   DragOverlay,
+  KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 import {
   CheckSquare,
   Code,
+  Copy,
   FileDown,
   FileUp,
   Heading1,
@@ -22,13 +25,16 @@ import {
   Link,
   List,
   ListOrdered,
+  Menu,
   Minus,
+  Moon,
   Quote,
   RefreshCcw,
   RotateCcw,
   RotateCw,
   Shield,
   Sparkles,
+  Sun,
   Table,
   Type,
   Video,
@@ -37,8 +43,15 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
-import { ModeToggle } from "@/components/ModeToggle";
+import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -138,6 +151,7 @@ const blocksToMarkdown = (blocks) => {
 };
 
 export default function Dashboard() {
+  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("editor");
   const [blocks, setBlocks] = useState(() => {
     const saved = localStorage.getItem("markdown-blocks");
@@ -175,9 +189,16 @@ export default function Dashboard() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 3,
+        distance: 8,
       },
-    })
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 100,
+        tolerance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
   );
 
   const getBlockIcon = (blockType) => {
@@ -258,6 +279,10 @@ export default function Dashboard() {
     }
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   const handleExport = (format) => {
     const markdown = blocksToMarkdown(blocks);
     if (format === "md") {
@@ -271,6 +296,16 @@ export default function Dashboard() {
       toast.success("Markdown exported!");
     } else {
       toast.info(`${format.toUpperCase()} export coming soon!`);
+    }
+  };
+
+  const handleCopyMarkdown = async () => {
+    const markdown = blocksToMarkdown(blocks);
+    try {
+      await navigator.clipboard.writeText(markdown);
+      toast.success("Markdown copied to clipboard!");
+    } catch (error) {
+      toast.error("Failed to copy to clipboard");
     }
   };
 
@@ -306,7 +341,7 @@ export default function Dashboard() {
     let blockCounter = 0;
 
     const generateUniqueId = () => {
-      return `${Date.now()}-${blockCounter++}-${Math.random().toString(36).substr(2, 9)}`;
+      return `${Date.now()}-${blockCounter++}-${Math.random().toString(36).substring(2, 11)}`;
     };
 
     while (i < lines.length) {
@@ -446,7 +481,7 @@ export default function Dashboard() {
     setActiveId(event.active.id);
   };
 
-  const handleDragOver = (event) => {
+  const handleDragOver = () => {
     // Just for visual feedback - don't update state here
   };
 
@@ -560,6 +595,36 @@ export default function Dashboard() {
     saveToHistory(newBlocks);
   };
 
+  const handleBlockAdd = (afterBlockId = null, customBlock = null) => {
+    const newBlock = customBlock || {
+      id: Date.now().toString(),
+      type: "paragraph",
+      content: "",
+    };
+
+    // Ensure the block has a unique ID
+    if (!newBlock.id) {
+      newBlock.id = Date.now().toString();
+    }
+
+    let newBlocks;
+    if (afterBlockId) {
+      // Insert after the specified block
+      const afterIndex = blocks.findIndex((b) => b.id === afterBlockId);
+      if (afterIndex !== -1) {
+        newBlocks = [...blocks.slice(0, afterIndex + 1), newBlock, ...blocks.slice(afterIndex + 1)];
+      } else {
+        newBlocks = [...blocks, newBlock];
+      }
+    } else {
+      // Add to the end
+      newBlocks = [...blocks, newBlock];
+    }
+
+    setBlocks(newBlocks);
+    saveToHistory(newBlocks);
+  };
+
   const getStats = () => {
     const markdown = blocksToMarkdown(blocks);
     const words = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
@@ -571,7 +636,7 @@ export default function Dashboard() {
   const stats = getStats();
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -580,14 +645,17 @@ export default function Dashboard() {
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <AppSidebar />
+        <AppSidebar onBlockAdd={handleBlockAdd} />
 
         <SidebarInset>
-          <header className="relative flex h-16 shrink-0 items-center justify-between px-4 border-b">
-            <div className="flex items-center gap-3">
+          <header className="flex h-16 shrink-0 items-center justify-between px-2 sm:px-4 border-b">
+            {/* Left: Sidebar trigger and stats */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="h-4" />
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <Separator orientation="vertical" className="h-4 hidden sm:block" />
+
+              {/* Stats - responsive visibility */}
+              <div className="hidden lg:flex items-center gap-3 text-sm text-muted-foreground">
                 <span>
                   <span className="font-semibold text-foreground">{stats.readingTime}</span> min
                   read
@@ -602,116 +670,199 @@ export default function Dashboard() {
             </div>
 
             {/* Center: Tabs */}
-            <div className="absolute left-1/2 transform -translate-x-1/2">
+            <div className="flex-1 flex justify-center px-2">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList>
-                  <TabsTrigger value="editor">Editor</TabsTrigger>
-                  <TabsTrigger value="raw">Raw</TabsTrigger>
-                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 max-w-[280px] sm:max-w-[300px] bg-muted/50 p-1">
+                  <TabsTrigger
+                    value="editor"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200"
+                  >
+                    Editor
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="raw"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200"
+                  >
+                    Raw
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="preview"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200"
+                  >
+                    Preview
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center gap-2 ml-auto">
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Reset"
-                onClick={handleReset}
-                disabled={blocks.length === 0}
-              >
-                <RefreshCcw className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Undo"
-                onClick={handleUndo}
-                disabled={historyIndex === 0}
-              >
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Redo"
-                onClick={handleRedo}
-                disabled={historyIndex === history.length - 1}
-              >
-                <RotateCw className="h-4 w-4" />
-              </Button>
-
-              <Separator orientation="vertical" className="h-4" />
-
-              <Button variant="outline" size="sm" onClick={handleImport} className="gap-1.5">
-                <FileUp className="w-4 h-4" /> Import
-              </Button>
-
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Quick actions - visible on larger screens */}
+              <div className="hidden xl:flex items-center gap-2">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => handleExport("md")}
-                  disabled={blocks.length === 0}
-                  className="gap-1.5"
+                  title="Undo"
+                  onClick={handleUndo}
+                  disabled={historyIndex === 0}
+                  className="px-2"
                 >
-                  <FileDown className="w-4 h-4" /> .md
+                  <RotateCcw className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => handleExport("pdf")}
-                  disabled={blocks.length === 0}
-                  className="gap-1.5"
+                  title="Redo"
+                  onClick={handleRedo}
+                  disabled={historyIndex === history.length - 1}
+                  className="px-2"
                 >
-                  <FileDown className="w-4 h-4" /> .pdf
+                  <RotateCw className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleExport("html")}
-                  disabled={blocks.length === 0}
-                  className="gap-1.5"
-                >
-                  <FileDown className="w-4 h-4" /> .html
-                </Button>
+                <Separator orientation="vertical" className="h-4" />
               </div>
 
-              <Separator orientation="vertical" className="h-4" />
-              <ModeToggle />
+              {/* Import button - visible on large+ screens */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleImport}
+                className="hidden lg:flex gap-1.5"
+              >
+                <FileUp className="w-4 h-4" />
+                <span className="hidden lg:inline">Import</span>
+              </Button>
+
+              {/* Actions dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="px-2">
+                    <Menu className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {/* Document Stats - Mobile/Tablet Only */}
+                  <div className="lg:hidden px-3 py-2 text-xs text-muted-foreground bg-muted/50 rounded-sm mx-2 mb-2">
+                    <div className="font-medium mb-1">Document Stats</div>
+                    <div className="space-y-0.5">
+                      <div>
+                        {stats.readingTime} min read • {stats.words} words
+                      </div>
+                      <div>{stats.characters} characters</div>
+                    </div>
+                  </div>
+
+                  {/* File Operations */}
+                  <DropdownMenuItem onClick={handleImport} className="lg:hidden">
+                    <FileUp className="w-4 h-4 mr-2" />
+                    Import File
+                  </DropdownMenuItem>
+
+                  {/* Edit Actions - Mobile/Tablet Only */}
+                  <div className="xl:hidden">
+                    {(historyIndex > 0 || historyIndex < history.length - 1) && (
+                      <>
+                        <DropdownMenuItem onClick={handleUndo} disabled={historyIndex === 0}>
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Undo
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={handleRedo}
+                          disabled={historyIndex === history.length - 1}
+                        >
+                          <RotateCw className="w-4 h-4 mr-2" />
+                          Redo
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                  </div>
+
+                  {/* Export Section */}
+                  <DropdownMenuItem
+                    onClick={() => handleExport("md")}
+                    disabled={blocks.length === 0}
+                  >
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export Markdown
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => handleExport("pdf")}
+                    disabled={blocks.length === 0}
+                  >
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export as PDF
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => handleExport("html")}
+                    disabled={blocks.length === 0}
+                  >
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export as HTML
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  {/* Appearance */}
+                  <DropdownMenuItem onClick={toggleTheme}>
+                    {theme === "dark" ? (
+                      <Sun className="w-4 h-4 mr-2" />
+                    ) : (
+                      <Moon className="w-4 h-4 mr-2" />
+                    )}
+                    Switch to {theme === "dark" ? "Light" : "Dark"}
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  {/* Danger Zone */}
+                  <DropdownMenuItem
+                    onClick={handleReset}
+                    disabled={blocks.length === 0}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <RefreshCcw className="w-4 h-4 mr-2" />
+                    Reset Editor
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
 
           {/* Main Content */}
-          <div className="flex flex-1 flex-col pt-0 gap-4">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="flex flex-1 flex-col p-4 gap-4">
+            <div className="flex-1 w-full max-w-none">
               <DashboardHome
                 activeTab={activeTab}
                 blocks={blocks}
                 onBlocksChange={handleBlocksChange}
                 onBlockUpdate={handleBlockUpdate}
                 onBlockDelete={handleBlockDelete}
+                onBlockAdd={handleBlockAdd}
               />
             </div>
           </div>
         </SidebarInset>
         {isImporting && (
           <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-t-transparent border-primary"></div>
-            <span className="ml-3 font-medium">Importing...</span>
+            <div className="flex items-center gap-3 bg-background/90 rounded-lg px-4 py-3 shadow-lg border">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-t-transparent border-primary"></div>
+              <span className="font-medium text-sm sm:text-base">Importing...</span>
+            </div>
           </div>
         )}
 
         <DragOverlay>
           {activeId ? (
-            <div className="bg-background border border-border rounded-md px-3 py-2 shadow-lg cursor-grabbing min-w-[200px]">
+            <div className="bg-background border border-border rounded-md px-2 sm:px-3 py-2 shadow-lg cursor-grabbing min-w-[150px] sm:min-w-[200px]">
               <div className="flex items-center gap-2">
                 {(() => {
                   const Icon = getBlockIcon(activeId);
-                  return <Icon className="h-4 w-4 text-muted-foreground" />;
+                  return <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />;
                 })()}
-                <span className="text-sm font-medium text-foreground">
+                <span className="text-xs sm:text-sm font-medium text-foreground truncate">
                   {blocks.find((b) => b.id === activeId)
                     ? "Moving block..."
                     : getBlockLabel(activeId)}

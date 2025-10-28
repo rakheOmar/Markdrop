@@ -493,26 +493,29 @@ export default function Raw({ blocks = [], onBlocksChange }) {
   };
 
   return (
-    <div className="w-full min-h-[500px] rounded-lg p-4">
-      <div className="flex items-center justify-end gap-2 mb-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={copyMarkdown}
-          aria-label="Copy markdown to clipboard"
-          className="flex items-center gap-2"
-        >
-          {isCopied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
-          <span className="text-sm">{isCopied ? "Copied" : "Copy to Clipboard"}</span>
-        </Button>
+    <div className="w-full h-full rounded-lg transition-colors relative">
+      <div className="h-full overflow-y-auto overflow-x-hidden">
+        <div className="p-2 sm:p-4">
+          <div className="relative bg-muted rounded-lg border-0 shadow-none h-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={copyMarkdown}
+              aria-label="Copy markdown to clipboard"
+              className="absolute top-3 right-3 z-10 h-8 w-8 hover:bg-background/80 rounded-md"
+            >
+              {isCopied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+            </Button>
+            <Textarea
+              value={markdown}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="# Your markdown here..."
+              className="h-full min-h-[calc(100vh-12rem)] font-mono text-sm p-4 pr-14 resize-none bg-transparent border-0 shadow-none focus-visible:ring-1 focus-visible:ring-ring"
+            />
+          </div>
+        </div>
       </div>
-      <Textarea
-        value={markdown}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        placeholder="# Your markdown here..."
-        className="min-h-[500px] font-mono text-sm p-4 resize-none bg-muted border-0 shadow-none focus-visible:ring-1"
-      />
     </div>
   );
 }
