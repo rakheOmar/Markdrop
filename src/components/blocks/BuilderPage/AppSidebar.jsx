@@ -191,10 +191,6 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
     badges: [
       { title: "Shield Badge", key: "shield-badge", icon: Shield },
       { title: "Skill Icons", key: "skill-icons", icon: Sparkles },
-      { title: "GitHub Stats", key: "github-stats", icon: Github },
-      { title: "Social Badges", key: "social-badges", icon: Users },
-      { title: "Dev Metrics", key: "dev-metrics", icon: BarChart3 },
-      { title: "Documentation Badges", key: "doc-badges", icon: FileText },
     ],
   };
 
