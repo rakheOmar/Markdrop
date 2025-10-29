@@ -105,7 +105,7 @@ export function SWStatus() {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed top-4 left-4 z-40">
       <div className={`${statusColors[swStatus]} text-white px-2 py-1 rounded text-xs`}>
         {statusTexts[swStatus]}
       </div>
