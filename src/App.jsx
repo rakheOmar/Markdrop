@@ -28,17 +28,17 @@ function App() {
     <Router>
       <Layout>
         <Routes>
-          // UNPROTECTED
+          {/* UNPROTECTED */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/builder" element={<Builder />} />
           <Route path="*" element={<NotFoundPage />} />
-          // AUTH
+          {/* AUTH */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          // PROTECTED
-          <Route path="/user-profile/:id" element={<UserProfile />} />
+          {/* PROTECTED */}
+          <Route path="/user-profile" element={<UserProfile />} />
         </Routes>
         <PWAStatus />
         <SWStatus />

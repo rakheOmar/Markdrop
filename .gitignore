@@ -120,3 +120,7 @@ generated/
 types/generated/
 dist-ssr/
 *.local
+
+
+# Supabase Config 
+setup-database.sql

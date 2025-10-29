@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { getCurrentUser, logoutUser } from "@/lib/auth";
+import { logoutUser } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 
 const AuthContext = createContext();
 
@@ -9,9 +10,12 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = useCallback(async () => {
     try {
-      const res = await getCurrentUser();
-      setUser(res.data);
-    } catch (_error) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
       setUser(null);
     } finally {
       setLoading(false);
@@ -19,7 +23,18 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    // Get initial session
     fetchUser();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, [fetchUser]);
 
   const logout = useCallback(async () => {
