@@ -57,20 +57,6 @@
 - **Statistics** - Real-time word count, character count, and reading time estimation
 - **Reset Functionality** - Quick reset to start fresh
 
-## Environment Setup
-
-### Required Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-
-```bash
-# Supabase Configuration (Optional for basic functionality)
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-**Note:** The application will work without these environment variables, but some features like user authentication and data persistence will be limited.
-
 ### Getting Supabase Credentials
 
 1. Go to [Supabase](https://supabase.com) and create a new project
