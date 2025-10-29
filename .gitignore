@@ -1,62 +1,122 @@
-# Node modules
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
 
 # Build output
 dist/
+dev-dist/
 build/
 out/
-.next/
-.angular/
+*.local
+
+# Vite
+.vite/
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# PWA
+dev-dist/
+sw.js
+workbox-*.js
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+!.env.example
 
 # Logs
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-*.log
 
-# OS-specific
+# Testing
+coverage/
+.nyc_output/
+*.snap
+test-output/
+.vitest/
+
+# IDEs and editors
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*.swn
+*.sw?
+*.sublime-project
+*.sublime-workspace
 .DS_Store
-Thumbs.db
 
-# Environment files
-.env
-.env.*
-!.env.example
+# OS
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
 
-# IDEs and editors
-.vscode/
-.idea/
-*.sw?
-*.sublime*
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.cache
+.cache/
 
-# Dependency lock files (optional, depending on workflow)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
+# Optional npm cache directory
+.npm
 
-# Coverage
-coverage/
-.nyc_output/
+# Optional eslint cache
+.eslintcache
 
-# Testing
-*.snap
-test-output/
+# Optional stylelint cache
+.stylelintcache
+
+# Biome cache
+.biome/
+
+# Turbo
+.turbo/
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
 # Misc
 *.tgz
-*.bak
-*.tmp
-*.temp
-*.orig
+.DS_Store
+*.pem
 
-# Optional: ignore generated types or API clients
+# Generated files
 generated/
 types/generated/
+dist-ssr/
+*.local

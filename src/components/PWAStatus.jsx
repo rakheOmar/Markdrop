@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export function PWAStatus() {
   const [isInstallable, setIsInstallable] = useState(false);
@@ -7,7 +7,7 @@ export function PWAStatus() {
 
   useEffect(() => {
     // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (window.matchMedia("(display-mode: standalone)").matches) {
       setIsInstalled(true);
     }
 
@@ -25,12 +25,12 @@ export function PWAStatus() {
       setDeferredPrompt(null);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
@@ -39,8 +39,8 @@ export function PWAStatus() {
 
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
+
+    if (outcome === "accepted") {
       setIsInstallable(false);
       setDeferredPrompt(null);
     }
@@ -73,35 +73,35 @@ export function PWAStatus() {
 
 // Service Worker registration status (for development)
 export function SWStatus() {
-  const [swStatus, setSWStatus] = useState('checking');
+  const [swStatus, setSWStatus] = useState("checking");
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
+    if ("serviceWorker" in navigator) {
       navigator.serviceWorker.ready
-        .then(() => setSWStatus('ready'))
-        .catch(() => setSWStatus('error'));
+        .then(() => setSWStatus("ready"))
+        .catch(() => setSWStatus("error"));
     } else {
-      setSWStatus('not-supported');
+      setSWStatus("not-supported");
     }
   }, []);
 
   // Only show in development
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== "development") {
     return null;
   }
 
   const statusColors = {
-    checking: 'bg-yellow-500',
-    ready: 'bg-green-500',
-    error: 'bg-red-500',
-    'not-supported': 'bg-gray-500'
+    checking: "bg-yellow-500",
+    ready: "bg-green-500",
+    error: "bg-red-500",
+    "not-supported": "bg-gray-500",
   };
 
   const statusTexts = {
-    checking: 'SW: Checking...',
-    ready: 'SW: Ready',
-    error: 'SW: Error',
-    'not-supported': 'SW: Not Supported'
+    checking: "SW: Checking...",
+    ready: "SW: Ready",
+    error: "SW: Error",
+    "not-supported": "SW: Not Supported",
   };
 
   return (
