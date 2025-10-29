@@ -8,9 +8,9 @@ export default function Footer() {
 
   return (
     <>
-      <div className="border-r border-[#cecece] dark:border-[#16181d] lg:block hidden" />
+      <div className="border-r border-t border-[#cecece] dark:border-[#16181d] lg:block hidden" />
 
-      <footer className="border-[#cecece] dark:border-[#16181d] flex items-center justify-between px-2 sm:px-4 md:px-8 py-2 sm:py-0 col-span-3 lg:col-span-1 overflow-hidden">
+      <footer className="border-t border-[#cecece] dark:border-[#16181d] flex items-center justify-between px-2 sm:px-4 md:px-8 py-2 sm:py-0 col-span-3 lg:col-span-1 overflow-hidden">
         <img
           src={theme === "dark" ? markdropIconDark : markdropIconLight}
           alt="Markdrop Logo"
@@ -60,7 +60,7 @@ export default function Footer() {
         </div>
       </footer>
 
-      <div className="border-l border-[#cecece] dark:border-[#16181d] relative lg:block hidden">
+      <div className="border-l border-t border-[#cecece] dark:border-[#16181d] relative lg:block hidden">
         <span className="absolute bottom-1 left-1 text-[10px] text-[#6b7280] dark:text-[#9ca3af] font-mono">
           Last updated on: October 25, 2025
         </span>

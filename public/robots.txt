@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Allow social media crawlers to fetch OG images
+Allow: /api/og/*
+
+Sitemap: https://markdrop.vercel.app/sitemap.xml
