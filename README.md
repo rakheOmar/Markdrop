@@ -34,11 +34,13 @@
 ## Features
 
 ### Visual Block-Based Editor
+
 - **Drag & Drop Interface** - Intuitive block-based editing with drag-and-drop reordering
 - **Live Preview** - Real-time markdown preview alongside your editor
 - **Multiple View Modes** - Switch between Editor, Raw Markdown, and Preview modes
 
 ### Rich Content Blocks
+
 - **Headings** - H1-H6 with proper formatting
 - **Text Elements** - Paragraphs, blockquotes, and formatted text
 - **Lists** - Bullet lists, numbered lists, and task lists with checkboxes
@@ -48,23 +50,51 @@
 - **Special Elements** - Shield badges, skill icons, HTML blocks, and horizontal separators
 
 ### Productivity Features
+
 - **Import/Export** - Import existing markdown files and export to multiple formats (.md, .pdf, .html)
 - **Undo/Redo** - Full history management with keyboard shortcuts
 - **Auto-save** - Automatic saving to local storage
 - **Statistics** - Real-time word count, character count, and reading time estimation
 - **Reset Functionality** - Quick reset to start fresh
 
+## Environment Setup
+
+### Required Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```bash
+# Supabase Configuration (Optional for basic functionality)
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# API Configuration (Optional)
+VITE_API_BASE_URL=http://localhost:3001/api
+
+# Socket Configuration (Optional)
+VITE_SOCKET_URL=http://localhost:3001
+```
+
+**Note:** The application will work without these environment variables, but some features like user authentication and data persistence will be limited.
+
+### Getting Supabase Credentials
+
+1. Go to [Supabase](https://supabase.com) and create a new project
+2. In your project dashboard, go to Settings > API
+3. Copy the Project URL and anon/public key
+4. Add them to your `.env` file
+
 ## Tech Stack
 
-| Category | Technologies |
-|----------|-------------|
-| **Frontend Framework** | React 18 |
-| **Build Tool** | Vite |
-| **UI Components** | Shadcn/UI |
-| **Styling** | Tailwind CSS |
-| **Drag & Drop** | @dnd-kit |
-| **Markdown Processing** | Remark, Rehype |
-| **Code Highlighting** | Prism.js / Shiki |
+| Category                | Technologies     |
+| ----------------------- | ---------------- |
+| **Frontend Framework**  | React 18         |
+| **Build Tool**          | Vite             |
+| **UI Components**       | Shadcn/UI        |
+| **Styling**             | Tailwind CSS     |
+| **Drag & Drop**         | @dnd-kit         |
+| **Markdown Processing** | Remark, Rehype   |
+| **Code Highlighting**   | Prism.js / Shiki |
 
 ## Contributing
 
