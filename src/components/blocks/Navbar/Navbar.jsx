@@ -70,11 +70,13 @@ export default function Navbar() {
     <>
       <div className="border-r border-b border-[#cecece] dark:border-[#16181d] lg:block hidden" />
       <nav className="border-b border-[#cecece] dark:border-[#16181d] flex items-center justify-between px-4 md:px-8 py-4 col-span-3 lg:col-span-1 overflow-hidden max-w-full">
-        <img
-          src={theme === "dark" ? markdropLogoDark : markdropLogoLight}
-          alt="Markdrop Logo"
-          className="h-6 md:h-8 w-auto flex-shrink-0 object-contain"
-        />
+        <Link to="/">
+          <img
+            src={theme === "dark" ? markdropLogoDark : markdropLogoLight}
+            alt="Markdrop Logo"
+            className="h-6 md:h-8 w-auto flex-shrink-0 object-contain cursor-pointer"
+          />
+        </Link>
 
         <div className="hidden lg:flex items-center gap-3 xl:gap-5">
           {NAV_LINKS.map((link) => (
