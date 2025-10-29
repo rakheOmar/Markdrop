@@ -622,6 +622,35 @@ export default function Dashboard() {
                 <span className="hidden lg:inline">Import</span>
               </Button>
 
+              {/* Export dropdown - visible on large+ screens */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={blocks.length === 0}
+                    className="hidden lg:flex gap-1.5"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    <span className="hidden lg:inline">Export</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => handleExport("md")}>
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export as Markdown
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport("pdf")}>
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export as PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport("html")}>
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export as HTML
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               {/* Actions dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
