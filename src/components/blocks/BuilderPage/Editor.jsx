@@ -9,17 +9,9 @@ const Editor = memo(function Editor({ blocks = [], onBlockUpdate, onBlockDelete,
   // Memoize block IDs for SortableContext
   const blockIds = useMemo(() => blocks.map((b) => b.id), [blocks]);
 
-  const handleDoubleClick = (e) => {
-    // Only add block if double-clicking on empty space (not on a block)
-    if (e.target === e.currentTarget || e.target.closest(".block-content") === null) {
-      onBlockAdd();
-    }
-  };
-
   return (
     <div
       ref={setNodeRef}
-      onDoubleClick={handleDoubleClick}
       className={`w-full h-full rounded-lg transition-colors relative ${
         isOver ? "bg-muted/30" : ""
       }`}
@@ -27,9 +19,7 @@ const Editor = memo(function Editor({ blocks = [], onBlockUpdate, onBlockDelete,
       {blocks.length === 0 ? (
         <div className="absolute inset-4 flex items-center justify-center border-2 border-dashed rounded-lg border-muted-foreground/20">
           <p className="text-center text-sm text-muted-foreground px-4">
-            {isOver
-              ? "Release to add block..."
-              : "Drag blocks here to start building or double-click to add a paragraph"}
+            {isOver ? "Release to add block..." : "Drag blocks here to start building"}
           </p>
         </div>
       ) : (

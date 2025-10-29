@@ -1,9 +1,7 @@
-import { Route, BrowserRouter as Router, Routes, useLocation } from "react-router-dom";
+import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 // COMPONENTS
-import Navbar from "@/components/blocks/Navbar/Navbar";
-import ChatBotButton from "@/components/ChatBotButton";
-import Footer from "@/components/Footer";
 import { PWAStatus, SWStatus } from "@/components/PWAStatus";
 import AboutPage from "@/pages/AboutPage";
 import Builder from "@/pages/Builder";
@@ -15,26 +13,10 @@ import NotFoundPage from "@/pages/NotFound";
 import SignUp from "@/pages/SignUp";
 import UserProfile from "@/pages/UserProfile";
 
-const hiddenLayoutRoutes = ["/login", "/signup", "/builder", "/"];
-const definedRoutes = ["/", "/about", "/contact", "/builder", "/login", "/signup", "/user-profile"];
-const noPaddingRoutes = ["/"];
-
-const _Layout = ({ children }) => {
-  const location = useLocation();
-  const isDefinedRoute = definedRoutes.some((route) =>
-    route.includes(":")
-      ? location.pathname.startsWith(route.split(":")[0])
-      : location.pathname === route
-  );
-  const hideLayout = hiddenLayoutRoutes.includes(location.pathname) || !isDefinedRoute;
-  const shouldAddPadding = !hideLayout && !noPaddingRoutes.includes(location.pathname);
-
+const Layout = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen">
-      {!hideLayout && <Navbar />}
-      <main className={`flex-1 ${shouldAddPadding ? "pt-24" : ""}`}>{children}</main>
-      {!hideLayout && <Footer />}
-      {!hideLayout && <ChatBotButton />}
+      <main className="flex-1">{children}</main>
       <Toaster position="bottom-right" />
     </div>
   );
@@ -43,7 +25,7 @@ const _Layout = ({ children }) => {
 function App() {
   return (
     <Router>
-      <_Layout>
+      <Layout>
         <Routes>
           // UNPROTECTED
           <Route path="/" element={<Home />} />
@@ -59,7 +41,8 @@ function App() {
         </Routes>
         <PWAStatus />
         <SWStatus />
-      </_Layout>
+        <SpeedInsights />
+      </Layout>
     </Router>
   );
 }
