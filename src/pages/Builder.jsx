@@ -55,6 +55,10 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { exportToPDF, exportToHTML, exportToMarkdown, blocksToMarkdown } from "@/lib/exportUtils";
+<<<<<<< HEAD
+=======
+
+>>>>>>> 560e952 (fix(builder): import blocksToMarkdown from exportUtils)
 
 export default function Dashboard() {
   const { theme, setTheme } = useTheme();
