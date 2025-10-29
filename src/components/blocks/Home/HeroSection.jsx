@@ -25,6 +25,20 @@ export default function HeroSection() {
             <p className="text-base sm:text-lg md:text-xl text-[#6b7280] dark:text-[#9ca3af] px-4 sm:px-0">
               The easiest way to create professional .md files—just write naturally
             </p>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <a
+                href="/tutorial"
+                className="inline-flex items-center gap-2 rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:opacity-95"
+              >
+                Get started
+              </a>
+              <a
+                href="/builder"
+                className="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                Open Builder
+              </a>
+            </div>
           </div>
         </div>
       </div>

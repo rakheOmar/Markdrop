@@ -7,6 +7,7 @@ import { PWAStatus, SWStatus } from "@/components/PWAStatus";
 import AboutPage from "@/pages/AboutPage";
 import Builder from "@/pages/Builder";
 import ContactPage from "@/pages/ContactUs";
+import Tutorial from "@/pages/Tutorial";
 // PAGES
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
@@ -31,6 +32,7 @@ function App() {
           // UNPROTECTED
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/tutorial" element={<Tutorial />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/builder" element={<Builder />} />
           <Route path="*" element={<NotFoundPage />} />
