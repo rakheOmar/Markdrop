@@ -67,12 +67,6 @@ Create a `.env` file in the root directory with the following variables:
 # Supabase Configuration (Optional for basic functionality)
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# API Configuration (Optional)
-VITE_API_BASE_URL=http://localhost:3001/api
-
-# Socket Configuration (Optional)
-VITE_SOCKET_URL=http://localhost:3001
 ```
 
 **Note:** The application will work without these environment variables, but some features like user authentication and data persistence will be limited.
@@ -95,6 +89,7 @@ VITE_SOCKET_URL=http://localhost:3001
 | **Drag & Drop**         | @dnd-kit         |
 | **Markdown Processing** | Remark, Rehype   |
 | **Code Highlighting**   | Prism.js / Shiki |
+| **Database & Backend**  | Supabase         |
 
 ## Contributing
 
