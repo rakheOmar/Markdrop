@@ -67,7 +67,7 @@ export default function UserProfile() {
   }, [fetchUserData]);
 
   return (
-    <div className="w-full min-h-screen grid grid-rows-[auto_auto_1fr_auto] grid-cols-[2%_96%_2%] sm:grid-cols-[5%_90%_5%] md:grid-cols-[8%_84%_8%] lg:grid-cols-[12%_76%_12%] xl:grid-cols-[15%_70%_15%] overflow-x-hidden">
+    <div className="w-full h-screen grid grid-rows-[7vh_25vh_68vh_7vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
       <Navbar />
       <DetailsSection user={user} loading={loading} error={error} />
       <FileSection

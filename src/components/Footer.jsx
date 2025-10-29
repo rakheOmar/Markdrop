@@ -62,7 +62,7 @@ export default function Footer() {
 
       <div className="border-l border-t border-[#cecece] dark:border-[#16181d] relative lg:block hidden">
         <span className="absolute bottom-1 left-1 text-[10px] text-[#6b7280] dark:text-[#9ca3af] font-mono">
-          Last updated on: October 25, 2025
+          Last updated on: October 30, 2025
         </span>
       </div>
     </>

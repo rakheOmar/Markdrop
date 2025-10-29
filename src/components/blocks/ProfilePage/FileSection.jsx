@@ -1,11 +1,36 @@
-import { Calendar, FileText, Folder, FolderOpen, RefreshCw } from "lucide-react";
+import {
+  Calendar,
+  FileText,
+  Folder,
+  FolderOpen,
+  RefreshCw,
+  MoreVertical,
+  Edit,
+  Trash2,
+  FolderInput,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-export default function FileSection({ folders, markdowns, loading, error, onRefresh }) {
+export default function FileSection({
+  folders,
+  markdowns,
+  loading,
+  error,
+  onRefresh,
+  onUpdateTitle,
+  onDeleteFile,
+  onMoveToFolder,
+}) {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
@@ -131,7 +156,7 @@ export default function FileSection({ folders, markdowns, loading, error, onRefr
               </TabsList>
             </div>
 
-            <TabsContent value="files" className="flex-1">
+            <TabsContent value="files" className="flex-1 mt-16">
               {markdowns.length === 0 ? (
                 <div className="h-96 flex items-center justify-center">
                   <div className="text-center">
@@ -141,26 +166,57 @@ export default function FileSection({ folders, markdowns, loading, error, onRefr
                 </div>
               ) : (
                 <ScrollArea className="h-96">
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                     {markdowns.map((doc) => (
-                      <Card key={doc.id} className="cursor-pointer hover:bg-muted/50">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-3">
-                            <FileText className="w-5 h-5 text-green-600 dark:text-green-400" />
-                            <div className="flex-1">
-                              <h3 className="font-medium">{doc.title}</h3>
-                              <div className="flex items-center gap-4 mt-1">
-                                {doc.folder_id && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    {folders.find((f) => f.id === doc.folder_id)?.name ||
-                                      "Unknown Folder"}
-                                  </Badge>
-                                )}
-                                <span className="text-xs text-muted-foreground">
-                                  <Calendar className="w-3 h-3 inline mr-1" />
-                                  {formatDate(doc.updated_at)}
-                                </span>
-                              </div>
+                      <Card
+                        key={doc.id}
+                        className="cursor-pointer hover:bg-muted/50 relative group"
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            >
+                              <MoreVertical className="w-3 h-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onUpdateTitle?.(doc.id, doc.title)}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Update Title
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onMoveToFolder?.(doc.id)}>
+                              <FolderInput className="w-4 h-4 mr-2" />
+                              Move to Folder
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => onDeleteFile?.(doc.id)}
+                              className="text-red-600 dark:text-red-400"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <CardContent className="p-3">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 pr-6">
+                              <FileText className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                              <h3 className="font-medium text-sm truncate">{doc.title}</h3>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              {doc.folder_id && (
+                                <Badge variant="secondary" className="text-xs w-fit">
+                                  {folders.find((f) => f.id === doc.folder_id)?.name ||
+                                    "Unknown Folder"}
+                                </Badge>
+                              )}
+                              <span className="text-xs text-muted-foreground">
+                                <Calendar className="w-3 h-3 inline mr-1" />
+                                {formatDate(doc.updated_at)}
+                              </span>
                             </div>
                           </div>
                         </CardContent>
@@ -171,7 +227,7 @@ export default function FileSection({ folders, markdowns, loading, error, onRefr
               )}
             </TabsContent>
 
-            <TabsContent value="folders" className="flex-1">
+            <TabsContent value="folders" className="flex-1 mt-16">
               {folders.length === 0 ? (
                 <div className="h-96 flex items-center justify-center">
                   <div className="text-center">
@@ -181,23 +237,52 @@ export default function FileSection({ folders, markdowns, loading, error, onRefr
                 </div>
               ) : (
                 <ScrollArea className="h-96">
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                     {folders.map((folder) => (
-                      <Card key={folder.id} className="cursor-pointer hover:bg-muted/50">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-3">
-                            <FolderOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                            <div className="flex-1">
-                              <h3 className="font-medium">{folder.name}</h3>
-                              <div className="flex items-center gap-4 mt-1">
-                                <span className="text-xs text-muted-foreground">
-                                  {getFolderMarkdowns(folder.id).length} files
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  <Calendar className="w-3 h-3 inline mr-1" />
-                                  {formatDate(folder.created_at)}
-                                </span>
-                              </div>
+                      <Card
+                        key={folder.id}
+                        className="cursor-pointer hover:bg-muted/50 relative group"
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            >
+                              <MoreVertical className="w-3 h-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => onUpdateTitle?.(folder.id, folder.name, "folder")}
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Rename Folder
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => onDeleteFile?.(folder.id, "folder")}
+                              className="text-red-600 dark:text-red-400"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete Folder
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <CardContent className="p-3">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 pr-6">
+                              <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                              <h3 className="font-medium text-sm truncate">{folder.name}</h3>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs text-muted-foreground">
+                                {getFolderMarkdowns(folder.id).length} files
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                <Calendar className="w-3 h-3 inline mr-1" />
+                                {formatDate(folder.created_at)}
+                              </span>
                             </div>
                           </div>
                         </CardContent>
