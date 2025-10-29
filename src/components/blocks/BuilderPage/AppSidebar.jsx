@@ -1,6 +1,10 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import {
+  BarChart3,
+  CheckSquare,
   Code2,
+  FileText,
+  Github,
   Heading1,
   Heading2,
   Heading3,
@@ -18,6 +22,7 @@ import {
   Sparkles,
   Table,
   List as UnorderedList,
+  Users,
   Video,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -36,8 +41,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-function DraggableItem({ id, title, icon: Icon, isCollapsed, isMobile, onDoubleClick }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id });
+function DraggableItem({
+  id,
+  title,
+  icon: Icon,
+  isCollapsed,
+  isMobile,
+  onDoubleClick,
+}) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id,
+  });
 
   // On mobile, always show text even if sidebar is "collapsed"
   const showText = !isCollapsed || isMobile;
@@ -59,7 +73,11 @@ function DraggableItem({ id, title, icon: Icon, isCollapsed, isMobile, onDoubleC
       style={{
         opacity: isDragging ? 0.5 : 1,
       }}
-      title={showText ? `Drag or double-click to add ${title}` : `Double-click to add ${title}`}
+      title={
+        showText
+          ? `Drag or double-click to add ${title}`
+          : `Double-click to add ${title}`
+      }
     >
       <Icon className="w-4 h-4 shrink-0 text-muted-foreground" />
       {showText && <span className="text-sm">{title}</span>}
@@ -93,7 +111,8 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       image: "",
       video: "",
       link: "",
-      table: "| Header 1 | Header 2 |\n|----------|----------|\n| Add text..   | Add text..   |",
+      table:
+        "| Header 1 | Header 2 |\n|----------|----------|\n| Add text..   | Add text..   |",
       "shield-badge": "",
       "skill-icons": "",
     };
@@ -102,7 +121,12 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       id: Date.now().toString(),
       type: blockType,
       content: defaultContent[blockType] || "",
-      ...(blockType === "image" && { alt: "", width: "", height: "", align: "left" }),
+      ...(blockType === "image" && {
+        alt: "",
+        width: "",
+        height: "",
+        align: "left",
+      }),
       ...(blockType === "video" && { title: "" }),
       ...(blockType === "link" && { url: "" }),
       ...(blockType === "shield-badge" && {
