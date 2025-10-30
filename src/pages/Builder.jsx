@@ -411,6 +411,7 @@ export default function Dashboard() {
     const saved = localStorage.getItem("markdown-blocks");
     return saved ? JSON.parse(saved) : [];
   });
+
   const [isImporting, setIsImporting] = useState(false);
   const [history, setHistory] = useState([[]]);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -502,7 +503,7 @@ export default function Dashboard() {
   );
 
   const handleReset = () => {
-    setBlocks([]);
+    updateBlocks([]);
     saveToHistory([]);
     toast.success("Editor reset");
   };
@@ -510,14 +511,14 @@ export default function Dashboard() {
   const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
-      setBlocks(history[historyIndex - 1]);
+      updateBlocks(history[historyIndex - 1]);
     }
   }, [historyIndex, history]);
 
   const handleRedo = useCallback(() => {
     if (historyIndex < history.length - 1) {
       setHistoryIndex(historyIndex + 1);
-      setBlocks(history[historyIndex + 1]);
+      updateBlocks(history[historyIndex + 1]);
     }
   }, [historyIndex, history]);
 
@@ -834,7 +835,7 @@ export default function Dashboard() {
 
       if (oldIndex !== -1 && newIndex !== -1) {
         const newBlocks = arrayMove(blocks, oldIndex, newIndex);
-        setBlocks(newBlocks);
+        updateBlocks(newBlocks);
         saveToHistory(newBlocks);
       }
       return;
@@ -915,7 +916,7 @@ export default function Dashboard() {
           newBlocks = [...blocks.slice(0, overIndex + 1), newBlock, ...blocks.slice(overIndex + 1)];
         }
 
-        setBlocks(newBlocks);
+        updateBlocks(newBlocks);
         saveToHistory(newBlocks);
       }
     }
@@ -927,18 +928,18 @@ export default function Dashboard() {
 
   const handleBlockUpdate = (blockId, updatedBlock) => {
     const newBlocks = blocks.map((b) => (b.id === blockId ? updatedBlock : b));
-    setBlocks(newBlocks);
+    updateBlocks(newBlocks);
   };
 
   const handleBlockDelete = (blockId) => {
     const newBlocks = blocks.filter((b) => b.id !== blockId);
-    setBlocks(newBlocks);
+    updateBlocks(newBlocks);
     saveToHistory(newBlocks);
     toast.success("Block deleted");
   };
 
   const handleBlocksChange = (newBlocks) => {
-    setBlocks(newBlocks);
+    updateBlocks(newBlocks);
     saveToHistory(newBlocks);
   };
 

@@ -48,6 +48,8 @@ function SortableIcon({ icon, onRemove }) {
       ref={setNodeRef}
       style={style}
       className="group flex items-center gap-1 px-2 py-1.5 bg-muted rounded text-sm cursor-move hover:bg-muted/70 transition-colors"
+      draggable={false}
+      onDragStart={(e)=>e.preventDefault()}
     >
       <div {...attributes} {...listeners}>
         <GripVertical className="w-3 h-3 text-muted-foreground" />
@@ -88,12 +90,12 @@ export default function SkillIconsBlock({ block, onUpdate }) {
   const handleDragEnd = (event) => {
     const { active, over } = event;
 
-    if (over && active.id !== over.id) {
+    if (!over && active.id == over.id) return;
       const oldIndex = selectedIcons.indexOf(active.id);
       const newIndex = selectedIcons.indexOf(over.id);
       const newIcons = arrayMove(selectedIcons, oldIndex, newIndex);
       onUpdate(block.id, { ...block, icons: newIcons.join(",") });
-    }
+    
   };
 
   const handleThemeChange = (value) => {
@@ -140,7 +142,11 @@ export default function SkillIconsBlock({ block, onUpdate }) {
             onDragEnd={handleDragEnd}
           >
             <SortableContext items={selectedIcons} strategy={horizontalListSortingStrategy}>
-              <div className="flex flex-wrap gap-2 p-3 bg-background rounded border min-h-[60px]">
+              <div 
+              className="flex flex-wrap gap-2 p-3 bg-background rounded border min-h-[60px]"
+              onDragOver={(e)=> e.preventDefault()}
+              onDrop={(e)=>e.preventDefault()}
+              >
                 {selectedIcons.map((icon) => (
                   <SortableIcon key={icon} icon={icon} onRemove={handleRemoveIcon} />
                 ))}
