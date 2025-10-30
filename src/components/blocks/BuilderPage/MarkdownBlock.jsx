@@ -17,20 +17,8 @@ import SkillIconsBlock from "./blocks/SkillIconsBlock";
 import TableBlock from "./blocks/TableBlock";
 import VideoBlock from "./blocks/VideoBlock";
 
-const MarkdownBlock = memo(function MarkdownBlock({
-  block,
-  onUpdate,
-  onDelete,
-  onBlockAdd,
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, onBlockAdd }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
   });
 

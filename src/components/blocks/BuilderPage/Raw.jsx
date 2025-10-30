@@ -130,20 +130,10 @@ const blocksToMarkdown = (blocks) => {
 
                 const needsRepo =
                   githubBadges.includes(badge.type) ||
-                  [
-                    "codecov",
-                    "coveralls",
-                    "travis-ci",
-                    "github-actions",
-                  ].includes(badge.type);
+                  ["codecov", "coveralls", "travis-ci", "github-actions"].includes(badge.type);
                 const needsPackage =
                   devMetrics.includes(badge.type) &&
-                  ![
-                    "codecov",
-                    "coveralls",
-                    "travis-ci",
-                    "github-actions",
-                  ].includes(badge.type);
+                  !["codecov", "coveralls", "travis-ci", "github-actions"].includes(badge.type);
                 const needsUsername = socialBadges.includes(badge.type);
 
                 return (
@@ -372,9 +362,7 @@ const markdownToBlocks = (markdown) => {
   let inHtmlBlock = false;
 
   const generateUniqueId = () => {
-    return `${Date.now()}-${blockCounter++}-${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+    return `${Date.now()}-${blockCounter++}-${Math.random().toString(36).substr(2, 9)}`;
   };
 
   for (let i = 0; i < lines.length; i++) {
@@ -392,13 +380,10 @@ const markdownToBlocks = (markdown) => {
       if (line.trim() === "</div>") {
         // Parse the HTML block content
         const htmlContent = htmlBlockContent.join("\n");
-        const align =
-          htmlContent.match(/align=["'](center|left|right)["']/)?.[1] || "left";
+        const align = htmlContent.match(/align=["'](center|left|right)["']/)?.[1] || "left";
 
         // Check if it contains a video element
-        const videoMatch = htmlContent.match(
-          /<video src=\s*["']([^"']+)["']\s*\/>/
-        );
+        const videoMatch = htmlContent.match(/<video src=\s*["']([^"']+)["']\s*\/>/);
         if (videoMatch) {
           const videoUrl = videoMatch[1];
           const titleMatch = htmlContent.match(/<h3>([^<]+)<\/h3>/);
@@ -512,8 +497,7 @@ const markdownToBlocks = (markdown) => {
     // Handle code blocks
     if (line.startsWith("```")) {
       if (inCodeBlock) {
-        const language =
-          codeBlockContent[0]?.replace("```", "").trim() || "plaintext";
+        const language = codeBlockContent[0]?.replace("```", "").trim() || "plaintext";
         const code = codeBlockContent.slice(1).join("\n");
         blocks.push({
           id: generateUniqueId(),

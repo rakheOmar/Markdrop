@@ -16,7 +16,6 @@ import {
   FileDown,
   FileText,
   FileUp,
-  Save,
   Github,
   Heading1,
   Heading2,
@@ -35,6 +34,7 @@ import {
   RefreshCcw,
   RotateCcw,
   RotateCw,
+  Save,
   Shield,
   Sparkles,
   Sun,
@@ -49,7 +49,6 @@ import { toast } from "sonner";
 import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
 import { useTheme } from "@/components/ThemeProvider";
-import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -71,6 +70,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/context/AuthContext";
 import { createMarkdown, updateMarkdown } from "@/lib/storage";
 
 const blocksToMarkdown = (blocks) => {

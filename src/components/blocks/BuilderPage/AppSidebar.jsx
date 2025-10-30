@@ -41,14 +41,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-function DraggableItem({
-  id,
-  title,
-  icon: Icon,
-  isCollapsed,
-  isMobile,
-  onDoubleClick,
-}) {
+function DraggableItem({ id, title, icon: Icon, isCollapsed, isMobile, onDoubleClick }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id,
   });
@@ -73,11 +66,7 @@ function DraggableItem({
       style={{
         opacity: isDragging ? 0.5 : 1,
       }}
-      title={
-        showText
-          ? `Drag or double-click to add ${title}`
-          : `Double-click to add ${title}`
-      }
+      title={showText ? `Drag or double-click to add ${title}` : `Double-click to add ${title}`}
     >
       <Icon className="w-4 h-4 shrink-0 text-muted-foreground" />
       {showText && <span className="text-sm">{title}</span>}
@@ -111,8 +100,7 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       image: "",
       video: "",
       link: "",
-      table:
-        "| Header 1 | Header 2 |\n|----------|----------|\n| Add text..   | Add text..   |",
+      table: "| Header 1 | Header 2 |\n|----------|----------|\n| Add text..   | Add text..   |",
       "shield-badge": "",
       "skill-icons": "",
     };

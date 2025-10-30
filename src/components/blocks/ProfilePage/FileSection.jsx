@@ -1,25 +1,25 @@
 import {
   Calendar,
+  Edit,
   FileText,
   Folder,
-  FolderOpen,
-  RefreshCw,
-  MoreVertical,
-  Edit,
-  Trash2,
   FolderInput,
+  FolderOpen,
+  MoreVertical,
+  RefreshCw,
+  Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function FileSection({
   folders,

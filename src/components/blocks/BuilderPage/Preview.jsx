@@ -127,20 +127,10 @@ const blocksToMarkdown = (blocks) => {
 
                 const needsRepo =
                   githubBadges.includes(badge.type) ||
-                  [
-                    "codecov",
-                    "coveralls",
-                    "travis-ci",
-                    "github-actions",
-                  ].includes(badge.type);
+                  ["codecov", "coveralls", "travis-ci", "github-actions"].includes(badge.type);
                 const needsPackage =
                   devMetrics.includes(badge.type) &&
-                  ![
-                    "codecov",
-                    "coveralls",
-                    "travis-ci",
-                    "github-actions",
-                  ].includes(badge.type);
+                  !["codecov", "coveralls", "travis-ci", "github-actions"].includes(badge.type);
                 const needsUsername = socialBadges.includes(badge.type);
 
                 return (
@@ -390,22 +380,13 @@ export default function Preview({ blocks = [] }) {
                     />
                   ),
                   h3: ({ ...props }) => (
-                    <h3
-                      className="text-xl font-semibold mt-6 mb-2"
-                      {...props}
-                    />
+                    <h3 className="text-xl font-semibold mt-6 mb-2" {...props} />
                   ),
                   h4: ({ ...props }) => (
-                    <h4
-                      className="text-lg font-semibold mt-6 mb-2"
-                      {...props}
-                    />
+                    <h4 className="text-lg font-semibold mt-6 mb-2" {...props} />
                   ),
                   h5: ({ ...props }) => (
-                    <h5
-                      className="text-base font-semibold mt-6 mb-2"
-                      {...props}
-                    />
+                    <h5 className="text-base font-semibold mt-6 mb-2" {...props} />
                   ),
                   h6: ({ ...props }) => (
                     <h6
@@ -413,25 +394,15 @@ export default function Preview({ blocks = [] }) {
                       {...props}
                     />
                   ),
-                  p: ({ ...props }) => (
-                    <p className="text-base leading-7 mb-4" {...props} />
-                  ),
-                  ul: ({ ...props }) => (
-                    <ul className="list-disc ml-6 mb-4 space-y-2" {...props} />
-                  ),
+                  p: ({ ...props }) => <p className="text-base leading-7 mb-4" {...props} />,
+                  ul: ({ ...props }) => <ul className="list-disc ml-6 mb-4 space-y-2" {...props} />,
                   ol: ({ ...props }) => (
-                    <ol
-                      className="list-decimal ml-6 mb-4 space-y-2"
-                      {...props}
-                    />
+                    <ol className="list-decimal ml-6 mb-4 space-y-2" {...props} />
                   ),
                   li: ({ ...props }) => <li className="text-base" {...props} />,
                   code: ({ inline, children, ...props }) =>
                     inline ? (
-                      <code
-                        className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono"
-                        {...props}
-                      >
+                      <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
                         {children}
                       </code>
                     ) : (
@@ -456,9 +427,7 @@ export default function Preview({ blocks = [] }) {
                       {...props}
                     />
                   ),
-                  hr: ({ ...props }) => (
-                    <hr className="my-8 border-border border-t-4" {...props} />
-                  ),
+                  hr: ({ ...props }) => <hr className="my-8 border-border border-t-4" {...props} />,
                   img: ({ src, alt, ...props }) => {
                     if (!src) return null;
                     return (
@@ -485,19 +454,12 @@ export default function Preview({ blocks = [] }) {
                   },
                   table: ({ ...props }) => (
                     <div className="overflow-x-auto my-4">
-                      <table
-                        className="border-collapse border border-border"
-                        {...props}
-                      />
+                      <table className="border-collapse border border-border" {...props} />
                     </div>
                   ),
-                  thead: ({ ...props }) => (
-                    <thead className="bg-muted" {...props} />
-                  ),
+                  thead: ({ ...props }) => <thead className="bg-muted" {...props} />,
                   tbody: ({ ...props }) => <tbody {...props} />,
-                  tr: ({ ...props }) => (
-                    <tr className="border-b border-border" {...props} />
-                  ),
+                  tr: ({ ...props }) => <tr className="border-b border-border" {...props} />,
                   th: ({ ...props }) => (
                     <th
                       className="border border-border px-4 py-2 text-left font-semibold"

@@ -64,12 +64,8 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
     const baseUrl = "https://img.shields.io";
 
     if (badge.type === "custom") {
-      const label = (badge.label || "label")
-        .replace(/ /g, "_")
-        .replace(/-/g, "--");
-      const message = (badge.message || "message")
-        .replace(/ /g, "_")
-        .replace(/-/g, "--");
+      const label = (badge.label || "label").replace(/ /g, "_").replace(/-/g, "--");
+      const message = (badge.message || "message").replace(/ /g, "_").replace(/-/g, "--");
       const color = badge.color || "blue";
       let url = `${baseUrl}/badge/${encodeURIComponent(
         label
@@ -305,25 +301,16 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs font-medium text-muted-foreground">
-            Shields.io Badges
-          </span>
+          <span className="text-xs font-medium text-muted-foreground">Shields.io Badges</span>
         </div>
-        <Button
-          onClick={addBadge}
-          size="sm"
-          variant="outline"
-          className="h-7 text-xs"
-        >
+        <Button onClick={addBadge} size="sm" variant="outline" className="h-7 text-xs">
           <Plus className="w-3 h-3 mr-1" />
           Add Badge
         </Button>
       </div>
 
       <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">
-          Alignment
-        </label>
+        <label className="text-xs font-medium text-muted-foreground mb-1 block">Alignment</label>
         <Select value={align} onValueChange={handleAlignChange}>
           <SelectTrigger className="bg-background">
             <SelectValue placeholder="Select alignment" />
@@ -342,14 +329,9 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
         const needsPackage = badgeType?.needsPackage;
 
         return (
-          <div
-            key={index}
-            className="space-y-3 p-3 border rounded bg-background/50"
-          >
+          <div key={index} className="space-y-3 p-3 border rounded bg-background/50">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">
-                Badge {index + 1}
-              </span>
+              <span className="text-xs font-medium text-muted-foreground">Badge {index + 1}</span>
               {badges.length > 1 && (
                 <Button
                   onClick={() => removeBadge(index)}
@@ -366,9 +348,7 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
               <Label className="text-xs">Badge Type</Label>
               <Select
                 value={badge.type || "custom"}
-                onValueChange={(value) =>
-                  handleBadgeChange(index, "type", value)
-                }
+                onValueChange={(value) => handleBadgeChange(index, "type", value)}
               >
                 <SelectTrigger className="bg-background h-8 text-sm">
                   <SelectValue placeholder="Select badge type" />
@@ -387,27 +367,19 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
               <>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Label
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Label</label>
                     <Input
                       value={badge.label || ""}
-                      onChange={(e) =>
-                        handleBadgeChange(index, "label", e.target.value)
-                      }
+                      onChange={(e) => handleBadgeChange(index, "label", e.target.value)}
                       placeholder="build"
                       className="bg-background h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Message
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Message</label>
                     <Input
                       value={badge.message || ""}
-                      onChange={(e) =>
-                        handleBadgeChange(index, "message", e.target.value)
-                      }
+                      onChange={(e) => handleBadgeChange(index, "message", e.target.value)}
                       placeholder="passing"
                       className="bg-background h-8 text-sm"
                     />
@@ -416,14 +388,10 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Color
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Color</label>
                     <Select
                       value={badge.color || "blue"}
-                      onValueChange={(value) =>
-                        handleBadgeChange(index, "color", value)
-                      }
+                      onValueChange={(value) => handleBadgeChange(index, "color", value)}
                     >
                       <SelectTrigger className="bg-background h-8 text-sm">
                         <SelectValue placeholder="Select color" />
@@ -438,14 +406,10 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Style
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Style</label>
                     <Select
                       value={badge.style || "flat"}
-                      onValueChange={(value) =>
-                        handleBadgeChange(index, "style", value)
-                      }
+                      onValueChange={(value) => handleBadgeChange(index, "style", value)}
                     >
                       <SelectTrigger className="bg-background h-8 text-sm">
                         <SelectValue placeholder="Select style" />
@@ -467,9 +431,7 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
                   </label>
                   <Input
                     value={badge.logo || ""}
-                    onChange={(e) =>
-                      handleBadgeChange(index, "logo", e.target.value)
-                    }
+                    onChange={(e) => handleBadgeChange(index, "logo", e.target.value)}
                     placeholder="github"
                     className="bg-background h-8 text-sm"
                   />
@@ -478,14 +440,10 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
             ) : (
               <>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">
-                    Label
-                  </label>
+                  <label className="text-xs text-muted-foreground mb-1 block">Label</label>
                   <Input
                     value={badge.label || ""}
-                    onChange={(e) =>
-                      handleBadgeChange(index, "label", e.target.value)
-                    }
+                    onChange={(e) => handleBadgeChange(index, "label", e.target.value)}
                     placeholder="Custom label"
                     className="bg-background h-8 text-sm"
                   />
@@ -494,27 +452,19 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
                 {needsRepo && (
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">
-                        Username
-                      </label>
+                      <label className="text-xs text-muted-foreground mb-1 block">Username</label>
                       <Input
                         value={badge.username || ""}
-                        onChange={(e) =>
-                          handleBadgeChange(index, "username", e.target.value)
-                        }
+                        onChange={(e) => handleBadgeChange(index, "username", e.target.value)}
                         placeholder="GitHub username"
                         className="bg-background h-8 text-sm"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">
-                        Repository
-                      </label>
+                      <label className="text-xs text-muted-foreground mb-1 block">Repository</label>
                       <Input
                         value={badge.repo || ""}
-                        onChange={(e) =>
-                          handleBadgeChange(index, "repo", e.target.value)
-                        }
+                        onChange={(e) => handleBadgeChange(index, "repo", e.target.value)}
                         placeholder="Repository name"
                         className="bg-background h-8 text-sm"
                       />
@@ -524,14 +474,10 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
 
                 {needsPackage && (
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Package Name
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Package Name</label>
                     <Input
                       value={badge.package || ""}
-                      onChange={(e) =>
-                        handleBadgeChange(index, "package", e.target.value)
-                      }
+                      onChange={(e) => handleBadgeChange(index, "package", e.target.value)}
                       placeholder="Package name (e.g., react, express)"
                       className="bg-background h-8 text-sm"
                     />
@@ -540,14 +486,10 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
 
                 {!needsRepo && !needsPackage && (
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
-                      Username/ID
-                    </label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Username/ID</label>
                     <Input
                       value={badge.username || ""}
-                      onChange={(e) =>
-                        handleBadgeChange(index, "username", e.target.value)
-                      }
+                      onChange={(e) => handleBadgeChange(index, "username", e.target.value)}
                       placeholder="Username or channel ID"
                       className="bg-background h-8 text-sm"
                     />
@@ -599,9 +541,7 @@ export default function ShieldBadgeBlock({ block, onUpdate }) {
           <div style={{ textAlign: align }}>
             {badges
               .filter((badge) => {
-                const badgeType = badgeTypes.find(
-                  (t) => t.value === badge.type
-                );
+                const badgeType = badgeTypes.find((t) => t.value === badge.type);
                 const needsRepo = badgeType?.needsRepo;
                 const needsPackage = badgeType?.needsPackage;
                 return (
