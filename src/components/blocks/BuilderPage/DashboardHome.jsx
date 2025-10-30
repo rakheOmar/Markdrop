@@ -30,7 +30,17 @@ export default function DashboardHome({
     e.preventDefault();
     e.stopPropagation();
     setIsDraggingFile(false);
-
+  
+//   //prevent from opening new tab
+//   if(e.dataTransfer.items){
+//     for(let i=0; i< e.dataTransfer.items.length; i++){
+//       if(e.dataTransfer.items[i].kind === "file"){
+//         e.dataTransfer.dropEffect= "copy";
+//       } else{
+//         e.dataTransfer.dropEffect= "none";
+//       }
+//   }
+// }
   const files= e.dataTransfer.files;
   if(files.length === 0) return;
   
@@ -40,6 +50,7 @@ export default function DashboardHome({
     const text= event.target.result;
   
   onBlocksChange([
+    // ...blocks,
     {
       id: Date.now(),
       type: "paragraph",
@@ -51,18 +62,31 @@ reader.readAsText(file);
 };
   return (
     <div className="w-full h-full">
-      <div className="w-full h-[calc(100vh-8rem)] rounded-xl border bg-card shadow-sm overflow-hidden">
-        {activeTab === "editor" && (
-          <div className="w-full h-full">
-            <Editor
-              blocks={blocks}
-              onBlockUpdate={onBlockUpdate}
-              onBlockDelete={onBlockDelete}
-              onBlockAdd={onBlockAdd}
+      <div
+      ref={dropZoneRef}
+      className={`w-full h-[calc(100vh-8rem)] rounded-xl border bg-card shadow-sm overflow-hidden ${
+      isDraggingFile ? "bg-muted/40 border-dashed border-2 border-primary" : ""
+    }`}
+      onDragOver={(e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect= "copy";
+        setIsDraggingFile(true);
+      }}
+      onDragLeave={handleDragLeave} 
+      onDrop={handleDrop}
+    >
+    {activeTab === "editor" && (
+        <div className="w-full h-full">
+        <Editor
+          blocks={blocks}
+          onBlockUpdate={onBlockUpdate}
+          onBlockDelete={onBlockDelete}
+          onBlockAdd={onBlockAdd}
 
-            />
-          </div>
-        )}
+        />
+      </div>
+    )}
 
         {activeTab === "preview" && (
           <div className="w-full h-full">

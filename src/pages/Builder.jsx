@@ -72,6 +72,8 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createMarkdown, updateMarkdown } from "@/lib/storage";
+import FileTabs from "@/components/ui/filetabs";
+import {useFiles} from "@/context/FileContext";
 
 const blocksToMarkdown = (blocks) => {
   return blocks
@@ -407,10 +409,14 @@ export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("editor");
-  const [blocks, setBlocks] = useState(() => {
-    const saved = localStorage.getItem("markdown-blocks");
-    return saved ? JSON.parse(saved) : [];
-  });
+
+  // const [blocks, setBlocks] = useState(() => {
+  //   const saved = localStorage.getItem("markdown-blocks");
+  //   return saved ? JSON.parse(saved) : [];
+  // });
+  const {files, addFile, switchFile, updateFileBlocks} = useFiles();
+  const activeFile= files.find((f)=> f.isActive);
+  const blocks = activeFile?.blocks || [];
 
   const [isImporting, setIsImporting] = useState(false);
   const [history, setHistory] = useState([[]]);
@@ -503,7 +509,7 @@ export default function Dashboard() {
   );
 
   const handleReset = () => {
-    updateBlocks([]);
+    updateFileBlocks([]);
     saveToHistory([]);
     toast.success("Editor reset");
   };
@@ -511,14 +517,14 @@ export default function Dashboard() {
   const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
-      updateBlocks(history[historyIndex - 1]);
+      updateFileBlocks(history[historyIndex - 1]);
     }
   }, [historyIndex, history]);
 
   const handleRedo = useCallback(() => {
     if (historyIndex < history.length - 1) {
       setHistoryIndex(historyIndex + 1);
-      updateBlocks(history[historyIndex + 1]);
+      updateFileBlocks(history[historyIndex + 1]);
     }
   }, [historyIndex, history]);
 
@@ -619,17 +625,29 @@ export default function Dashboard() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".md,.markdown,.txt";
+    input.multiple= true;
+
     input.onchange = async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
 
       setIsImporting(true);
       try {
+        for(let i=0;i<files.length;i++){
+        const file=files[i];
         const text = await file.text();
         const newBlocks = markdownToBlocks(text);
-        setBlocks(newBlocks);
+        updateFileBlocks(newBlocks);
         saveToHistory(newBlocks);
         toast.success("Markdown imported!");
+        addFile({
+          name: file.name,
+          content: text,
+          blocks: newBlocks,
+        });
+        //saveToHistory((prev)=>[...prev, ...newBlocks]);
+      }
+        toast.success(`${files.length} Markdown file(s) imported!`);
       } catch {
         toast.error("Failed to import file");
       } finally {
@@ -835,7 +853,7 @@ export default function Dashboard() {
 
       if (oldIndex !== -1 && newIndex !== -1) {
         const newBlocks = arrayMove(blocks, oldIndex, newIndex);
-        updateBlocks(newBlocks);
+        updateFileBlocks(newBlocks);
         saveToHistory(newBlocks);
       }
       return;
@@ -916,7 +934,7 @@ export default function Dashboard() {
           newBlocks = [...blocks.slice(0, overIndex + 1), newBlock, ...blocks.slice(overIndex + 1)];
         }
 
-        updateBlocks(newBlocks);
+        updateFileBlocks(newBlocks);
         saveToHistory(newBlocks);
       }
     }
@@ -928,18 +946,18 @@ export default function Dashboard() {
 
   const handleBlockUpdate = (blockId, updatedBlock) => {
     const newBlocks = blocks.map((b) => (b.id === blockId ? updatedBlock : b));
-    updateBlocks(newBlocks);
+    updateFileBlocks(newBlocks);
   };
 
   const handleBlockDelete = (blockId) => {
     const newBlocks = blocks.filter((b) => b.id !== blockId);
-    updateBlocks(newBlocks);
+    updateFileBlocks(newBlocks);
     saveToHistory(newBlocks);
     toast.success("Block deleted");
   };
 
   const handleBlocksChange = (newBlocks) => {
-    updateBlocks(newBlocks);
+    updateFileBlocks(newBlocks);
     saveToHistory(newBlocks);
   };
 
@@ -969,7 +987,7 @@ export default function Dashboard() {
       newBlocks = [...blocks, newBlock];
     }
 
-    setBlocks(newBlocks);
+    updateFileBlocks(newBlocks);
     saveToHistory(newBlocks);
   };
 
@@ -1212,6 +1230,7 @@ export default function Dashboard() {
           {/* Main Content */}
           <div className="flex flex-1 flex-col p-4 gap-4">
             <div className="flex-1 w-full max-w-none">
+              <FileTabs/>
               <DashboardHome
                 activeTab={activeTab}
                 blocks={blocks}
