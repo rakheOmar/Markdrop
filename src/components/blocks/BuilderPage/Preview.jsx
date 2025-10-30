@@ -184,27 +184,38 @@ export default function Preview({ blocks = [] }) {
                     <ol className="list-decimal ml-6 mb-4 space-y-2" {...props} />
                   ),
                   li: ({ ...props }) => <li className="text-base" {...props} />,
-                  code: ({ inline, children, ...props }) =>
+                  code: ({ inline, className, children, ...props }) =>
                     inline ? (
                       <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
                         {children}
                       </code>
                     ) : (
-                      <code
-                        className="block bg-transparent p-0 text-sm font-mono whitespace-pre-wrap"
-                        {...props}
-                      >
+                      <code className={`block bg-transparent p-0 text-sm font-mono whitespace-pre-wrap ${className || ''}`} {...props}>
                         {children}
                       </code>
                     ),
-                  pre: ({ children, ...props }) => (
-                    <pre
-                      className="bg-muted p-4 rounded-md my-4 overflow-x-auto text-sm font-mono whitespace-pre-wrap"
-                      {...props}
-                    >
-                      {children}
-                    </pre>
-                  ),
+                  pre: ({ children, ...props }) => {
+                    // Try to detect language from child code element's className (e.g., language-js)
+                    let lang = '';
+                    try {
+                      const child = Array.isArray(children) ? children[0] : children;
+                      lang = child?.props?.className?.match(/language-([a-z0-9+#]+)/i)?.[1] || '';
+                    } catch {}
+                    const labelMap = { js: 'JS', javascript: 'JS', ts: 'TS', typescript: 'TS', html: 'HTML5', css: 'CSS' };
+                    const label = labelMap[lang?.toLowerCase?.()] || (lang ? lang.toUpperCase() : '');
+                    const colorMap = { js: 'bg-yellow-400 text-black', javascript: 'bg-yellow-400 text-black', html: 'bg-orange-500 text-white', css: 'bg-blue-500 text-white', ts: 'bg-blue-600 text-white', typescript: 'bg-blue-600 text-white' };
+                    const color = colorMap[lang?.toLowerCase?.()] || 'bg-muted text-muted-foreground';
+                    return (
+                      <div className="relative my-4">
+                        {label ? (
+                          <span className={`absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded ${color}`}>{label}</span>
+                        ) : null}
+                        <pre className="bg-muted p-4 rounded-md overflow-x-auto text-sm font-mono whitespace-pre-wrap" {...props}>
+                          {children}
+                        </pre>
+                      </div>
+                    );
+                  },
                   blockquote: ({ ...props }) => (
                     <blockquote
                       className="border-l-4 border-border pl-4 my-4 text-muted-foreground"

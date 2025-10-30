@@ -131,7 +131,38 @@ export const blocksToHTML = (blocks) => {
   try {
     const markdown = blocksToMarkdown(blocks);
     const html = marked.parse(markdown, { breaks: true, gfm: true });
-    return getHTMLTemplate(html);
+    // Inject language badges into code blocks
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    const labelMap = { js: 'JS', javascript: 'JS', ts: 'TS', typescript: 'TS', html: 'HTML5', css: 'CSS' };
+    container.querySelectorAll('pre > code').forEach((codeEl) => {
+      const cls = codeEl.className || '';
+      const match = cls.match(/language-([a-z0-9+#]+)/i);
+      const lang = match ? match[1].toLowerCase() : '';
+      const label = labelMap[lang] || (lang ? lang.toUpperCase() : '');
+      if (!label) return;
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'relative';
+      const badge = document.createElement('span');
+      badge.textContent = label;
+      badge.style.position = 'absolute';
+      badge.style.top = '8px';
+      badge.style.right = '8px';
+      badge.style.fontSize = '10px';
+      badge.style.padding = '2px 6px';
+      badge.style.borderRadius = '6px';
+      // Colors
+      if (lang === 'js' || lang === 'javascript') { badge.style.background = '#fbbf24'; badge.style.color = '#111827'; }
+      else if (lang === 'html') { badge.style.background = '#f97316'; badge.style.color = '#ffffff'; }
+      else if (lang === 'css') { badge.style.background = '#3b82f6'; badge.style.color = '#ffffff'; }
+      else if (lang === 'ts' || lang === 'typescript') { badge.style.background = '#2563eb'; badge.style.color = '#ffffff'; }
+      else { badge.style.background = '#e5e7eb'; badge.style.color = '#6b7280'; }
+      const pre = codeEl.parentElement;
+      pre.parentElement?.insertBefore(wrapper, pre);
+      wrapper.appendChild(pre);
+      wrapper.appendChild(badge);
+    });
+    return getHTMLTemplate(container.innerHTML);
   } catch (error) {
     console.error('Error converting blocks to HTML:', error);
     const fallbackHTML = blocks
@@ -175,75 +206,78 @@ const getHTMLTemplate = (content) => {
             font-weight: 600;
             line-height: 1.25;
         }
-        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
-        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
-        h3 { font-size: 1.25em; }
-        h4 { font-size: 1em; }
-        h5 { font-size: 0.875em; }
-        h6 { font-size: 0.85em; color: #6a737d; }
-        p { margin-bottom: 1em; }
+        /* Match preview heading sizes/borders */
+        h1 { font-size: 1.875rem; /* text-3xl */ border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem; }
+        h2 { font-size: 1.5rem;   /* text-2xl */ border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem; }
+        h3 { font-size: 1.25rem;  /* text-xl  */ margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        h4 { font-size: 1.125rem; /* text-lg  */ margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        h5 { font-size: 1rem;     /* text-base*/ margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        h6 { font-size: 0.875rem; /* text-sm  */ color: #6b7280; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        p { margin-bottom: 1rem; line-height: 1.75; /* leading-7 */ }
         blockquote {
-            margin: 0 0 1em 0;
-            padding: 0 1em;
-            color: #6a737d;
-            border-left: 0.25em solid #dfe2e5;
+            margin: 1rem 0;
+            padding-left: 1rem;
+            color: #6b7280;
+            border-left: 4px solid #e5e7eb; /* border-l-4 border-border */
         }
         code {
-            padding: 0.2em 0.4em;
+            padding: 0.15em 0.4em;
             margin: 0;
-            font-size: 85%;
-            background-color: rgba(27,31,35,0.05);
-            border-radius: 3px;
+            font-size: 0.875rem; /* text-sm */
+            background-color: #f3f4f6; /* muted */
+            border-radius: 4px;
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
         }
         pre {
             padding: 16px;
             overflow: auto;
-            font-size: 85%;
-            line-height: 1.45;
-            background-color: #f6f8fa;
-            border-radius: 6px;
-            margin-bottom: 1em;
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.6;
+            background-color: #f3f4f6; /* muted */
+            border-radius: 8px; /* rounded-md */
+            margin: 1rem 0; /* my-4 */
         }
         pre code {
             background-color: transparent;
             padding: 0;
             border-radius: 0;
             display: block;
+            white-space: pre-wrap; /* whitespace-pre-wrap */
         }
         ul, ol {
-            margin-bottom: 1em;
-            padding-left: 2em;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem; /* ml-6 */
         }
         li {
-            margin-bottom: 0.25em;
+            margin-bottom: 0.5rem; /* space-y-2 mimic */
+            font-size: 1rem; /* text-base */
         }
         table {
             border-collapse: collapse;
             border-spacing: 0;
             width: 100%;
-            margin-bottom: 1em;
+            margin: 1rem 0; /* my-4 */
         }
         table th, table td {
-            padding: 6px 13px;
-            border: 1px solid #dfe2e5;
+            padding: 10px 16px; /* px-4 py-2 */
+            border: 1px solid #e5e7eb; /* border-border */
         }
         table th {
             font-weight: 600;
-            background-color: #f6f8fa;
+            background-color: #f3f4f6; /* bg-muted */
         }
         img {
             max-width: 100%;
             height: auto;
-            margin: 1em 0;
+            margin: 1rem 0; /* my-4 */
+            border-radius: 6px; /* rounded */
             display: block;
         }
         hr {
-            height: 0.25em;
-            padding: 0;
-            margin: 24px 0;
-            background-color: #e1e4e8;
-            border: 0;
+            height: 0;
+            border: none;
+            border-top: 4px solid #e5e7eb; /* border-t-4 */
+            margin: 2rem 0; /* my-8 */
         }
         a {
             color: #0366d6;
@@ -252,6 +286,9 @@ const getHTMLTemplate = (content) => {
         a:hover {
             text-decoration: underline;
         }
+        /* GitHub task list compatibility */
+        .task-list-item { list-style: none; }
+        .task-list-item input[type="checkbox"] { margin-right: 0.5em; vertical-align: middle; }
         @media print {
             body { margin: 0; padding: 20px; }
             h1, h2 { page-break-after: avoid; }
@@ -312,7 +349,7 @@ export const exportToPDF = async (blocks, filename = 'document.pdf') => {
 
     const handleLoad = async () => {
       try {
-        await new Promise((r) => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1500));
 
         const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!iframeDoc || !iframeDoc.body) {
@@ -325,7 +362,8 @@ export const exportToPDF = async (blocks, filename = 'document.pdf') => {
         const canvas = await html2canvas(body, {
           scale: 1.5,
           useCORS: true,
-          allowTaint: true,
+          allowTaint: false,
+          imageTimeout: 15000,
           backgroundColor: '#ffffff',
           logging: false,
           onclone: (clonedDoc) => {
