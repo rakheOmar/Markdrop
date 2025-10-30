@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -18,17 +18,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/context/AuthContext";
-import axios from "@/lib/axios";
+import { loginWithEmail, signInWithGoogle } from "@/lib/auth";
 
 const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export default function Login() {
   const navigate = useNavigate();
   const { setUser } = useAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -39,163 +40,87 @@ export default function Login() {
   });
 
   const onSubmit = async (data) => {
+    setIsLoading(true);
     try {
-      const res = await axios.post("/users/login", data);
-      console.log("Login Success:", res.data);
-      setUser(res.data?.data?.user);
+      const result = await loginWithEmail(data.email, data.password);
+      setUser(result.user);
       toast.success("Logged in successfully!");
-      setTimeout(() => navigate("/"), 2000);
-    } catch (err) {
-      const message = err?.response?.data?.message?.toString?.() || err?.message || "Login failed.";
-
-      if (err?.response?.data?.errors?.length) {
-        err.response.data.errors.forEach((e) => {
-          toast.error(e?.message?.toString() || "Something went wrong.");
-        });
-      } else {
-        toast.error(message);
-      }
-
-      console.error("Login Error:", message, err);
+      navigate("/");
+    } catch (error) {
+      console.error("Login Error:", error);
+      toast.error(error.message || "Login failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
     try {
-      setGoogleLoading(true);
-      // Ensure Google Identity script is loaded
-      const googleObj = window.google;
-      if (!googleObj || !googleObj.accounts || !googleObj.accounts.id) {
-        throw new Error("Google Identity script not loaded");
-      }
-
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-      if (!clientId) {
-        throw new Error("Missing VITE_GOOGLE_CLIENT_ID env var");
-      }
-
-      // If button already rendered, request a fresh credential via prompt
-      const res = await new Promise((resolve, reject) => {
-        try {
-          googleObj.accounts.id.initialize({ client_id: clientId, callback: resolve });
-          googleObj.accounts.id.prompt();
-        } catch (err) {
-          reject(err);
-        }
-      });
-
-      const credential = res?.credential;
-      if (!credential) throw new Error("Google credential not received");
-
-      if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.log(
-          "[Google] credential length:",
-          credential?.length,
-          "baseURL:",
-          axios.defaults.baseURL
-        );
-      }
-
-      const apiRes = await axios.post("/users/oauth/google", { idToken: credential });
-      setUser(apiRes.data?.data?.user);
-      toast.success("Logged in with Google!");
-      setTimeout(() => navigate("/"), 1000);
-    } catch (err) {
-      const message =
-        err?.response?.data?.message?.toString?.() || err?.message || "Google login failed.";
-      toast.error(message);
-      console.error("Google Login Error:", message, err);
-    } finally {
+      await signInWithGoogle();
+      // The redirect will handle the rest
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      toast.error(error.message || "Google login failed.");
       setGoogleLoading(false);
     }
   };
 
-  // Render the official Google button into a container
-  useEffect(() => {
-    const googleObj = window.google;
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!googleObj || !googleObj.accounts || !googleObj.accounts.id || !clientId) return;
-    try {
-      googleObj.accounts.id.initialize({
-        client_id: clientId,
-        callback: async (res) => {
-          try {
-            const credential = res?.credential;
-            if (!credential) return;
-            const apiRes = await axios.post("/users/oauth/google", { idToken: credential });
-            setUser(apiRes.data?.data?.user);
-            toast.success("Logged in with Google!");
-            setTimeout(() => navigate("/"), 1000);
-          } catch (err) {
-            const message =
-              err?.response?.data?.message?.toString?.() || err?.message || "Google login failed.";
-            toast.error(message);
-          }
-        },
-      });
-      const container = document.getElementById("googleBtnContainer");
-      if (container) {
-        googleObj.accounts.id.renderButton(container, {
-          theme: "outline",
-          size: "large",
-          width: 320,
-          type: "standard",
-          text: "continue_with",
-          shape: "rectangular",
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }, [navigate, setUser]);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="max-w-sm w-full">
-        <CardHeader className="text-center space-y-2">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:px-6 lg:px-8 relative">
+      <Link
+        to="/"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-md hover:bg-muted transition-colors z-10"
+        title="Go to Home"
+      >
+        <HomeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground hover:text-foreground" />
+      </Link>
+      <Card className="w-full max-w-sm sm:max-w-md mx-auto">
+        <CardHeader className="text-center space-y-2 px-4 sm:px-6 pt-6 pb-4">
           <div className="flex justify-center">
-            <Logo className="h-9 w-9 text-primary" />
+            <Logo className="h-8 w-8 sm:h-9 sm:w-9 text-primary" />
           </div>
-          <CardTitle className="text-xl font-bold tracking-tight">Log in</CardTitle>
-          <CardDescription>Welcome back! Please sign in to your account</CardDescription>
+          <CardTitle className="text-lg sm:text-xl font-bold tracking-tight">
+            Log in to Markdrop
+          </CardTitle>
+          <CardDescription className="text-sm sm:text-base">
+            Welcome back! Please sign in to your account
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="w-full flex justify-center">
-            <div
-              id="googleBtnContainer"
-              className="w-full flex justify-center"
-              style={{ minHeight: 40 }}
-            />
-          </div>
+        <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6">
           <Button
-            className="w-full gap-3"
+            className="w-full gap-2 sm:gap-3 h-10 sm:h-11 text-sm sm:text-base"
             variant="secondary"
             onClick={handleGoogleLogin}
             disabled={googleLoading}
           >
             <GoogleLogo />
-            {googleLoading ? "Connecting..." : "Use One Tap"}
+            {googleLoading ? "Connecting..." : "Continue with Google"}
           </Button>
 
           <div className="flex items-center justify-center overflow-hidden">
             <Separator className="flex-1" />
-            <span className="text-sm px-2 text-muted-foreground">OR</span>
+            <span className="text-xs sm:text-sm px-2 text-muted-foreground">OR</span>
             <Separator className="flex-1" />
           </div>
 
           <Form {...form}>
-            <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+            <form className="space-y-3 sm:space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-sm sm:text-base">Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Email" {...field} />
+                      <Input
+                        type="email"
+                        placeholder="Email"
+                        className="h-10 sm:h-11 text-sm sm:text-base"
+                        {...field}
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs sm:text-sm" />
                   </FormItem>
                 )}
               />
@@ -204,21 +129,30 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-sm sm:text-base">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Password"
+                        className="h-10 sm:h-11 text-sm sm:text-base"
+                        {...field}
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs sm:text-sm" />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Continue with Email
+              <Button
+                type="submit"
+                className="w-full h-10 sm:h-11 text-sm sm:text-base"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing in..." : "Continue with Email"}
               </Button>
             </form>
           </Form>
 
-          <p className="text-sm text-center text-muted-foreground">
+          <p className="text-xs sm:text-sm text-center text-muted-foreground">
             Don't have an account?{" "}
             <Link to="/signup" className="underline text-primary hover:text-primary/90">
               Sign Up!
@@ -263,6 +197,25 @@ function GoogleLogo() {
           <rect width="15.6825" height="16" fill="white" />
         </clipPath>
       </defs>
+    </svg>
+  );
+}
+
+function HomeIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+      />
     </svg>
   );
 }

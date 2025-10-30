@@ -8,12 +8,15 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
+import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import {
+  BarChart3,
   CheckSquare,
   Code,
   FileDown,
+  FileText,
   FileUp,
+  Github,
   Heading1,
   Heading2,
   Heading3,
@@ -31,19 +34,30 @@ import {
   RefreshCcw,
   RotateCcw,
   RotateCw,
+  Save,
   Shield,
   Sparkles,
   Sun,
   Table,
   Type,
+  Users,
   Video,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
 import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,13 +65,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { exportToPDF, exportToHTML, exportToMarkdown, blocksToMarkdown } from "@/lib/exportUtils";
+import { useAuth } from "@/context/AuthContext";
+import { createMarkdown, updateMarkdown } from "@/lib/storage";
 
 export default function Dashboard() {
   const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("editor");
   const [blocks, setBlocks] = useState(() => {
     const saved = localStorage.getItem("markdown-blocks");
@@ -67,6 +87,11 @@ export default function Dashboard() {
   const [history, setHistory] = useState([[]]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [activeId, setActiveId] = useState(null);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveTitle, setSaveTitle] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [currentDocumentId, setCurrentDocumentId] = useState(null);
+  const [lastSavedContent, setLastSavedContent] = useState("");
 
   useEffect(() => {
     localStorage.setItem("markdown-blocks", JSON.stringify(blocks));
@@ -138,12 +163,15 @@ export default function Dashboard() {
     return labels[blockType] || blockType;
   };
 
-  const saveToHistory = (newBlocks) => {
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push(newBlocks);
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  };
+  const saveToHistory = useCallback(
+    (newBlocks) => {
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push(newBlocks);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    },
+    [history, historyIndex]
+  );
 
   const handleReset = () => {
     setBlocks([]);
@@ -165,6 +193,54 @@ export default function Dashboard() {
     }
   }, [historyIndex, history]);
 
+  const handleSave = useCallback(async () => {
+    // Check if user is logged in
+    if (!user) {
+      toast.error("Please log in to save your document");
+      navigate("/login");
+      return;
+    }
+
+    // If blocks are empty, don't allow saving
+    if (blocks.length === 0) {
+      toast.error("Cannot save an empty document");
+      return;
+    }
+
+    // If we have an existing document, save directly without asking for title
+    if (currentDocumentId && saveTitle) {
+      setIsSaving(true);
+      try {
+        const content = JSON.stringify(blocks);
+        await updateMarkdown(currentDocumentId, {
+          title: saveTitle,
+          content: content,
+        });
+        setLastSavedContent(content);
+        toast.success("Document updated successfully!");
+      } catch (error) {
+        console.error("Save error:", error);
+        toast.error("Failed to save document. Please try again.");
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+
+    // For new documents, auto-populate title from first heading if not already set
+    if (!saveTitle) {
+      const firstHeading = blocks.find(
+        (block) => ["h1", "h2", "h3", "h4", "h5", "h6"].includes(block.type) && block.content.trim()
+      );
+      if (firstHeading) {
+        setSaveTitle(firstHeading.content.trim());
+      }
+    }
+
+    // Show save dialog for new documents
+    setShowSaveDialog(true);
+  }, [user, navigate, blocks, saveTitle, currentDocumentId]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       // Detect Ctrl+Z (Windows) or Command+Z (Mac) for Undo
@@ -177,13 +253,18 @@ export default function Dashboard() {
         event.preventDefault();
         handleRedo();
       }
+      // Detect Ctrl+S (Windows) or Command+S (Mac) for Save
+      else if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault();
+        handleSave();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleUndo, handleRedo]);
+  }, [handleUndo, handleRedo, handleSave]);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -254,6 +335,67 @@ export default function Dashboard() {
     };
     input.click();
   };
+
+  const handleSaveConfirm = async () => {
+    if (!saveTitle.trim()) {
+      toast.error("Please enter a title for your document");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const content = JSON.stringify(blocks);
+
+      // Create new document (existing documents are handled directly in handleSave)
+      const newDoc = await createMarkdown(user.id, saveTitle.trim(), content);
+      setCurrentDocumentId(newDoc.id);
+      setLastSavedContent(content);
+      toast.success("Document saved successfully!");
+
+      setShowSaveDialog(false);
+      // Don't clear saveTitle anymore since we want to keep it for future updates
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("Failed to save document. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveCancel = () => {
+    setShowSaveDialog(false);
+    // Only clear title if it's a new document
+    if (!currentDocumentId) {
+      setSaveTitle("");
+    }
+  };
+
+  // Function to load a document (can be called from other components)
+  const loadDocument = useCallback(
+    (document) => {
+      try {
+        const parsedBlocks = JSON.parse(document.content);
+        setBlocks(parsedBlocks);
+        setCurrentDocumentId(document.id);
+        setSaveTitle(document.title);
+        setLastSavedContent(document.content);
+        saveToHistory(parsedBlocks);
+        toast.success(`Loaded "${document.title}"`);
+      } catch (error) {
+        console.error("Error loading document:", error);
+        toast.error("Failed to load document");
+      }
+    },
+    [saveToHistory]
+  );
+
+  // Expose loadDocument function globally for other components to use
+  useEffect(() => {
+    window.loadDocument = loadDocument;
+    return () => {
+      delete window.loadDocument;
+    };
+  }, [loadDocument]);
 
   const markdownToBlocks = (markdown) => {
     const lines = markdown.split("\n");
@@ -430,15 +572,29 @@ export default function Dashboard() {
           id: Date.now().toString(),
           type: blockType,
           content: defaultContent[blockType] || "",
-          ...(blockType === "image" && { alt: "", width: "", height: "", align: "left" }),
+          ...(blockType === "image" && {
+            alt: "",
+            width: "",
+            height: "",
+            align: "left",
+          }),
           ...(blockType === "video" && { title: "" }),
           ...(blockType === "link" && { url: "" }),
           ...(blockType === "shield-badge" && {
-            label: "build",
-            message: "passing",
-            badgeColor: "brightgreen",
-            style: "flat",
-            logo: "",
+            badges: [
+              {
+                type: "custom",
+                label: "build",
+                message: "passing",
+                color: "brightgreen",
+                style: "flat",
+                logo: "",
+                username: "",
+                repo: "",
+                package: "",
+              },
+            ],
+            align: "left",
           }),
           ...(blockType === "skill-icons" && {
             icons: "js,html,css",
@@ -523,6 +679,12 @@ export default function Dashboard() {
   };
 
   const stats = getStats();
+
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = () => {
+    const currentContent = JSON.stringify(blocks);
+    return currentContent !== lastSavedContent && blocks.length > 0;
+  };
 
   return (
     <SidebarProvider defaultOpen={false}>
@@ -622,6 +784,20 @@ export default function Dashboard() {
                 <span className="hidden lg:inline">Import</span>
               </Button>
 
+              {/* Save button - visible on medium+ screens */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSave}
+                className="hidden md:flex gap-1.5 relative"
+              >
+                <Save className="w-4 h-4" />
+                <span className="hidden lg:inline">Save</span>
+                {hasUnsavedChanges() && (
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full" />
+                )}
+              </Button>
+
               {/* Export dropdown - visible on large+ screens */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -674,6 +850,16 @@ export default function Dashboard() {
                   <DropdownMenuItem onClick={handleImport} className="lg:hidden">
                     <FileUp className="w-4 h-4 mr-2" />
                     Import File
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={handleSave} className="md:hidden">
+                    <div className="flex items-center w-full">
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Document
+                      {hasUnsavedChanges() && (
+                        <div className="ml-auto w-2 h-2 bg-orange-500 rounded-full" />
+                      )}
+                    </div>
                   </DropdownMenuItem>
 
                   {/* Edit Actions - Mobile/Tablet Only */}
@@ -763,6 +949,42 @@ export default function Dashboard() {
             </div>
           </div>
         </SidebarInset>
+
+        {/* Save Dialog */}
+        <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Save Document</DialogTitle>
+              <DialogDescription>Enter a title for your markdown document.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Document Title</Label>
+                <Input
+                  id="title"
+                  placeholder="Enter document title..."
+                  value={saveTitle}
+                  onChange={(e) => setSaveTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSaveConfirm();
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleSaveCancel} disabled={isSaving}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveConfirm} disabled={isSaving || !saveTitle.trim()}>
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {isImporting && (
           <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="flex items-center gap-3 bg-background/90 rounded-lg px-4 py-3 shadow-lg border">

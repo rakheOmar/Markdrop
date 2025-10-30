@@ -11,7 +11,17 @@ export default defineConfig({
     tailwindcss(),
     sitemap({
       hostname: "https://markdrop.vercel.app",
-      dynamicRoutes: ["/", "/about", "/contact", "/builder", "/login", "/signup"],
+      dynamicRoutes: [
+        "/",
+        "/about",
+        "/contact",
+        "/builder",
+        "/login",
+        "/signup",
+        "/privacy-policy",
+        "/terms-of-services",
+        "/user-profile"
+      ],
     }),
     VitePWA({
       registerType: 'autoUpdate',
