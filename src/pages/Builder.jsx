@@ -637,7 +637,7 @@ export default function Dashboard() {
         const file=files[i];
         const text = await file.text();
         const newBlocks = markdownToBlocks(text);
-        updateFileBlocks(newBlocks);
+        updateFileBlocks(activeFile.id,newBlocks);
         saveToHistory(newBlocks);
         toast.success("Markdown imported!");
         addFile({
@@ -853,7 +853,7 @@ export default function Dashboard() {
 
       if (oldIndex !== -1 && newIndex !== -1) {
         const newBlocks = arrayMove(blocks, oldIndex, newIndex);
-        updateFileBlocks(newBlocks);
+        updateFileBlocks(activeFile.id, newBlocks);
         saveToHistory(newBlocks);
       }
       return;
@@ -934,7 +934,7 @@ export default function Dashboard() {
           newBlocks = [...blocks.slice(0, overIndex + 1), newBlock, ...blocks.slice(overIndex + 1)];
         }
 
-        updateFileBlocks(newBlocks);
+        updateFileBlocks(activeFile.id, newBlocks);
         saveToHistory(newBlocks);
       }
     }
@@ -946,18 +946,18 @@ export default function Dashboard() {
 
   const handleBlockUpdate = (blockId, updatedBlock) => {
     const newBlocks = blocks.map((b) => (b.id === blockId ? updatedBlock : b));
-    updateFileBlocks(newBlocks);
+    updateFileBlocks(activeFile.id, newBlocks);
   };
 
   const handleBlockDelete = (blockId) => {
     const newBlocks = blocks.filter((b) => b.id !== blockId);
-    updateFileBlocks(newBlocks);
+    updateFileBlocks(activeFile.id, newBlocks);
     saveToHistory(newBlocks);
     toast.success("Block deleted");
   };
 
   const handleBlocksChange = (newBlocks) => {
-    updateFileBlocks(newBlocks);
+    updateFileBlocks(activeFile.id, newBlocks);
     saveToHistory(newBlocks);
   };
 
@@ -987,7 +987,7 @@ export default function Dashboard() {
       newBlocks = [...blocks, newBlock];
     }
 
-    updateFileBlocks(newBlocks);
+    updateFileBlocks(activeFiles.id, newBlocks);
     saveToHistory(newBlocks);
   };
 
@@ -1012,8 +1012,15 @@ export default function Dashboard() {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
+        onDragStart={(event)=>{
+          if (event?.active?.data?.current?.type === "native") return; 
+          handleDragStart(event);
+        }}
+          
+        onDragOver={(event)=>{
+          if (event?.over == null && event?.active?.data?.current === null) return; 
+          handleDragOver(event);
+        }}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
