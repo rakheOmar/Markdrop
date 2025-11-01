@@ -1,8 +1,8 @@
 {
-  "name": "client",
+  "name": "markdrop",
   "private": true,
-  "version": "1.0.0",
-  "description": "The React frontend for the MERN Hackathon Starter Template, built with Vite and Shadcn/UI.",
+  "version": "0.1.0",
+  "description": "Create beautiful README files, documentation, and markdown content with Markdrop's intuitive drag-and-drop interface.",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
