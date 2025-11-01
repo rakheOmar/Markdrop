@@ -35,6 +35,7 @@ function App() {
           <Route path="/templates" element={<Templates />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/builder" element={<Builder />} />
+          <Route path="/builder/:id" element={<Builder />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-services" element={<TermsOfServices />} />
           <Route path="*" element={<NotFoundPage />} />

@@ -40,7 +40,7 @@ import {
   Video,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
@@ -68,12 +68,13 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
 import { blocksToMarkdown, exportToHTML, exportToMarkdown, exportToPDF } from "@/lib/exportUtils";
-import { createMarkdown, updateMarkdown } from "@/lib/storage";
+import { createMarkdown, getMarkdownById, updateMarkdown } from "@/lib/storage";
 
 export default function Dashboard() {
   const { theme, setTheme } = useTheme();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { id } = useParams();
   const [activeTab, setActiveTab] = useState("editor");
   const [blocks, setBlocks] = useState(() => {
     const saved = localStorage.getItem("markdown-blocks");
@@ -92,6 +93,36 @@ export default function Dashboard() {
   useEffect(() => {
     localStorage.setItem("markdown-blocks", JSON.stringify(blocks));
   }, [blocks]);
+
+  // Load document from URL parameter on mount
+  useEffect(() => {
+    const loadDocumentFromUrl = async () => {
+      if (id && user) {
+        try {
+          const document = await getMarkdownById(id);
+          if (document && document.user_id === user.id) {
+            const parsedBlocks = JSON.parse(document.content);
+            setBlocks(parsedBlocks);
+            setCurrentDocumentId(document.id);
+            setSaveTitle(document.title);
+            setLastSavedContent(document.content);
+            setHistory([parsedBlocks]);
+            setHistoryIndex(0);
+            toast.success(`Loaded "${document.title}"`);
+          } else {
+            toast.error("Document not found or access denied");
+            navigate("/builder");
+          }
+        } catch (error) {
+          console.error("Error loading document:", error);
+          toast.error("Failed to load document");
+          navigate("/builder");
+        }
+      }
+    };
+
+    loadDocumentFromUrl();
+  }, [id, user, navigate]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -914,7 +945,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2">
                 {(() => {
                   const Icon = getBlockIcon(activeId);
-                  return <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />;
+                  return <Icon className="h-4 w-4 text-muted-foreground shrink-0" />;
                 })()}
                 <span className="text-xs sm:text-sm font-medium text-foreground truncate">
                   {blocks.find((b) => b.id === activeId)

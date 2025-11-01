@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Trash2,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +21,56 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatDate } from "@/lib/fileManager";
+
+const FileCard = ({ doc, onUpdateTitle, onMoveToFolder, onDeleteFile, onDoubleClick }) => {
+  return (
+    <Card
+      className="cursor-pointer hover:bg-muted/50 relative group overflow-hidden p-0"
+      onDoubleClick={() => onDoubleClick(doc.id)}
+    >
+      <div className="aspect-video bg-linear-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 flex items-center justify-center">
+        <FileText className="w-8 h-8 text-green-600 dark:text-green-400" />
+      </div>
+      <CardContent className="p-3 space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-medium text-sm truncate flex-1">{doc.title}</h3>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 shrink-0">
+                <MoreVertical className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onUpdateTitle(doc.id, doc.title)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Update Title
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onMoveToFolder(doc.id)}>
+                <FolderInput className="w-4 h-4 mr-2" />
+                Move to Folder
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDeleteFile(doc.id)}
+                className="text-red-600 dark:text-red-400"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <p className="text-xs text-muted-foreground line-clamp-2">
+          {doc.description || "No description"}
+        </p>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Calendar className="w-3 h-3" />
+          <span>{formatDate(doc.updated_at)}</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function FileSection({
   folders,
@@ -31,20 +82,16 @@ export default function FileSection({
   onDeleteFile,
   onMoveToFolder,
 }) {
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+  const navigate = useNavigate();
+
+  const handleDoubleClick = (fileId) => {
+    navigate(`/builder/${fileId}`);
   };
 
-  // --- Top Right Label ---
   const TopRightLabel = () => (
-    <div className="absolute top-0 right-0 w-20 h-20 sm:w-24 sm:h-10 md:w-28 md:h-12 border-l border-b border-[#cecece] dark:border-[#16181d] sm:flex items-center justify-center hidden">
-      <span className="font-mono text-[10px] sm:text-xs md:text-sm text-black dark:text-white whitespace-nowrap">
-        Files &<br />
-        Folders
+    <div className="absolute top-0 right-0 w-auto h-auto px-2 py-1.5 sm:px-2.5 sm:py-2 border-l border-b border-[#cecece] dark:border-[#16181d] sm:flex items-center justify-center hidden">
+      <span className="font-mono text-[0.55rem] sm:text-[0.65rem] md:text-xs text-black dark:text-white whitespace-nowrap leading-tight">
+        Files & Folders
       </span>
     </div>
   );
@@ -142,9 +189,17 @@ export default function FileSection({
       <div className="border-r border-[#cecece] dark:border-[#16181d] relative overflow-hidden">
         <TopRightLabel />
       </div>
-      <div className="border-[#cecece] dark:border-[#16181d] p-4 md:p-6 relative">
+      <div className="border-[#cecece] dark:border-[#16181d] p-4 md:p-6 relative h-full overflow-hidden">
         <div className="h-full flex flex-col">
-          <Tabs defaultValue="files" className="flex-1">
+          <div className="absolute top-2 left-2 z-10 h-auto p-1">
+            <div className="p-2 flex items-center">
+              <h2 className="text-lg md:text-xl font-semibold">
+                {markdowns.length} {markdowns.length === 1 ? "File" : "Files"} and {folders.length}{" "}
+                {folders.length === 1 ? "Folder" : "Folders"}
+              </h2>
+            </div>
+          </div>
+          <Tabs defaultValue="files" className="flex-1 flex flex-col min-h-0">
             <div className="absolute top-2 right-2 z-10">
               <TabsList className="h-auto p-1 bg-transparent">
                 <TabsTrigger value="files" className="p-2">
@@ -156,88 +211,43 @@ export default function FileSection({
               </TabsList>
             </div>
 
-            <TabsContent value="files" className="flex-1 mt-16">
-              {markdowns.length === 0 ? (
-                <div className="h-96 flex items-center justify-center">
-                  <div className="text-center">
-                    <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No files yet</p>
+            <TabsContent value="files" className="flex-1 mt-14 min-h-0">
+              <ScrollArea className="h-full w-full">
+                {markdowns.length === 0 ? (
+                  <div className="h-96 flex items-center justify-center">
+                    <div className="text-center">
+                      <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">No files yet</p>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <ScrollArea className="h-96">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 p-1">
                     {markdowns.map((doc) => (
-                      <Card
+                      <FileCard
                         key={doc.id}
-                        className="cursor-pointer hover:bg-muted/50 relative group"
-                      >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                            >
-                              <MoreVertical className="w-3 h-3" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onUpdateTitle?.(doc.id, doc.title)}>
-                              <Edit className="w-4 h-4 mr-2" />
-                              Update Title
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onMoveToFolder?.(doc.id)}>
-                              <FolderInput className="w-4 h-4 mr-2" />
-                              Move to Folder
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => onDeleteFile?.(doc.id)}
-                              className="text-red-600 dark:text-red-400"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <CardContent className="p-3">
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2 pr-6">
-                              <FileText className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                              <h3 className="font-medium text-sm truncate">{doc.title}</h3>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              {doc.folder_id && (
-                                <Badge variant="secondary" className="text-xs w-fit">
-                                  {folders.find((f) => f.id === doc.folder_id)?.name ||
-                                    "Unknown Folder"}
-                                </Badge>
-                              )}
-                              <span className="text-xs text-muted-foreground">
-                                <Calendar className="w-3 h-3 inline mr-1" />
-                                {formatDate(doc.updated_at)}
-                              </span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                        doc={doc}
+                        onUpdateTitle={onUpdateTitle}
+                        onMoveToFolder={onMoveToFolder}
+                        onDeleteFile={onDeleteFile}
+                        onDoubleClick={handleDoubleClick}
+                      />
                     ))}
                   </div>
-                </ScrollArea>
-              )}
+                )}
+              </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="folders" className="flex-1 mt-16">
-              {folders.length === 0 ? (
-                <div className="h-96 flex items-center justify-center">
-                  <div className="text-center">
-                    <Folder className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No folders yet</p>
+            <TabsContent value="folders" className="flex-1 mt-14 min-h-0">
+              <ScrollArea className="h-full w-full">
+                {folders.length === 0 ? (
+                  <div className="h-96 flex items-center justify-center">
+                    <div className="text-center">
+                      <Folder className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">No folders yet</p>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <ScrollArea className="h-96">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 p-1">
                     {folders.map((folder) => (
                       <Card
                         key={folder.id}
@@ -272,7 +282,7 @@ export default function FileSection({
                         <CardContent className="p-3">
                           <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 pr-6">
-                              <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                              <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                               <h3 className="font-medium text-sm truncate">{folder.name}</h3>
                             </div>
                             <div className="flex flex-col gap-1">
@@ -289,8 +299,8 @@ export default function FileSection({
                       </Card>
                     ))}
                   </div>
-                </ScrollArea>
-              )}
+                )}
+              </ScrollArea>
             </TabsContent>
           </Tabs>
         </div>

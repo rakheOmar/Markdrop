@@ -22,7 +22,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <footer className="border-t border-[#cecece] dark:border-[#16181d] flex items-center justify-between px-2 sm:px-4 md:px-8 py-2 col-span-3 lg:col-span-1 overflow-hidden">
+      <footer className="border-t border-[#cecece] dark:border-[#16181d] flex items-center justify-between px-2 sm:px-4 md:px-8 py-2 col-span-3 lg:col-span-1 overflow-hidden relative">
         <div className="flex items-center gap-2">
           <img
             src={theme === "dark" ? markdropIconDark : markdropIconLight}
@@ -31,7 +31,7 @@ export default function Footer() {
           />
         </div>
 
-        <div className="flex items-center gap-2 text-[10px] sm:text-xs text-[#6b7280] dark:text-[#9ca3af] font-mono">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-[8px] sm:text-[10px] md:text-xs text-[#6b7280] dark:text-[#9ca3af] font-mono whitespace-nowrap">
           <Link
             to="/privacy-policy"
             className="hover:text-black dark:hover:text-white transition-colors"

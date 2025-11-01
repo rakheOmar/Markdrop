@@ -4,159 +4,117 @@ import Footer from "@/components/Footer";
 function Content() {
   return (
     <>
-      <div className="border-r border-b border-[#cecece] dark:border-[#16181d] relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border-l border-b border-[#cecece] dark:border-[#16181d] sm:flex items-center justify-center hidden">
-          <span className="font-mono text-xs sm:text-sm md:text-base text-black dark:text-white whitespace-nowrap leading-[0.9]">
-            Terms of <br /> Service
+      <div className="relative overflow-hidden border-r border-[#cecece] dark:border-[#16181d]">
+        <div className="absolute top-0 right-0 w-auto h-auto px-2 py-1.5 sm:px-2.5 sm:py-2 border-l border-b border-[#cecece] dark:border-[#16181d] sm:flex items-center justify-center hidden">
+          <span className="font-mono text-[0.55rem] sm:text-[0.65rem] md:text-xs text-black dark:text-white whitespace-nowrap leading-tight">
+            terms_of_service.md
           </span>
         </div>
       </div>
 
-      <div className="border-l border-b border-[#cecece] dark:border-[#16181d] overflow-y-auto px-6 py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">Introduction</h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              These Terms of Service ("Terms") govern your use of MarkDrop ("we," "our," or "us"), a
-              markdown editor service. By accessing or using our service, you agree to be bound by
-              these Terms. If you do not agree to these Terms, please do not use our service.
+      <div className="overflow-y-auto px-4 sm:px-6 md:px-8 py-8 md:py-12">
+        <div className="max-w-4xl mx-auto space-y-10">
+          <section className="space-y-6">
+            <h2 className="text-3xl font-bold text-black dark:text-white">Introduction</h2>
+            <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
+              These Terms of Service govern your use of MarkDrop, a free markdown editor for
+              creating beautiful GitHub profile READMEs and markdown documents. By using MarkDrop,
+              you agree to these Terms.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">
-              Acceptance of Terms
-            </h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              By creating an account or using MarkDrop, you acknowledge that you have read,
-              understood, and agree to be bound by these Terms and our Privacy Policy. These Terms
-              apply to all users of the service.
+          <section className="space-y-6">
+            <h2 className="text-3xl font-bold text-black dark:text-white">Using MarkDrop</h2>
+            <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
+              MarkDrop is a client-side markdown editor that stores your documents locally in your
+              browser. You can use MarkDrop without creating an account. If you choose to create an
+              account, you agree to:
             </p>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">
-              Description of Service
-            </h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              MarkDrop is a web-based markdown editor that allows users to create, edit, and manage
-              markdown documents. Our service includes features such as:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-[#6b7280] dark:text-[#9ca3af] ml-4">
-              <li>Real-time markdown editing and preview</li>
-              <li>Document storage and synchronization</li>
-              <li>Export functionality</li>
-              <li>Collaboration tools</li>
-              <li>Theme customization</li>
+            <ul className="list-disc list-inside space-y-2 text-base text-[#6b7280] dark:text-[#9ca3af] ml-4">
+              <li>Provide accurate information</li>
+              <li>Keep your account credentials secure</li>
+              <li>Be responsible for activities under your account</li>
             </ul>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">
-              User Accounts and Registration
-            </h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              To access certain features, you must create an account. You agree to:
+          <section className="space-y-6">
+            <h2 className="text-3xl font-bold text-black dark:text-white">Your Content</h2>
+            <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
+              You own all content you create using MarkDrop. We don't claim any ownership rights to
+              your documents. When you save documents to your account, we store them only to provide
+              the service to you.
             </p>
-            <ul className="list-disc list-inside space-y-2 text-[#6b7280] dark:text-[#9ca3af] ml-4">
-              <li>Provide accurate and complete information</li>
-              <li>Maintain the security of your account credentials</li>
-              <li>Notify us immediately of any unauthorized use</li>
-              <li>Be responsible for all activities under your account</li>
-              <li>Use only one account per person</li>
+          </section>
+
+          <section className="space-y-6">
+            <h2 className="text-3xl font-bold text-black dark:text-white">Acceptable Use</h2>
+            <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
+              Please use MarkDrop responsibly. Don't use it to:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-base text-[#6b7280] dark:text-[#9ca3af] ml-4">
+              <li>Violate any laws or regulations</li>
+              <li>Harm others or distribute malicious content</li>
+              <li>Attempt to breach our security</li>
+              <li>Abuse or overload our services</li>
             </ul>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">
-              Acceptable Use Policy
-            </h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              You agree not to use MarkDrop for any unlawful or prohibited activities, including:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-[#6b7280] dark:text-[#9ca3af] ml-4">
-              <li>Violating any applicable laws or regulations</li>
-              <li>Infringing on intellectual property rights</li>
-              <li>Uploading malicious code or harmful content</li>
-              <li>Attempting to gain unauthorized access to our systems</li>
-              <li>Harassing or threatening other users</li>
-              <li>Distributing spam or unsolicited communications</li>
-            </ul>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">
-              Content Ownership and Rights
-            </h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              You retain ownership of all content you create using MarkDrop. By using our service,
-              you grant us a limited license to store, process, and display your content solely for
-              the purpose of providing our service. We do not claim ownership of your content.
+          <section className="space-y-6">
+            <h2 className="text-3xl font-bold text-black dark:text-white">Service Availability</h2>
+            <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
+              We strive to keep MarkDrop available and running smoothly, but we can't guarantee
+              uninterrupted access. The service is provided "as is" without warranties. We may need
+              to temporarily suspend service for maintenance or updates.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">
-              Service Availability
-            </h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              We strive to maintain high service availability but cannot guarantee uninterrupted
-              access. We may temporarily suspend service for maintenance, updates, or due to
-              circumstances beyond our control. We are not liable for any downtime or service
-              interruptions.
-            </p>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">
+          <section className="space-y-6">
+            <h2 className="text-3xl font-bold text-black dark:text-white">
               Limitation of Liability
             </h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              MarkDrop is provided "as is" without warranties of any kind. We are not liable for any
-              indirect, incidental, special, or consequential damages arising from your use of our
-              service. Our total liability shall not exceed the amount paid by you for our service
-              in the past 12 months.
+            <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
+              MarkDrop is provided free of charge. We are not liable for any damages arising from
+              your use of the service, including data loss. Always keep backups of important
+              documents.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">Termination</h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              You may terminate your account at any time. We may suspend or terminate your account
-              if you violate these Terms. Upon termination, your access to the service will cease,
-              and we may delete your content after a reasonable notice period.
+          <section className="space-y-6">
+            <h2 className="text-3xl font-bold text-black dark:text-white">Termination</h2>
+            <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
+              You can stop using MarkDrop and delete your account at any time. We may suspend or
+              terminate accounts that violate these Terms.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">Changes to Terms</h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              We may update these Terms from time to time. We will notify you of material changes by
-              posting the updated Terms on our website. Your continued use of the service after
-              changes constitutes acceptance of the new Terms.
+          <section className="space-y-6">
+            <h2 className="text-3xl font-bold text-black dark:text-white">Changes to Terms</h2>
+            <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
+              We may update these Terms occasionally. Continued use of MarkDrop after changes means
+              you accept the updated Terms.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-black dark:text-white">Contact Us</h2>
-            <p className="text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              If you have any questions about these Terms of Service, please contact us at:
+          <section className="space-y-6">
+            <h2 className="text-3xl font-bold text-black dark:text-white">Contact Us</h2>
+            <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
+              If you have any questions about these Terms of Service, please contact us at:{" "}
+              <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
+                rakheOmar@outlook.com
+              </code>
             </p>
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-[#cecece] dark:border-[#16181d]">
-              <p className="text-[#6b7280] dark:text-[#9ca3af]">Email: rakheomar@outlook.com</p>
-            </div>
           </section>
         </div>
       </div>
 
-      <div className="border-b border-[#cecece] dark:border-[#16181d] flex items-center justify-center px-4 md:px-8" />
+      <div className="flex items-center justify-center px-4 md:px-8 border-l border-[#cecece] dark:border-[#16181d]" />
     </>
   );
 }
 
 export default function TermsOfServices() {
   return (
-    <div className="w-full h-screen grid grid-rows-[7vh_245vh_7vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
+    <div className="w-full h-screen grid grid-rows-[7vh_180vh_7vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
       <Navbar />
       <Content />
       <Footer />
