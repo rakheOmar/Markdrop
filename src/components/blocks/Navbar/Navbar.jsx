@@ -59,7 +59,7 @@ export default function Navbar() {
         return <Home className="h-4 w-4 mr-2" />;
       case "/builder":
         return <Wrench className="h-4 w-4 mr-2" />;
-      case "/about":
+      case "/templates":
         return <Info className="h-4 w-4 mr-2" />;
       default:
         return null;

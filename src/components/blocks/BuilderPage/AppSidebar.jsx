@@ -1,10 +1,7 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import {
-  BarChart3,
-  CheckSquare,
   Code2,
-  FileText,
-  Github,
+  CreditCard,
   Heading1,
   Heading2,
   Heading3,
@@ -21,8 +18,8 @@ import {
   Shield,
   Sparkles,
   Table,
+  Type,
   List as UnorderedList,
-  Users,
   Video,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -103,6 +100,8 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       table: "| Header 1 | Header 2 |\n|----------|----------|\n| Add text..   | Add text..   |",
       "shield-badge": "",
       "skill-icons": "",
+      "typing-svg": "",
+      "github-profile-cards": "",
     };
 
     const newBlock = {
@@ -128,6 +127,31 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
         icons: "js,html,css",
         theme: "dark",
         perLine: "15",
+      }),
+      ...(blockType === "typing-svg" && {
+        lines: ["Hi there! I'm a developer 👋"],
+        font: "Fira Code",
+        size: "28",
+        duration: "3000",
+        pause: "1000",
+        color: "00FFB3",
+        center: true,
+        vCenter: true,
+        width: "900",
+        height: "80",
+      }),
+      ...(blockType === "github-profile-cards" && {
+        username: "",
+        align: "left",
+        cards: [
+          {
+            cardType: "profile-details",
+            theme: "material_palenight",
+            utcOffset: "8",
+            height: "",
+            width: "",
+          },
+        ],
       }),
     };
 
@@ -176,9 +200,11 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       { title: "Video", key: "video", icon: Video },
     ],
     links: [{ title: "Link", key: "link", icon: Link2 }],
-    badges: [
+    "special blocks": [
       { title: "Shield Badge", key: "shield-badge", icon: Shield },
       { title: "Skill Icons", key: "skill-icons", icon: Sparkles },
+      { title: "Typing SVG", key: "typing-svg", icon: Type },
+      { title: "GitHub Profile Cards", key: "github-profile-cards", icon: CreditCard },
     ],
   };
 

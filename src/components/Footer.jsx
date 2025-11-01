@@ -1,5 +1,6 @@
 import { FavouriteIcon, GithubIcon, Mail01Icon, NewTwitterIcon } from "hugeicons-react";
 import { useEffect, useState } from "react";
+import { GithubIcon, Mail01Icon, NewTwitterIcon } from "hugeicons-react";
 import { Link } from "react-router-dom";
 
 export default function Footer() {

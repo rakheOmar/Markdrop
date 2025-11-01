@@ -8,15 +8,12 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 import {
-  BarChart3,
   CheckSquare,
   Code,
   FileDown,
-  FileText,
   FileUp,
-  Github,
   Heading1,
   Heading2,
   Heading3,
@@ -40,7 +37,6 @@ import {
   Sun,
   Table,
   Type,
-  Users,
   Video,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -71,336 +67,8 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
+import { blocksToMarkdown, exportToHTML, exportToMarkdown, exportToPDF } from "@/lib/exportUtils";
 import { createMarkdown, updateMarkdown } from "@/lib/storage";
-
-const blocksToMarkdown = (blocks) => {
-  return blocks
-    .map((block) => {
-      switch (block.type) {
-        case "h1":
-          return `# ${block.content}`;
-        case "h2":
-          return `## ${block.content}`;
-        case "h3":
-          return `### ${block.content}`;
-        case "h4":
-          return `#### ${block.content}`;
-        case "h5":
-          return `##### ${block.content}`;
-        case "h6":
-          return `###### ${block.content}`;
-        case "paragraph":
-          return block.content;
-        case "blockquote":
-          return `> ${block.content}`;
-        case "code":
-          return block.content;
-
-        case "ul":
-          return block.content;
-        case "ol":
-          return block.content;
-        case "task-list":
-          return block.content;
-        case "separator":
-          return "---";
-        case "image": {
-          const align = block.align || "left";
-          let imageMarkdown;
-
-          // If width or height is specified, use HTML img tag
-          if (block.width || block.height) {
-            const attrs = [`src="${block.content}"`];
-            if (block.alt) attrs.push(`alt="${block.alt}"`);
-            if (block.width) attrs.push(`width="${block.width}"`);
-            if (block.height) attrs.push(`height="${block.height}"`);
-            imageMarkdown = `<img ${attrs.join(" ")} />`;
-          } else {
-            imageMarkdown = `![${block.alt || ""}](${block.content})`;
-          }
-
-          // Wrap with alignment p tag if not left
-          if (align === "center") {
-            return `<p align="center">\n\n${imageMarkdown}\n\n</p>`;
-          } else if (align === "right") {
-            return `<p align="right">\n\n${imageMarkdown}\n\n</p>`;
-          }
-          return imageMarkdown;
-        }
-        case "link":
-          return `[${block.content}](${block.url || ""})`;
-        case "table":
-          return block.content;
-        case "shield-badge": {
-          const badges = block.badges || [];
-          const align = block.align || "left";
-
-          if (badges.length === 0) return "";
-
-          const badgesMarkdown = badges
-            .filter((badge) => {
-              if (badge.type === "custom") {
-                return badge.label && badge.message;
-              } else {
-                const githubBadges = [
-                  "stars",
-                  "forks",
-                  "issues",
-                  "license",
-                  "last-commit",
-                  "repo-size",
-                  "languages",
-                  "contributors",
-                  "pull-requests",
-                ];
-                const socialBadges = [
-                  "twitter",
-                  "youtube",
-                  "discord",
-                  "twitch",
-                  "instagram",
-                  "linkedin",
-                  "github-followers",
-                  "reddit",
-                ];
-                const devMetrics = [
-                  "npm-downloads",
-                  "npm-version",
-                  "pypi-downloads",
-                  "pypi-version",
-                  "codecov",
-                  "coveralls",
-                  "travis-ci",
-                  "github-actions",
-                  "docker-pulls",
-                  "docker-stars",
-                ];
-                const docPlatforms = [
-                  "gitbook",
-                  "notion",
-                  "confluence",
-                  "docusaurus",
-                  "mkdocs",
-                  "sphinx",
-                ];
-
-                const needsRepo =
-                  githubBadges.includes(badge.type) ||
-                  ["codecov", "coveralls", "travis-ci", "github-actions"].includes(badge.type);
-                const needsPackage =
-                  devMetrics.includes(badge.type) &&
-                  !["codecov", "coveralls", "travis-ci", "github-actions"].includes(badge.type);
-                const needsUsername = socialBadges.includes(badge.type);
-
-                return (
-                  (needsRepo && badge.username && badge.repo) ||
-                  (needsPackage && badge.package) ||
-                  (needsUsername && badge.username) ||
-                  (docPlatforms.includes(badge.type) && badge.label)
-                );
-              }
-            })
-            .map((badge) => {
-              const baseUrl = "https://img.shields.io";
-
-              if (badge.type === "custom") {
-                const label = (badge.label || "label").replace(/ /g, "_").replace(/-/g, "--");
-                const message = (badge.message || "message").replace(/ /g, "_").replace(/-/g, "--");
-                const color = badge.color || "blue";
-                let url = `${baseUrl}/badge/${encodeURIComponent(
-                  label
-                )}-${encodeURIComponent(message)}-${color}`;
-
-                const params = [];
-                if (badge.style && badge.style !== "flat") {
-                  params.push(`style=${badge.style}`);
-                }
-                if (badge.logo) {
-                  params.push(`logo=${encodeURIComponent(badge.logo)}`);
-                }
-
-                if (params.length > 0) {
-                  url += `?${params.join("&")}`;
-                }
-
-                return `![${badge.label}](${url})`;
-              } else {
-                // All other badge types
-                const { type, username, repo, label, package: pkg } = badge;
-
-                switch (type) {
-                  // GitHub badges
-                  case "stars":
-                    return `![${label}](${baseUrl}/github/stars/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "forks":
-                    return `![${label}](${baseUrl}/github/forks/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "issues":
-                    return `![${label}](${baseUrl}/github/issues/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "license":
-                    return `![${label}](${baseUrl}/github/license/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "last-commit":
-                    return `![${label}](${baseUrl}/github/last-commit/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "repo-size":
-                    return `![${label}](${baseUrl}/github/repo-size/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "languages":
-                    return `![${label}](${baseUrl}/github/languages/top/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "contributors":
-                    return `![${label}](${baseUrl}/github/contributors/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "pull-requests":
-                    return `![${label}](${baseUrl}/github/issues-pr/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-
-                  // Documentation platforms
-                  case "gitbook":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=GitBook&color=3884FF&logo=gitbook&logoColor=white&style=flat-square)`;
-                  case "notion":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=Notion&color=000000&logo=notion&logoColor=white&style=flat-square)`;
-                  case "confluence":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=Confluence&color=172B4D&logo=confluence&logoColor=white&style=flat-square)`;
-                  case "docusaurus":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=Docusaurus&color=2E8555&logo=docusaurus&logoColor=white&style=flat-square)`;
-                  case "mkdocs":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=MkDocs&color=000000&logo=markdown&logoColor=white&style=flat-square)`;
-                  case "sphinx":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=Sphinx&color=4B8B3B&logo=sphinx&logoColor=white&style=flat-square)`;
-
-                  // Social badges
-                  case "twitter":
-                    return `![${label}](${baseUrl}/twitter/follow/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=twitter&logoColor=white)`;
-                  case "youtube":
-                    return `![${label}](${baseUrl}/youtube/channel/subscribers/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=youtube&logoColor=red)`;
-                  case "discord":
-                    return `![${label}](${baseUrl}/discord/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=discord&logoColor=white)`;
-                  case "twitch":
-                    return `![${label}](${baseUrl}/twitch/status/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=twitch&logoColor=white)`;
-                  case "instagram":
-                    return `![${label}](${baseUrl}/instagram/followers/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=instagram&logoColor=white)`;
-                  case "linkedin":
-                    return `![${label}](${baseUrl}/linkedin/followers/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=linkedin&logoColor=white)`;
-                  case "github-followers":
-                    return `![${label}](${baseUrl}/github/followers/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "reddit":
-                    return `![${label}](${baseUrl}/reddit/user-karma/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=reddit&logoColor=white)`;
-
-                  // Dev metrics
-                  case "npm-downloads":
-                    return `![${label}](${baseUrl}/npm/dm/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=npm&logoColor=white)`;
-                  case "npm-version":
-                    return `![${label}](${baseUrl}/npm/v/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=npm&logoColor=white)`;
-                  case "pypi-downloads":
-                    return `![${label}](${baseUrl}/pypi/dm/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=pypi&logoColor=white)`;
-                  case "pypi-version":
-                    return `![${label}](${baseUrl}/pypi/v/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=pypi&logoColor=white)`;
-                  case "codecov":
-                    return `![${label}](${baseUrl}/codecov/c/github/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=codecov&logoColor=white)`;
-                  case "coveralls":
-                    return `![${label}](${baseUrl}/coveralls/github/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=coveralls&logoColor=white)`;
-                  case "travis-ci":
-                    return `![${label}](${baseUrl}/travis-ci/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=travis-ci&logoColor=white)`;
-                  case "github-actions":
-                    return `![${label}](${baseUrl}/github/workflows/status/${username}/${repo}/main?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github-actions&logoColor=white)`;
-                  case "docker-pulls":
-                    return `![${label}](${baseUrl}/docker/pulls/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=docker&logoColor=white)`;
-                  case "docker-stars":
-                    return `![${label}](${baseUrl}/docker/stars/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=docker&logoColor=white)`;
-
-                  default:
-                    return "";
-                }
-              }
-            })
-            .filter(Boolean)
-            .join(" ");
-
-          if (align === "center") {
-            return `<div align="center">\n\n${badgesMarkdown}\n\n</div>`;
-          } else if (align === "right") {
-            return `<div align="right">\n\n${badgesMarkdown}\n\n</div>`;
-          }
-          return badgesMarkdown;
-        }
-        case "skill-icons": {
-          const icons = block.icons || "js,html,css";
-          let url = `https://skillicons.dev/icons?i=${icons}`;
-          if (block.theme && block.theme !== "dark") {
-            url += `&theme=${block.theme}`;
-          }
-          if (block.perLine && block.perLine !== "15") {
-            url += `&perline=${block.perLine}`;
-          }
-          return `![Skill Icons](${url})`;
-        }
-        default:
-          return block.content;
-      }
-    })
-    .join("\n\n");
-};
 
 export default function Dashboard() {
   const { theme, setTheme } = useTheme();
@@ -522,20 +190,17 @@ export default function Dashboard() {
   }, [historyIndex, history]);
 
   const handleSave = useCallback(async () => {
-    // Check if user is logged in
     if (!user) {
       toast.error("Please log in to save your document");
       navigate("/login");
       return;
     }
 
-    // If blocks are empty, don't allow saving
     if (blocks.length === 0) {
       toast.error("Cannot save an empty document");
       return;
     }
 
-    // If we have an existing document, save directly without asking for title
     if (currentDocumentId && saveTitle) {
       setIsSaving(true);
       try {
@@ -555,7 +220,6 @@ export default function Dashboard() {
       return;
     }
 
-    // For new documents, auto-populate title from first heading if not already set
     if (!saveTitle) {
       const firstHeading = blocks.find(
         (block) => ["h1", "h2", "h3", "h4", "h5", "h6"].includes(block.type) && block.content.trim()
@@ -565,24 +229,18 @@ export default function Dashboard() {
       }
     }
 
-    // Show save dialog for new documents
     setShowSaveDialog(true);
   }, [user, navigate, blocks, saveTitle, currentDocumentId]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      // Detect Ctrl+Z (Windows) or Command+Z (Mac) for Undo
       if ((event.ctrlKey || event.metaKey) && event.key === "z" && !event.shiftKey) {
         event.preventDefault();
         handleUndo();
-      }
-      // Detect Ctrl+Y (Windows) or Command+Y (Mac) for Redo
-      else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
+      } else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
         event.preventDefault();
         handleRedo();
-      }
-      // Detect Ctrl+S (Windows) or Command+S (Mac) for Save
-      else if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+      } else if ((event.ctrlKey || event.metaKey) && event.key === "s") {
         event.preventDefault();
         handleSave();
       }
@@ -598,19 +256,35 @@ export default function Dashboard() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const handleExport = (format) => {
-    const markdown = blocksToMarkdown(blocks);
-    if (format === "md") {
-      const blob = new Blob([markdown], { type: "text/markdown" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "document.md";
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success("Markdown exported!");
-    } else {
-      toast.info(`${format.toUpperCase()} export coming soon!`);
+  const handleExport = async (format) => {
+    if (blocks.length === 0) {
+      toast.error("No content to export");
+      return;
+    }
+
+    const timestamp = new Date().toISOString().split("T")[0];
+    const filename = `markdrop-document-${timestamp}`;
+
+    try {
+      switch (format) {
+        case "md":
+          exportToMarkdown(blocks, `${filename}.md`);
+          toast.success("Markdown exported!");
+          break;
+        case "html":
+          exportToHTML(blocks, `${filename}.html`);
+          toast.success("HTML exported!");
+          break;
+        case "pdf":
+          await exportToPDF(blocks, `${filename}.pdf`);
+          toast.success("PDF exported!");
+          break;
+        default:
+          toast.error(`Unsupported format: ${format}`);
+      }
+    } catch (error) {
+      console.error(`Export error for ${format}:`, error);
+      toast.error(`Failed to export ${format.toUpperCase()}`);
     }
   };
 
@@ -655,7 +329,6 @@ export default function Dashboard() {
       toast.success("Document saved successfully!");
 
       setShowSaveDialog(false);
-      // Don't clear saveTitle anymore since we want to keep it for future updates
     } catch (error) {
       console.error("Save error:", error);
       toast.error("Failed to save document. Please try again.");
@@ -666,13 +339,11 @@ export default function Dashboard() {
 
   const handleSaveCancel = () => {
     setShowSaveDialog(false);
-    // Only clear title if it's a new document
     if (!currentDocumentId) {
       setSaveTitle("");
     }
   };
 
-  // Function to load a document (can be called from other components)
   const loadDocument = useCallback(
     (document) => {
       try {
@@ -691,7 +362,6 @@ export default function Dashboard() {
     [saveToHistory]
   );
 
-  // Expose loadDocument function globally for other components to use
   useEffect(() => {
     window.loadDocument = loadDocument;
     return () => {
@@ -727,7 +397,6 @@ export default function Dashboard() {
         });
         i++;
       } else if (line.match(/^<img\s+[^>]*>/)) {
-        // Parse img tag with attributes
         const srcMatch = line.match(/src=["']([^"']+)["']/);
         const altMatch = line.match(/alt=["']([^"']+)["']/);
         const widthMatch = line.match(/width=["']([^"']+)["']/);
@@ -814,20 +483,17 @@ export default function Dashboard() {
     setActiveId(event.active.id);
   };
 
-  const handleDragOver = () => {
-    // Just for visual feedback - don't update state here
-  };
+  // biome-ignore lint/suspicious/noEmptyBlockStatements: for responsiveness
+  const handleDragOver = () => {};
 
   const handleDragEnd = (event) => {
     const { over, active } = event;
     setActiveId(null);
 
-    // If no drop target or dropped back on sidebar, do nothing
     if (!over || over.id === "sidebar") {
       return;
     }
 
-    // Handle reordering existing blocks
     if (over && active.id !== over.id && blocks.find((b) => b.id === active.id)) {
       const oldIndex = blocks.findIndex((b) => b.id === active.id);
       const newIndex = blocks.findIndex((b) => b.id === over.id);
@@ -840,7 +506,6 @@ export default function Dashboard() {
       return;
     }
 
-    // Handle adding new blocks from sidebar
     if (over) {
       const isExistingBlock = blocks.find((b) => b.id === active.id);
       if (!isExistingBlock) {
@@ -906,11 +571,9 @@ export default function Dashboard() {
         };
 
         let newBlocks;
-        // If dropped on editor-dropzone or no specific block, add to end
         if (over.id === "editor-dropzone" || !blocks.find((b) => b.id === over.id)) {
           newBlocks = [...blocks, newBlock];
         } else {
-          // Insert at the position of the block it was dropped on
           const overIndex = blocks.findIndex((b) => b.id === over.id);
           newBlocks = [...blocks.slice(0, overIndex + 1), newBlock, ...blocks.slice(overIndex + 1)];
         }
@@ -949,14 +612,12 @@ export default function Dashboard() {
       content: "",
     };
 
-    // Ensure the block has a unique ID
     if (!newBlock.id) {
       newBlock.id = Date.now().toString();
     }
 
     let newBlocks;
     if (afterBlockId) {
-      // Insert after the specified block
       const afterIndex = blocks.findIndex((b) => b.id === afterBlockId);
       if (afterIndex !== -1) {
         newBlocks = [...blocks.slice(0, afterIndex + 1), newBlock, ...blocks.slice(afterIndex + 1)];
@@ -964,7 +625,6 @@ export default function Dashboard() {
         newBlocks = [...blocks, newBlock];
       }
     } else {
-      // Add to the end
       newBlocks = [...blocks, newBlock];
     }
 
@@ -982,7 +642,6 @@ export default function Dashboard() {
 
   const stats = getStats();
 
-  // Check if there are unsaved changes
   const hasUnsavedChanges = () => {
     const currentContent = JSON.stringify(blocks);
     return currentContent !== lastSavedContent && blocks.length > 0;
@@ -1002,12 +661,10 @@ export default function Dashboard() {
 
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center justify-between px-2 sm:px-4 border-b">
-            {/* Left: Sidebar trigger and stats */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="h-4 hidden sm:block" />
 
-              {/* Stats - responsive visibility */}
               <div className="hidden lg:flex items-center gap-3 text-sm text-muted-foreground">
                 <span>
                   <span className="font-semibold text-foreground">{stats.readingTime}</span> min
@@ -1022,7 +679,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Center: Tabs */}
             <div className="flex-1 flex justify-center px-2">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-3 max-w-[280px] sm:max-w-[300px] bg-muted/50 p-1">
@@ -1048,9 +704,7 @@ export default function Dashboard() {
               </Tabs>
             </div>
 
-            {/* Right: Actions */}
             <div className="flex items-center gap-1 sm:gap-2">
-              {/* Quick actions - visible on larger screens */}
               <div className="hidden xl:flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -1075,7 +729,6 @@ export default function Dashboard() {
                 <Separator orientation="vertical" className="h-4" />
               </div>
 
-              {/* Import button - visible on large+ screens */}
               <Button
                 variant="outline"
                 size="sm"
@@ -1086,7 +739,6 @@ export default function Dashboard() {
                 <span className="hidden lg:inline">Import</span>
               </Button>
 
-              {/* Save button - visible on medium+ screens */}
               <Button
                 variant="outline"
                 size="sm"
@@ -1100,7 +752,6 @@ export default function Dashboard() {
                 )}
               </Button>
 
-              {/* Actions dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="px-2">
@@ -1108,8 +759,7 @@ export default function Dashboard() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  {/* Document Stats - Mobile/Tablet Only */}
-                  <div className="lg:hidden px-3 py-2 text-xs text-muted-foreground bg-muted/50 rounded-sm mx-2 mb-2">
+                  <div className="lg:hidden px-2 py-2 text-xs text-muted-foreground bg-muted/50 rounded-sm mb-2">
                     <div className="font-medium mb-1">Document Stats</div>
                     <div className="space-y-0.5">
                       <div>
@@ -1119,23 +769,19 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* File Operations */}
                   <DropdownMenuItem onClick={handleImport} className="lg:hidden">
                     <FileUp className="w-4 h-4 mr-2" />
                     Import File
                   </DropdownMenuItem>
 
                   <DropdownMenuItem onClick={handleSave} className="md:hidden">
-                    <div className="flex items-center w-full">
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Document
-                      {hasUnsavedChanges() && (
-                        <div className="ml-auto w-2 h-2 bg-orange-500 rounded-full" />
-                      )}
-                    </div>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Document
+                    {hasUnsavedChanges() && (
+                      <div className="ml-auto w-2 h-2 bg-orange-500 rounded-full" />
+                    )}
                   </DropdownMenuItem>
 
-                  {/* Edit Actions - Mobile/Tablet Only */}
                   <div className="xl:hidden">
                     {(historyIndex > 0 || historyIndex < history.length - 1) && (
                       <>
@@ -1155,7 +801,6 @@ export default function Dashboard() {
                     )}
                   </div>
 
-                  {/* Export Section */}
                   <DropdownMenuItem
                     onClick={() => handleExport("md")}
                     disabled={blocks.length === 0}
@@ -1182,7 +827,6 @@ export default function Dashboard() {
 
                   <DropdownMenuSeparator />
 
-                  {/* Appearance */}
                   <DropdownMenuItem onClick={toggleTheme}>
                     {theme === "dark" ? (
                       <Sun className="w-4 h-4 mr-2" />
@@ -1194,7 +838,6 @@ export default function Dashboard() {
 
                   <DropdownMenuSeparator />
 
-                  {/* Danger Zone */}
                   <DropdownMenuItem
                     onClick={handleReset}
                     disabled={blocks.length === 0}
@@ -1208,7 +851,6 @@ export default function Dashboard() {
             </div>
           </header>
 
-          {/* Main Content */}
           <div className="flex flex-1 flex-col p-4 gap-4">
             <div className="flex-1 w-full max-w-none">
               <DashboardHome
@@ -1223,7 +865,6 @@ export default function Dashboard() {
           </div>
         </SidebarInset>
 
-        {/* Save Dialog */}
         <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
           <DialogContent>
             <DialogHeader>
