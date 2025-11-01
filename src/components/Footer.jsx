@@ -1,4 +1,4 @@
-import { FavouriteIcon, GithubIcon, Mail01Icon, NewTwitterIcon } from "hugeicons-react";
+import { GithubIcon, Mail01Icon, NewTwitterIcon } from "hugeicons-react";
 import { Link } from "react-router-dom";
 import markdropIconDark from "@/assets/markdrop_icon_dark.svg";
 import markdropIconLight from "@/assets/markdrop_icon_light.svg";

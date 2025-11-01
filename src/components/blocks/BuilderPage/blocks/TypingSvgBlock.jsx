@@ -59,7 +59,7 @@ const TypingSvgBlock = memo(function TypingSvgBlock({ block, onUpdate }) {
     (property, value) => {
       onUpdate(block.id, { ...block, [property]: value });
     },
-    [block.id, onUpdate]
+    [block.id, onUpdate, block]
   );
 
   const previewUrl = useMemo(() => {

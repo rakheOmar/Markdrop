@@ -483,27 +483,50 @@ export default function Preview({ blocks = [] }) {
                         {children}
                       </code>
                     ) : (
-                      <code className={`block bg-transparent p-0 text-sm font-mono whitespace-pre-wrap ${className || ''}`} {...props}>
+                      <code
+                        className={`block bg-transparent p-0 text-sm font-mono whitespace-pre-wrap ${className || ""}`}
+                        {...props}
+                      >
                         {children}
                       </code>
                     ),
                   pre: ({ children, ...props }) => {
-                    // Try to detect language from child code element's className (e.g., language-js)
-                    let lang = '';
-                    try {
-                      const child = Array.isArray(children) ? children[0] : children;
-                      lang = child?.props?.className?.match(/language-([a-z0-9+#]+)/i)?.[1] || '';
-                    } catch {}
-                    const labelMap = { js: 'JS', javascript: 'JS', ts: 'TS', typescript: 'TS', html: 'HTML5', css: 'CSS' };
-                    const label = labelMap[lang?.toLowerCase?.()] || (lang ? lang.toUpperCase() : '');
-                    const colorMap = { js: 'bg-yellow-400 text-black', javascript: 'bg-yellow-400 text-black', html: 'bg-orange-500 text-white', css: 'bg-blue-500 text-white', ts: 'bg-blue-600 text-white', typescript: 'bg-blue-600 text-white' };
-                    const color = colorMap[lang?.toLowerCase?.()] || 'bg-muted text-muted-foreground';
+                    let lang = "";
+                    const child = Array.isArray(children) ? children[0] : children;
+                    lang = child?.props?.className?.match(/language-([a-z0-9+#]+)/i)?.[1] || "";
+                    const labelMap = {
+                      js: "JS",
+                      javascript: "JS",
+                      ts: "TS",
+                      typescript: "TS",
+                      html: "HTML5",
+                      css: "CSS",
+                    };
+                    const label =
+                      labelMap[lang?.toLowerCase?.()] || (lang ? lang.toUpperCase() : "");
+                    const colorMap = {
+                      js: "bg-yellow-400 text-black",
+                      javascript: "bg-yellow-400 text-black",
+                      html: "bg-orange-500 text-white",
+                      css: "bg-blue-500 text-white",
+                      ts: "bg-blue-600 text-white",
+                      typescript: "bg-blue-600 text-white",
+                    };
+                    const color =
+                      colorMap[lang?.toLowerCase?.()] || "bg-muted text-muted-foreground";
                     return (
                       <div className="relative my-4">
                         {label ? (
-                          <span className={`absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded ${color}`}>{label}</span>
+                          <span
+                            className={`absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded ${color}`}
+                          >
+                            {label}
+                          </span>
                         ) : null}
-                        <pre className="bg-muted p-4 rounded-md overflow-x-auto text-sm font-mono whitespace-pre-wrap" {...props}>
+                        <pre
+                          className="bg-muted p-4 rounded-md overflow-x-auto text-sm font-mono whitespace-pre-wrap"
+                          {...props}
+                        >
                           {children}
                         </pre>
                       </div>

@@ -1,11 +1,7 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import {
-  BarChart3,
-  CheckSquare,
   Code2,
   CreditCard,
-  FileText,
-  Github,
   Heading1,
   Heading2,
   Heading3,
@@ -24,7 +20,6 @@ import {
   Table,
   Type,
   List as UnorderedList,
-  Users,
   Video,
 } from "lucide-react";
 import { useEffect, useState } from "react";
