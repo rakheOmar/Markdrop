@@ -11,14 +11,14 @@ export function PWAStatus() {
       setIsInstalled(true);
     }
 
-    // Listen for the beforeinstallprompt event
+    // Listen for beforeinstallprompt
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setIsInstallable(true);
     };
 
-    // Listen for app installed event
+    // Handle when app gets installed
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setIsInstallable(false);
@@ -46,25 +46,18 @@ export function PWAStatus() {
     }
   };
 
-  // Don't show anything if already installed
-  if (isInstalled) {
-    return null;
-  }
+  if (isInstalled) return null;
 
-  // Show install button if installable
   if (isInstallable) {
     return (
-      <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-        <div className="flex items-center gap-2">
-          <span className="text-sm">Install Markdrop</span>
-          <button
-            onClick={handleInstallClick}
-            className="bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm transition-colors"
-          >
-            Install
-          </button>
-        </div>
-      </div>
+      <button
+        onClick={handleInstallClick}
+        className="hidden sm:flex fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-700 
+                   text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm 
+                   transition-colors duration-200 ease-in-out cursor-pointer"
+      >
+        Install Markdrop
+      </button>
     );
   }
 
@@ -85,10 +78,7 @@ export function SWStatus() {
     }
   }, []);
 
-  // Only show in development
-  if (process.env.NODE_ENV !== "development") {
-    return null;
-  }
+  if (process.env.NODE_ENV !== "development") return null;
 
   const statusColors = {
     checking: "bg-yellow-500",
