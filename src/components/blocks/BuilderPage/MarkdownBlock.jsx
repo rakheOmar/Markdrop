@@ -5,6 +5,7 @@ import { memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import BlockquoteBlock from "./blocks/BlockquoteBlock";
 import CodeBlock from "./blocks/CodeBlock";
+import GithubProfileCardsBlock from "./blocks/GithubProfileCardsBlock";
 import HeadingBlock from "./blocks/HeadingBlock";
 
 import ImageBlock from "./blocks/ImageBlock";
@@ -15,6 +16,7 @@ import SeparatorBlock from "./blocks/SeparatorBlock";
 import ShieldBadgeBlock from "./blocks/ShieldBadgeBlock";
 import SkillIconsBlock from "./blocks/SkillIconsBlock";
 import TableBlock from "./blocks/TableBlock";
+import TypingSvgBlock from "./blocks/TypingSvgBlock";
 import VideoBlock from "./blocks/VideoBlock";
 
 const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, onBlockAdd }) {
@@ -71,6 +73,10 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
         return <ShieldBadgeBlock block={block} onUpdate={onUpdate} />;
       case "skill-icons":
         return <SkillIconsBlock block={block} onUpdate={onUpdate} />;
+      case "typing-svg":
+        return <TypingSvgBlock block={block} onUpdate={onUpdate} />;
+      case "github-profile-cards":
+        return <GithubProfileCardsBlock block={block} onUpdate={onUpdate} />;
       default:
         if (listTypes.includes(block.type)) {
           return <ListBlock block={block} onUpdate={onUpdate} />;

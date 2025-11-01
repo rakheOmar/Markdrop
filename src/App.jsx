@@ -4,7 +4,6 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 // COMPONENTS
 import { PWAStatus, SWStatus } from "@/components/PWAStatus";
-import AboutPage from "@/pages/AboutPage";
 import Builder from "@/pages/Builder";
 import ContactPage from "@/pages/ContactUs";
 // PAGES
@@ -13,6 +12,7 @@ import Login from "@/pages/Login";
 import NotFoundPage from "@/pages/NotFound";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import SignUp from "@/pages/SignUp";
+import Templates from "@/pages/Templates";
 import TermsOfServices from "@/pages/TermsOfServices";
 import UserProfile from "@/pages/UserProfile";
 
@@ -32,7 +32,7 @@ function App() {
         <Routes>
           {/* UNPROTECTED */}
           <Route path="/" element={<Home />} />
-          <Route path="/about" element={<AboutPage />} />
+          <Route path="/templates" element={<Templates />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/builder" element={<Builder />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

@@ -13,7 +13,7 @@ export default defineConfig({
       hostname: "https://markdrop.vercel.app",
       dynamicRoutes: [
         "/",
-        "/about",
+        "/templates",
         "/contact",
         "/builder",
         "/login",

@@ -58,6 +58,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "color": "^5.0.2",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "hugeicons-react": "^0.3.0",
@@ -66,6 +67,7 @@
     "motion": "^12.23.24",
     "next-themes": "^0.4.6",
     "ogl": "^1.0.11",
+    "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-day-picker": "^9.11.1",
     "react-dom": "^19.2.0",
@@ -90,6 +92,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.7",
+    "@types/color": "^4.2.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/react-syntax-highlighter": "^15.5.13",
