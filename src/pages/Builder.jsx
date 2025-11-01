@@ -70,337 +70,9 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { exportToPDF, exportToHTML, exportToMarkdown, blocksToMarkdown } from "@/lib/exportUtils";
 import { useAuth } from "@/context/AuthContext";
 import { createMarkdown, updateMarkdown } from "@/lib/storage";
-
-const blocksToMarkdown = (blocks) => {
-  return blocks
-    .map((block) => {
-      switch (block.type) {
-        case "h1":
-          return `# ${block.content}`;
-        case "h2":
-          return `## ${block.content}`;
-        case "h3":
-          return `### ${block.content}`;
-        case "h4":
-          return `#### ${block.content}`;
-        case "h5":
-          return `##### ${block.content}`;
-        case "h6":
-          return `###### ${block.content}`;
-        case "paragraph":
-          return block.content;
-        case "blockquote":
-          return `> ${block.content}`;
-        case "code":
-          return block.content;
-
-        case "ul":
-          return block.content;
-        case "ol":
-          return block.content;
-        case "task-list":
-          return block.content;
-        case "separator":
-          return "---";
-        case "image": {
-          const align = block.align || "left";
-          let imageMarkdown;
-
-          // If width or height is specified, use HTML img tag
-          if (block.width || block.height) {
-            const attrs = [`src="${block.content}"`];
-            if (block.alt) attrs.push(`alt="${block.alt}"`);
-            if (block.width) attrs.push(`width="${block.width}"`);
-            if (block.height) attrs.push(`height="${block.height}"`);
-            imageMarkdown = `<img ${attrs.join(" ")} />`;
-          } else {
-            imageMarkdown = `![${block.alt || ""}](${block.content})`;
-          }
-
-          // Wrap with alignment p tag if not left
-          if (align === "center") {
-            return `<p align="center">\n\n${imageMarkdown}\n\n</p>`;
-          } else if (align === "right") {
-            return `<p align="right">\n\n${imageMarkdown}\n\n</p>`;
-          }
-          return imageMarkdown;
-        }
-        case "link":
-          return `[${block.content}](${block.url || ""})`;
-        case "table":
-          return block.content;
-        case "shield-badge": {
-          const badges = block.badges || [];
-          const align = block.align || "left";
-
-          if (badges.length === 0) return "";
-
-          const badgesMarkdown = badges
-            .filter((badge) => {
-              if (badge.type === "custom") {
-                return badge.label && badge.message;
-              } else {
-                const githubBadges = [
-                  "stars",
-                  "forks",
-                  "issues",
-                  "license",
-                  "last-commit",
-                  "repo-size",
-                  "languages",
-                  "contributors",
-                  "pull-requests",
-                ];
-                const socialBadges = [
-                  "twitter",
-                  "youtube",
-                  "discord",
-                  "twitch",
-                  "instagram",
-                  "linkedin",
-                  "github-followers",
-                  "reddit",
-                ];
-                const devMetrics = [
-                  "npm-downloads",
-                  "npm-version",
-                  "pypi-downloads",
-                  "pypi-version",
-                  "codecov",
-                  "coveralls",
-                  "travis-ci",
-                  "github-actions",
-                  "docker-pulls",
-                  "docker-stars",
-                ];
-                const docPlatforms = [
-                  "gitbook",
-                  "notion",
-                  "confluence",
-                  "docusaurus",
-                  "mkdocs",
-                  "sphinx",
-                ];
-
-                const needsRepo =
-                  githubBadges.includes(badge.type) ||
-                  ["codecov", "coveralls", "travis-ci", "github-actions"].includes(badge.type);
-                const needsPackage =
-                  devMetrics.includes(badge.type) &&
-                  !["codecov", "coveralls", "travis-ci", "github-actions"].includes(badge.type);
-                const needsUsername = socialBadges.includes(badge.type);
-
-                return (
-                  (needsRepo && badge.username && badge.repo) ||
-                  (needsPackage && badge.package) ||
-                  (needsUsername && badge.username) ||
-                  (docPlatforms.includes(badge.type) && badge.label)
-                );
-              }
-            })
-            .map((badge) => {
-              const baseUrl = "https://img.shields.io";
-
-              if (badge.type === "custom") {
-                const label = (badge.label || "label").replace(/ /g, "_").replace(/-/g, "--");
-                const message = (badge.message || "message").replace(/ /g, "_").replace(/-/g, "--");
-                const color = badge.color || "blue";
-                let url = `${baseUrl}/badge/${encodeURIComponent(
-                  label
-                )}-${encodeURIComponent(message)}-${color}`;
-
-                const params = [];
-                if (badge.style && badge.style !== "flat") {
-                  params.push(`style=${badge.style}`);
-                }
-                if (badge.logo) {
-                  params.push(`logo=${encodeURIComponent(badge.logo)}`);
-                }
-
-                if (params.length > 0) {
-                  url += `?${params.join("&")}`;
-                }
-
-                return `![${badge.label}](${url})`;
-              } else {
-                // All other badge types
-                const { type, username, repo, label, package: pkg } = badge;
-
-                switch (type) {
-                  // GitHub badges
-                  case "stars":
-                    return `![${label}](${baseUrl}/github/stars/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "forks":
-                    return `![${label}](${baseUrl}/github/forks/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "issues":
-                    return `![${label}](${baseUrl}/github/issues/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "license":
-                    return `![${label}](${baseUrl}/github/license/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "last-commit":
-                    return `![${label}](${baseUrl}/github/last-commit/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "repo-size":
-                    return `![${label}](${baseUrl}/github/repo-size/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "languages":
-                    return `![${label}](${baseUrl}/github/languages/top/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "contributors":
-                    return `![${label}](${baseUrl}/github/contributors/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "pull-requests":
-                    return `![${label}](${baseUrl}/github/issues-pr/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-
-                  // Documentation platforms
-                  case "gitbook":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=GitBook&color=3884FF&logo=gitbook&logoColor=white&style=flat-square)`;
-                  case "notion":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=Notion&color=000000&logo=notion&logoColor=white&style=flat-square)`;
-                  case "confluence":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=Confluence&color=172B4D&logo=confluence&logoColor=white&style=flat-square)`;
-                  case "docusaurus":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=Docusaurus&color=2E8555&logo=docusaurus&logoColor=white&style=flat-square)`;
-                  case "mkdocs":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=MkDocs&color=000000&logo=markdown&logoColor=white&style=flat-square)`;
-                  case "sphinx":
-                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
-                      label
-                    )}&message=Sphinx&color=4B8B3B&logo=sphinx&logoColor=white&style=flat-square)`;
-
-                  // Social badges
-                  case "twitter":
-                    return `![${label}](${baseUrl}/twitter/follow/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=twitter&logoColor=white)`;
-                  case "youtube":
-                    return `![${label}](${baseUrl}/youtube/channel/subscribers/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=youtube&logoColor=red)`;
-                  case "discord":
-                    return `![${label}](${baseUrl}/discord/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=discord&logoColor=white)`;
-                  case "twitch":
-                    return `![${label}](${baseUrl}/twitch/status/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=twitch&logoColor=white)`;
-                  case "instagram":
-                    return `![${label}](${baseUrl}/instagram/followers/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=instagram&logoColor=white)`;
-                  case "linkedin":
-                    return `![${label}](${baseUrl}/linkedin/followers/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=linkedin&logoColor=white)`;
-                  case "github-followers":
-                    return `![${label}](${baseUrl}/github/followers/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github&logoColor=white)`;
-                  case "reddit":
-                    return `![${label}](${baseUrl}/reddit/user-karma/${username}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=reddit&logoColor=white)`;
-
-                  // Dev metrics
-                  case "npm-downloads":
-                    return `![${label}](${baseUrl}/npm/dm/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=npm&logoColor=white)`;
-                  case "npm-version":
-                    return `![${label}](${baseUrl}/npm/v/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=npm&logoColor=white)`;
-                  case "pypi-downloads":
-                    return `![${label}](${baseUrl}/pypi/dm/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=pypi&logoColor=white)`;
-                  case "pypi-version":
-                    return `![${label}](${baseUrl}/pypi/v/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=pypi&logoColor=white)`;
-                  case "codecov":
-                    return `![${label}](${baseUrl}/codecov/c/github/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=codecov&logoColor=white)`;
-                  case "coveralls":
-                    return `![${label}](${baseUrl}/coveralls/github/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=coveralls&logoColor=white)`;
-                  case "travis-ci":
-                    return `![${label}](${baseUrl}/travis-ci/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=travis-ci&logoColor=white)`;
-                  case "github-actions":
-                    return `![${label}](${baseUrl}/github/workflows/status/${username}/${repo}/main?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=github-actions&logoColor=white)`;
-                  case "docker-pulls":
-                    return `![${label}](${baseUrl}/docker/pulls/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=docker&logoColor=white)`;
-                  case "docker-stars":
-                    return `![${label}](${baseUrl}/docker/stars/${pkg}?style=flat-square&label=${encodeURIComponent(
-                      label
-                    )}&logo=docker&logoColor=white)`;
-
-                  default:
-                    return "";
-                }
-              }
-            })
-            .filter(Boolean)
-            .join(" ");
-
-          if (align === "center") {
-            return `<div align="center">\n\n${badgesMarkdown}\n\n</div>`;
-          } else if (align === "right") {
-            return `<div align="right">\n\n${badgesMarkdown}\n\n</div>`;
-          }
-          return badgesMarkdown;
-        }
-        case "skill-icons": {
-          const icons = block.icons || "js,html,css";
-          let url = `https://skillicons.dev/icons?i=${icons}`;
-          if (block.theme && block.theme !== "dark") {
-            url += `&theme=${block.theme}`;
-          }
-          if (block.perLine && block.perLine !== "15") {
-            url += `&perline=${block.perLine}`;
-          }
-          return `![Skill Icons](${url})`;
-        }
-        default:
-          return block.content;
-      }
-    })
-    .join("\n\n");
-};
 
 export default function Dashboard() {
   const { theme, setTheme } = useTheme();
@@ -598,19 +270,45 @@ export default function Dashboard() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const handleExport = (format) => {
-    const markdown = blocksToMarkdown(blocks);
-    if (format === "md") {
-      const blob = new Blob([markdown], { type: "text/markdown" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "document.md";
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success("Markdown exported!");
-    } else {
-      toast.info(`${format.toUpperCase()} export coming soon!`);
+  const handleExport = async (format) => {
+    if (blocks.length === 0) {
+      toast.error("No content to export");
+      return;
+    }
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `markdrop-document-${timestamp}`;
+
+    try {
+      switch (format) {
+        case "md":
+          exportToMarkdown(blocks, `${filename}.md`);
+          toast.success("Markdown exported!");
+          break;
+        case "html":
+          exportToHTML(blocks, `${filename}.html`);
+          toast.success("HTML exported!");
+          break;
+        case "pdf":
+          await exportToPDF(blocks, `${filename}.pdf`);
+          toast.success("PDF exported!");
+          break;
+        default:
+          toast.error(`Unsupported format: ${format}`);
+      }
+    } catch (error) {
+      console.error(`Export error for ${format}:`, error);
+      toast.error(`Failed to export ${format.toUpperCase()}`);
+    }
+  };
+
+  const handleCopyMarkdown = async () => {
+    try {
+      const markdown = blocksToMarkdown(blocks);
+      await navigator.clipboard.writeText(markdown);
+      toast.success("Markdown copied to clipboard!");
+    } catch (error) {
+      toast.error("Failed to copy to clipboard");
     }
   };
 
@@ -1099,6 +797,35 @@ export default function Dashboard() {
                   <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full" />
                 )}
               </Button>
+
+              {/* Export dropdown - visible on large+ screens */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={blocks.length === 0}
+                    className="hidden lg:flex gap-1.5"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    <span className="hidden lg:inline">Export</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => handleExport("md")}>
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export as Markdown
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport("pdf")}>
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export as PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport("html")}>
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export as HTML
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {/* Actions dropdown */}
               <DropdownMenu>
