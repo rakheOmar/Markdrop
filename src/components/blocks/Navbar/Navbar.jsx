@@ -1,4 +1,16 @@
-import { Home, Info, LogIn, LogOut, Menu, Moon, Sun, User, UserPlus, Wrench } from "lucide-react";
+import {
+  FileText,
+  Home,
+  Info,
+  LogIn,
+  LogOut,
+  Menu,
+  Moon,
+  Sun,
+  User,
+  UserPlus,
+  Wrench,
+} from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import markdropLogoDark from "@/assets/markdrop_logo_dark.svg";
@@ -60,7 +72,7 @@ export default function Navbar() {
       case "/builder":
         return <Wrench className="h-4 w-4 mr-2" />;
       case "/templates":
-        return <Info className="h-4 w-4 mr-2" />;
+        return <FileText className="h-4 w-4 mr-2" />;
       case "/about":
         return <Info className="h-4 w-4 mr-2" />;
       default:

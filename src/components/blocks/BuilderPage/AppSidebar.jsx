@@ -37,6 +37,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 function DraggableItem({ id, title, icon: Icon, isCollapsed, isMobile, onDoubleClick }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -53,7 +54,7 @@ function DraggableItem({ id, title, icon: Icon, isCollapsed, isMobile, onDoubleC
     onDoubleClick(id);
   };
 
-  return (
+  const itemContent = (
     <div
       ref={setNodeRef}
       {...listeners}
@@ -63,12 +64,26 @@ function DraggableItem({ id, title, icon: Icon, isCollapsed, isMobile, onDoubleC
       style={{
         opacity: isDragging ? 0.5 : 1,
       }}
-      title={showText ? `Drag or double-click to add ${title}` : `Double-click to add ${title}`}
     >
       <Icon className="w-4 h-4 shrink-0 text-muted-foreground" />
       {showText && <span className="text-sm">{title}</span>}
     </div>
   );
+
+  // If collapsed (showing only icons), wrap with tooltip
+  if (!showText) {
+    return (
+      <Tooltip delayDuration={200}>
+        <TooltipTrigger asChild>{itemContent}</TooltipTrigger>
+        <TooltipContent side="right" className="text-xs">
+          <p>{title}</p>
+          <p className="text-muted-foreground text-[10px]">Drag or double-click to add</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return itemContent;
 }
 
 export default function AppSidebar({ onBlockAdd, ...props }) {
@@ -240,35 +255,37 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
 
       <SidebarContent>
         <ScrollArea className="h-full">
-          <div className="space-y-4 py-2">
-            {Object.entries(data).map(([section, items], i, arr) => (
-              <div key={section}>
-                {showFullContent && (
-                  <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase">
-                    {section}
-                  </div>
-                )}
+          <TooltipProvider>
+            <div className="space-y-4 py-2">
+              {Object.entries(data).map(([section, items], i, arr) => (
+                <div key={section}>
+                  {showFullContent && (
+                    <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase">
+                      {section}
+                    </div>
+                  )}
 
-                {items.map((item) => (
-                  <DraggableItem
-                    key={item.key}
-                    id={item.key}
-                    title={item.title}
-                    icon={item.icon}
-                    isCollapsed={isCollapsed}
-                    isMobile={isMobile}
-                    onDoubleClick={handleDoubleClickAdd}
-                  />
-                ))}
+                  {items.map((item) => (
+                    <DraggableItem
+                      key={item.key}
+                      id={item.key}
+                      title={item.title}
+                      icon={item.icon}
+                      isCollapsed={isCollapsed}
+                      isMobile={isMobile}
+                      onDoubleClick={handleDoubleClickAdd}
+                    />
+                  ))}
 
-                {!showFullContent && i < arr.length - 1 && (
-                  <div className="px-3">
-                    <Separator className="my-2 opacity-40" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  {!showFullContent && i < arr.length - 1 && (
+                    <div className="px-3">
+                      <Separator className="my-2 opacity-40" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </TooltipProvider>
         </ScrollArea>
       </SidebarContent>
 

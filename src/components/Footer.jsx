@@ -1,4 +1,5 @@
 import { GithubIcon, Mail01Icon, NewTwitterIcon } from "hugeicons-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import markdropIconDark from "@/assets/markdrop_icon_dark.svg";
 import markdropIconLight from "@/assets/markdrop_icon_light.svg";
@@ -6,6 +7,35 @@ import { useTheme } from "@/components/ThemeProvider";
 
 export default function Footer() {
   const { theme } = useTheme();
+  const [lastCommitDate, setLastCommitDate] = useState("Loading...");
+
+  useEffect(() => {
+    const fetchLastCommit = async () => {
+      try {
+        const response = await fetch(
+          "https://api.github.com/repos/rakheOmar/Markdrop/commits/main"
+        );
+        const data = await response.json();
+
+        if (data.commit && data.commit.author && data.commit.author.date) {
+          const date = new Date(data.commit.author.date);
+          const formattedDate = date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+          setLastCommitDate(formattedDate);
+        } else {
+          setLastCommitDate("October 30, 2025");
+        }
+      } catch (error) {
+        console.error("Failed to fetch last commit date:", error);
+        setLastCommitDate("October 30, 2025");
+      }
+    };
+
+    fetchLastCommit();
+  }, []);
 
   return (
     <>
@@ -78,7 +108,7 @@ export default function Footer() {
 
       <div className="border-l border-t border-[#cecece] dark:border-[#16181d] relative lg:block hidden">
         <span className="absolute bottom-1 left-1 text-[10px] text-[#6b7280] dark:text-[#9ca3af] font-mono">
-          Last updated on: October 30, 2025
+          Last updated on: {lastCommitDate}
         </span>
       </div>
     </>

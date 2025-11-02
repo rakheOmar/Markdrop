@@ -97,18 +97,16 @@ export function SWStatus() {
     "not-supported": "bg-gray-500",
   };
 
-  const statusTexts = {
-    checking: "SW: Checking...",
-    ready: "SW: Ready",
-    error: "SW: Error",
-    "not-supported": "SW: Not Supported",
+  const statusTitles = {
+    checking: "Service Worker: Checking...",
+    ready: "Service Worker: Ready",
+    error: "Service Worker: Error",
+    "not-supported": "Service Worker: Not Supported",
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50">
-      <div className={`${statusColors[swStatus]} text-white px-2 py-1 rounded text-xs`}>
-        {statusTexts[swStatus]}
-      </div>
+    <div className="fixed bottom-4 right-4 z-50" title={statusTitles[swStatus]}>
+      <div className={`${statusColors[swStatus]} w-4 h-4 rounded-full`} />
     </div>
   );
 }
