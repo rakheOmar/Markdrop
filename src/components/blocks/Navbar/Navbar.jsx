@@ -61,6 +61,8 @@ export default function Navbar() {
         return <Wrench className="h-4 w-4 mr-2" />;
       case "/templates":
         return <Info className="h-4 w-4 mr-2" />;
+      case "/about":
+        return <Info className="h-4 w-4 mr-2" />;
       default:
         return null;
     }

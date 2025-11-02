@@ -22,7 +22,7 @@
 ## Demo
 
 <p align="center">
-  <img width="98%" alt="MarkDrop Demo" src="https://github.com/user-attachments/assets/c3056dad-7bd8-4ddb-9274-b12df6fe6119" />
+  <img width="98%" alt="Markdrop Demo" src="https://github.com/user-attachments/assets/c3056dad-7bd8-4ddb-9274-b12df6fe6119" />
 </p>
 
 #### Builder Preview

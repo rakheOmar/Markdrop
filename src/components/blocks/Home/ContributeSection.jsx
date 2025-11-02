@@ -15,7 +15,7 @@ export default function ContributeSection() {
               Join the Community
             </h2>
             <p className="text-sm sm:text-base md:text-lg text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              Help make MarkDrop better for everyone. Contribute code, report bugs, or suggest new
+              Help make Markdrop better for everyone. Contribute code, report bugs, or suggest new
               features on GitHub.
             </p>
           </div>

@@ -15,6 +15,7 @@ import SignUp from "@/pages/SignUp";
 import Templates from "@/pages/Templates";
 import TermsOfServices from "@/pages/TermsOfServices";
 import UserProfile from "@/pages/UserProfile";
+import About from "@/pages/AboutPage";
 
 const Layout = ({ children }) => {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/builder/:id" element={<Builder />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-services" element={<TermsOfServices />} />
+          <Route path="/about" element={<About />} />
           <Route path="*" element={<NotFoundPage />} />
           {/* AUTH */}
           <Route path="/login" element={<Login />} />

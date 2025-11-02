@@ -17,7 +17,7 @@ function Content() {
           <section className="space-y-6">
             <h2 className="text-3xl font-bold text-black dark:text-white">Introduction</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              MarkDrop is a free, client-side markdown editor that helps you create beautiful GitHub
+              Markdrop is a free, client-side markdown editor that helps you create beautiful GitHub
               profile READMEs and markdown documents. We are committed to protecting your privacy.
               This policy explains how we handle your data.
             </p>
@@ -26,7 +26,7 @@ function Content() {
           <section className="space-y-6">
             <h2 className="text-3xl font-bold text-black dark:text-white">Data Storage</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              MarkDrop stores your markdown documents and preferences locally in your browser using
+              Markdrop stores your markdown documents and preferences locally in your browser using
               localStorage. Your content never leaves your device unless you explicitly choose to
               save it to your account or export it.
             </p>
@@ -58,7 +58,7 @@ function Content() {
           <section className="space-y-6">
             <h2 className="text-3xl font-bold text-black dark:text-white">Third-Party Services</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              MarkDrop may use third-party services for:
+              Markdrop may use third-party services for:
             </p>
             <ul className="list-disc list-inside space-y-2 text-base text-[#6b7280] dark:text-[#9ca3af] ml-4">
               <li>Authentication (if you create an account)</li>
@@ -73,7 +73,7 @@ function Content() {
               <li>Access and export your saved documents at any time</li>
               <li>Delete your account and all associated data</li>
               <li>Clear local storage at any time through your browser</li>
-              <li>Use MarkDrop without creating an account</li>
+              <li>Use Markdrop without creating an account</li>
             </ul>
           </section>
 
@@ -92,7 +92,7 @@ function Content() {
             </h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
               We may update this Privacy Policy occasionally. Any changes will be posted on this
-              page. Continued use of MarkDrop after changes means you accept the updated policy.
+              page. Continued use of Markdrop after changes means you accept the updated policy.
             </p>
           </section>
 
@@ -116,7 +116,7 @@ function Content() {
 
 export default function PrivacyPolicy() {
   return (
-    <div className="w-full h-screen grid grid-rows-[7vh_195vh_7vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
+    <div className="w-full h-screen grid grid-rows-[7vh_195vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
       <Navbar />
       <Content />
       <Footer />

@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 
 export default function Templates() {
   return (
-    <div className="w-full h-screen grid grid-rows-[7vh_86vh_7vh] grid-cols-[15%_70%_15%]">
+    <div className="w-full h-screen grid grid-rows-[7vh_88vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
       <Navbar />
       <MainSection />
       <Footer />

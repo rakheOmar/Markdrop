@@ -17,17 +17,17 @@ function Content() {
           <section className="space-y-6">
             <h2 className="text-3xl font-bold text-black dark:text-white">Introduction</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              These Terms of Service govern your use of MarkDrop, a free markdown editor for
-              creating beautiful GitHub profile READMEs and markdown documents. By using MarkDrop,
+              These Terms of Service govern your use of Markdrop, a free markdown editor for
+              creating beautiful GitHub profile READMEs and markdown documents. By using Markdrop,
               you agree to these Terms.
             </p>
           </section>
 
           <section className="space-y-6">
-            <h2 className="text-3xl font-bold text-black dark:text-white">Using MarkDrop</h2>
+            <h2 className="text-3xl font-bold text-black dark:text-white">Using Markdrop</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              MarkDrop is a client-side markdown editor that stores your documents locally in your
-              browser. You can use MarkDrop without creating an account. If you choose to create an
+              Markdrop is a client-side markdown editor that stores your documents locally in your
+              browser. You can use Markdrop without creating an account. If you choose to create an
               account, you agree to:
             </p>
             <ul className="list-disc list-inside space-y-2 text-base text-[#6b7280] dark:text-[#9ca3af] ml-4">
@@ -40,7 +40,7 @@ function Content() {
           <section className="space-y-6">
             <h2 className="text-3xl font-bold text-black dark:text-white">Your Content</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              You own all content you create using MarkDrop. We don't claim any ownership rights to
+              You own all content you create using Markdrop. We don't claim any ownership rights to
               your documents. When you save documents to your account, we store them only to provide
               the service to you.
             </p>
@@ -49,7 +49,7 @@ function Content() {
           <section className="space-y-6">
             <h2 className="text-3xl font-bold text-black dark:text-white">Acceptable Use</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              Please use MarkDrop responsibly. Don't use it to:
+              Please use Markdrop responsibly. Don't use it to:
             </p>
             <ul className="list-disc list-inside space-y-2 text-base text-[#6b7280] dark:text-[#9ca3af] ml-4">
               <li>Violate any laws or regulations</li>
@@ -62,7 +62,7 @@ function Content() {
           <section className="space-y-6">
             <h2 className="text-3xl font-bold text-black dark:text-white">Service Availability</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              We strive to keep MarkDrop available and running smoothly, but we can't guarantee
+              We strive to keep Markdrop available and running smoothly, but we can't guarantee
               uninterrupted access. The service is provided "as is" without warranties. We may need
               to temporarily suspend service for maintenance or updates.
             </p>
@@ -73,7 +73,7 @@ function Content() {
               Limitation of Liability
             </h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              MarkDrop is provided free of charge. We are not liable for any damages arising from
+              Markdrop is provided free of charge. We are not liable for any damages arising from
               your use of the service, including data loss. Always keep backups of important
               documents.
             </p>
@@ -82,7 +82,7 @@ function Content() {
           <section className="space-y-6">
             <h2 className="text-3xl font-bold text-black dark:text-white">Termination</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              You can stop using MarkDrop and delete your account at any time. We may suspend or
+              You can stop using Markdrop and delete your account at any time. We may suspend or
               terminate accounts that violate these Terms.
             </p>
           </section>
@@ -90,7 +90,7 @@ function Content() {
           <section className="space-y-6">
             <h2 className="text-3xl font-bold text-black dark:text-white">Changes to Terms</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
-              We may update these Terms occasionally. Continued use of MarkDrop after changes means
+              We may update these Terms occasionally. Continued use of Markdrop after changes means
               you accept the updated Terms.
             </p>
           </section>
@@ -114,7 +114,7 @@ function Content() {
 
 export default function TermsOfServices() {
   return (
-    <div className="w-full h-screen grid grid-rows-[7vh_180vh_7vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
+    <div className="w-full h-screen grid grid-rows-[7vh_180vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
       <Navbar />
       <Content />
       <Footer />
