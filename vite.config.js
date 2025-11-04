@@ -18,6 +18,7 @@ export default defineConfig({
         "/builder",
         "/login",
         "/signup",
+        "/about",
         "/privacy-policy",
         "/terms-of-services",
         "/user-profile",

@@ -99,6 +99,19 @@ export const deleteFolder = async (folderId) => {
 
   if (error) throw error;
 };
+
+// Get a single markdown by ID
+export const getMarkdownById = async (markdownId) => {
+  const { data, error } = await supabase
+    .from("markdowns")
+    .select("*")
+    .eq("id", markdownId)
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
 // Get all folders for a user (helper function for UserProfile)
 export const getAllUserFolders = async (userId) => {
   const { data, error } = await supabase

@@ -102,12 +102,25 @@ export default function ListBlock({ block, onUpdate }) {
     });
   }, []);
 
-  const removeItem = useCallback((id) => {
-    setItems((prev) => {
-      if (prev.length <= 1) return prev;
-      return prev.filter((item) => item.id !== id);
-    });
-  }, []);
+  const removeItem = useCallback(
+    (id) => {
+      setItems((prev) => {
+        if (prev.length <= 1) return prev;
+        const filtered = prev.filter((item) => item.id !== id);
+
+        // Recalculate sequence numbers for ordered lists
+        if (blockType === "ol") {
+          return filtered.map((item, index) => ({
+            ...item,
+            number: index + 1,
+          }));
+        }
+
+        return filtered;
+      });
+    },
+    [blockType]
+  );
 
   const handleSelect = useCallback((e, itemId) => {
     const input = e.target;

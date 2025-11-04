@@ -4,7 +4,7 @@
 
 ## Introduction
 
-MarkDrop ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our markdown editor application and related services.
+Markdrop ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our markdown editor application and related services.
 
 ## Information We Collect
 

@@ -99,14 +99,14 @@ export default function SignUp() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:px-6 lg:px-8 relative">
-      <Link
-        to="/"
-        className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-md hover:bg-muted transition-colors z-10"
-        title="Go to Home"
-      >
-        <HomeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground hover:text-foreground" />
-      </Link>
-      <Card className="w-full max-w-sm sm:max-w-md mx-auto">
+      <Card className="w-full max-w-sm sm:max-w-md mx-auto relative">
+        <Link
+          to="/"
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 p-2 rounded-md hover:bg-muted transition-colors z-10"
+          title="Go to Home"
+        >
+          <HomeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground hover:text-foreground" />
+        </Link>
         <CardHeader className="text-center space-y-2 px-4 sm:px-6 pt-6 pb-4">
           <div className="flex justify-center">
             <Logo className="h-8 w-8 sm:h-9 sm:w-9 text-primary" />

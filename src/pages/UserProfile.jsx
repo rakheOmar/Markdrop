@@ -1,9 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import Navbar from "@/components/blocks/Navbar/Navbar";
 import DetailsSection from "@/components/blocks/ProfilePage/DetailsSection";
 import FileSection from "@/components/blocks/ProfilePage/FileSection";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/context/AuthContext";
+import {
+  deleteFile,
+  deleteFolder,
+  moveFileToFolder,
+  updateFileTitle,
+  updateFolderName,
+} from "@/lib/fileManager";
 import { getAllUserFolders, getAllUserMarkdowns } from "@/lib/storage";
 
 export default function UserProfile() {
@@ -66,8 +74,76 @@ export default function UserProfile() {
     fetchUserData();
   }, [fetchUserData]);
 
+  const handleUpdateTitle = async (id, currentTitle, type = "file") => {
+    const newTitle = prompt(
+      `Enter new ${type === "folder" ? "folder name" : "title"}:`,
+      currentTitle
+    );
+    if (!newTitle || newTitle === currentTitle) return;
+
+    const result =
+      type === "folder"
+        ? await updateFolderName(id, newTitle)
+        : await updateFileTitle(id, newTitle);
+
+    if (result.success) {
+      toast.success(`${type === "folder" ? "Folder" : "File"} updated successfully`);
+      fetchUserData(true);
+    } else {
+      toast.error(`Failed to update ${type}: ${result.error}`);
+    }
+  };
+
+  const handleDeleteFile = async (id, type = "file") => {
+    const confirmMessage = `Are you sure you want to delete this ${type}?${
+      type === "folder" ? " Files in this folder will be moved to root." : ""
+    }`;
+
+    if (!confirm(confirmMessage)) return;
+
+    const result = type === "folder" ? await deleteFolder(id) : await deleteFile(id);
+
+    if (result.success) {
+      toast.success(`${type === "folder" ? "Folder" : "File"} deleted successfully`);
+      fetchUserData(true);
+    } else {
+      toast.error(`Failed to delete ${type}: ${result.error}`);
+    }
+  };
+
+  const handleMoveToFolder = async (fileId) => {
+    if (folders.length === 0) {
+      toast.error("No folders available. Create a folder first.");
+      return;
+    }
+
+    const folderOptions = folders.map((f, i) => `${i + 1}. ${f.name}`).join("\n");
+    const selection = prompt(
+      `Select a folder:\n${folderOptions}\n\nEnter the number (or 0 for root):`
+    );
+
+    if (selection === null) return;
+
+    const folderIndex = parseInt(selection) - 1;
+    const targetFolderId = folderIndex === -1 ? null : folders[folderIndex]?.id;
+
+    if (folderIndex >= 0 && !targetFolderId) {
+      toast.error("Invalid folder selection");
+      return;
+    }
+
+    const result = await moveFileToFolder(fileId, targetFolderId);
+
+    if (result.success) {
+      toast.success("File moved successfully");
+      fetchUserData(true);
+    } else {
+      toast.error(`Failed to move file: ${result.error}`);
+    }
+  };
+
   return (
-    <div className="w-full h-screen grid grid-rows-[7vh_25vh_68vh_7vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
+    <div className="w-full h-screen grid grid-rows-[7vh_25vh_68vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
       <Navbar />
       <DetailsSection user={user} loading={loading} error={error} />
       <FileSection
@@ -76,6 +152,9 @@ export default function UserProfile() {
         loading={loading}
         error={error}
         onRefresh={() => fetchUserData(true)}
+        onUpdateTitle={handleUpdateTitle}
+        onDeleteFile={handleDeleteFile}
+        onMoveToFolder={handleMoveToFolder}
       />
       <Footer />
     </div>

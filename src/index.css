@@ -10,6 +10,45 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.7 0.01 255) oklch(0.95 0.002 255);
+  }
+
+  .dark * {
+    scrollbar-color: oklch(0.35 0.01 255) oklch(0.18 0.01 255);
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: oklch(0.95 0.002 255);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: oklch(0.7 0.01 255);
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.6 0.01 255);
+  }
+
+  .dark *::-webkit-scrollbar-track {
+    background: oklch(0.18 0.01 255);
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background: oklch(0.35 0.01 255);
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.45 0.01 255);
+  }
 }
 
 @keyframes marquee {
@@ -52,7 +91,6 @@ body {
 }
 
 :root {
-  /* Light Mode - GitHub inspired colors */
   --background: oklch(1 0 0);
   --foreground: oklch(0.2 0.005 255);
   --card: oklch(0.99 0 0);
@@ -108,7 +146,6 @@ body {
 }
 
 .dark {
-  /* Dark Mode - GitHub inspired dark theme */
   --background: oklch(0.15 0.01 255);
   --foreground: oklch(0.9 0.005 255);
   --card: oklch(0.18 0.01 255);

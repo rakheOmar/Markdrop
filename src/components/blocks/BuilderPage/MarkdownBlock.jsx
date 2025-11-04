@@ -28,16 +28,6 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
     onDelete(block.id);
   }, [onDelete, block.id]);
 
-  const handleDoubleClick = useCallback(
-    (e) => {
-      // Prevent event bubbling to parent
-      e.stopPropagation();
-      // Add a new block after this one
-      onBlockAdd(block.id);
-    },
-    [onBlockAdd, block.id]
-  );
-
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -90,7 +80,6 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
       <div
         ref={setNodeRef}
         style={style}
-        onDoubleClick={handleDoubleClick}
         className="group relative rounded-lg border border-transparent hover:border-muted-foreground/20 transition-all p-3 touch-manipulation"
       >
         {/* Controls - always visible on mobile, hover on desktop */}

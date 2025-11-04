@@ -4,6 +4,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 // COMPONENTS
 import { PWAStatus, SWStatus } from "@/components/PWAStatus";
+import About from "@/pages/AboutPage";
 import Builder from "@/pages/Builder";
 import ContactPage from "@/pages/ContactUs";
 // PAGES
@@ -35,8 +36,10 @@ function App() {
           <Route path="/templates" element={<Templates />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/builder" element={<Builder />} />
+          <Route path="/builder/:id" element={<Builder />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-services" element={<TermsOfServices />} />
+          <Route path="/about" element={<About />} />
           <Route path="*" element={<NotFoundPage />} />
           {/* AUTH */}
           <Route path="/login" element={<Login />} />
