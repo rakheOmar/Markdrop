@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Download01Icon } from "hugeicons-react";
+import { Button } from "@/components/ui/button";
 
 export function PWAStatus() {
+  const location = useLocation();
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -48,16 +52,29 @@ export function PWAStatus() {
 
   if (isInstalled) return null;
 
-  if (isInstallable) {
+  if (isInstallable && location.pathname === "/") {
     return (
-      <button
-        onClick={handleInstallClick}
-        className="hidden sm:flex fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-700 
-                   text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm 
-                   transition-colors duration-200 ease-in-out cursor-pointer"
-      >
-        Install Markdrop
-      </button>
+      <>
+        <Button
+          onClick={handleInstallClick}
+          size="sm"
+          variant="default"
+          className="hidden sm:flex fixed bottom-4 right-4 shadow-lg z-50 gap-2"
+        >
+          <Download01Icon size={16} />
+          Install Markdrop
+        </Button>
+
+        <Button
+          onClick={handleInstallClick}
+          size="icon"
+          variant="default"
+          className="flex sm:hidden fixed bottom-4 left-4 shadow-lg z-50"
+          title="Install Markdrop"
+        >
+          <Download01Icon size={20} />
+        </Button>
+      </>
     );
   }
 
@@ -95,7 +112,7 @@ export function SWStatus() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50" title={statusTitles[swStatus]}>
+    <div className="fixed bottom-4 left-4 z-50" title={statusTitles[swStatus]}>
       <div className={`${statusColors[swStatus]} w-4 h-4 rounded-full`} />
     </div>
   );

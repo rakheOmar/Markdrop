@@ -4,39 +4,10 @@ import { Link } from "react-router-dom";
 import markdropIconDark from "@/assets/markdrop_icon_dark.svg";
 import markdropIconLight from "@/assets/markdrop_icon_light.svg";
 import { useTheme } from "@/components/ThemeProvider";
-import { Button } from "@/components/ui/button";
 
 export default function Footer() {
   const { theme } = useTheme();
   const [lastCommitDate, setLastCommitDate] = useState("Loading...");
-  const [isInstallable, setIsInstallable] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setIsInstallable(true);
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === "accepted") {
-      setIsInstallable(false);
-      setDeferredPrompt(null);
-    }
-  };
 
   useEffect(() => {
     const fetchLastCommit = async () => {
@@ -82,14 +53,6 @@ export default function Footer() {
       </div>
 
       <footer className="border-t border-[#cecece] dark:border-[#16181d] flex items-center justify-between px-2 sm:px-4 md:px-8 py-2 col-span-3 lg:col-span-1 overflow-hidden relative">
-        {isInstallable && (
-          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 sm:hidden z-50">
-            <Button onClick={handleInstallClick} size="sm">
-              Install Now
-            </Button>
-          </div>
-        )}
-
         <div className="flex items-center gap-2">
           <img
             src={theme === "dark" ? markdropIconDark : markdropIconLight}

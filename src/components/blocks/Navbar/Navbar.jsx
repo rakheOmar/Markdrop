@@ -17,6 +17,7 @@ import markdropLogoDark from "@/assets/markdrop_logo_dark.svg";
 import markdropLogoLight from "@/assets/markdrop_logo_light.svg";
 import HomeModeToggle from "@/components/blocks/Navbar/NavModeToggle";
 import { useTheme } from "@/components/ThemeProvider";
+import { useThemeTransition } from "@/hooks/useThemeTransition";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,12 +32,13 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
+  const { applyCircleExpand } = useThemeTransition();
   const { user, logout, loading } = useAuth();
   const location = useLocation();
   const currentPath = location.pathname;
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    applyCircleExpand(() => setTheme(theme === "dark" ? "light" : "dark"));
   };
 
   const handleLogout = async () => {
@@ -88,7 +90,7 @@ export default function Navbar() {
           <img
             src={theme === "dark" ? markdropLogoDark : markdropLogoLight}
             alt="Markdrop Logo"
-            className="h-6 md:h-8 w-auto flex-shrink-0 object-contain cursor-pointer"
+            className="h-6 md:h-8 w-auto shrink-0 object-contain cursor-pointer"
           />
         </Link>
 
@@ -154,7 +156,7 @@ export default function Navbar() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="lg:hidden">
-            <button className="p-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors flex-shrink-0">
+            <button className="p-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors shrink-0">
               <Menu className="h-4 w-4" />
             </button>
           </DropdownMenuTrigger>

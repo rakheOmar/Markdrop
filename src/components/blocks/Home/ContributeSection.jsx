@@ -23,7 +23,7 @@ export default function ContributeSection() {
             href="https://github.com/rakheOmar/Markdrop"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 sm:px-7 md:px-8 py-3 sm:py-3.5 md:py-4 bg-black dark:bg-white text-white dark:text-black font-medium text-sm sm:text-base hover:opacity-90 transition-all duration-200 hover:scale-105"
+            className="inline-flex items-center gap-2 px-6 sm:px-7 md:px-8 py-3 sm:py-3.5 md:py-4 bg-black dark:bg-white text-white dark:text-black font-medium text-sm sm:text-base rounded-md hover:opacity-90 transition-all duration-200 hover:scale-105"
           >
             <span>View on GitHub</span>
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">

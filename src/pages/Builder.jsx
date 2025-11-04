@@ -45,6 +45,7 @@ import { toast } from "sonner";
 import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
 import { useTheme } from "@/components/ThemeProvider";
+import { useThemeTransition } from "@/hooks/useThemeTransition";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -72,6 +73,7 @@ import { createMarkdown, getMarkdownById, updateMarkdown } from "@/lib/storage";
 
 export default function Dashboard() {
   const { theme, setTheme } = useTheme();
+  const { applyCircleExpand } = useThemeTransition();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -284,7 +286,7 @@ export default function Dashboard() {
   }, [handleUndo, handleRedo, handleSave]);
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    applyCircleExpand(() => setTheme(theme === "dark" ? "light" : "dark"));
   };
 
   const handleExport = async (format) => {
