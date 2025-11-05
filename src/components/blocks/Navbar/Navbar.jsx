@@ -17,7 +17,6 @@ import markdropLogoDark from "@/assets/markdrop_logo_dark.svg";
 import markdropLogoLight from "@/assets/markdrop_logo_light.svg";
 import HomeModeToggle from "@/components/blocks/Navbar/NavModeToggle";
 import { useTheme } from "@/components/ThemeProvider";
-import { useThemeTransition } from "@/hooks/useThemeTransition";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { NAV_LINKS } from "@/config/nav";
 import { useAuth } from "@/context/AuthContext";
+import { useThemeTransition } from "@/hooks/useThemeTransition";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();

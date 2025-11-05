@@ -1,13 +1,12 @@
 import { useCallback } from "react";
 
 export function useThemeTransition() {
-    const applyCircleExpand = useCallback(
-        (callback, cx = "100", cy = "0") => {
-            const styleId = `theme-transition-${Date.now()}`;
-            const style = document.createElement("style");
-            style.id = styleId;
+  const applyCircleExpand = useCallback((callback, cx = "100", cy = "0") => {
+    const styleId = `theme-transition-${Date.now()}`;
+    const style = document.createElement("style");
+    style.id = styleId;
 
-            const css = `
+    const css = `
         @supports (view-transition-name: root) {
           ::view-transition-old(root) {
             animation: none;
@@ -27,26 +26,24 @@ export function useThemeTransition() {
         }
       `;
 
-            style.textContent = css;
-            document.head.appendChild(style);
+    style.textContent = css;
+    document.head.appendChild(style);
 
-            setTimeout(() => {
-                const styleEl = document.getElementById(styleId);
-                if (styleEl) {
-                    styleEl.remove();
-                }
-            }, 3000);
+    setTimeout(() => {
+      const styleEl = document.getElementById(styleId);
+      if (styleEl) {
+        styleEl.remove();
+      }
+    }, 3000);
 
-            if ("startViewTransition" in document) {
-                document.startViewTransition(() => {
-                    callback();
-                });
-            } else {
-                callback();
-            }
-        },
-        []
-    );
+    if ("startViewTransition" in document) {
+      document.startViewTransition(() => {
+        callback();
+      });
+    } else {
+      callback();
+    }
+  }, []);
 
-    return { applyCircleExpand };
+  return { applyCircleExpand };
 }

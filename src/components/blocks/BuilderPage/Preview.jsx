@@ -19,7 +19,9 @@ const blocksToMarkdown = (blocks) => {
         case "h6":
           return `###### ${block.content}`;
         case "paragraph":
-          return block.content;
+          // Ensure paragraph content is on its own line and wrapped properly
+          // This ensures ReactMarkdown treats it as a paragraph with inline formatting
+          return block.content.trim();
         case "blockquote":
           return `> ${block.content}`;
         case "code":
@@ -441,8 +443,9 @@ export default function Preview({ blocks = [] }) {
           <div className="p-2 sm:p-4">
             <div className="prose prose-slate dark:prose-invert max-w-none prose-sm">
               <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
+                remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
                 rehypePlugins={[rehypeRaw]}
+                skipHtml={false}
                 components={{
                   h1: ({ ...props }) => (
                     <h1
@@ -477,9 +480,25 @@ export default function Preview({ blocks = [] }) {
                     <ol className="list-decimal ml-6 mb-4 space-y-2" {...props} />
                   ),
                   li: ({ ...props }) => <li className="text-base" {...props} />,
+                  strong: ({ ...props }) => <strong className="font-bold" {...props} />,
+                  em: ({ ...props }) => <em className="italic" {...props} />,
+                  del: ({ ...props }) => <del className="line-through" {...props} />,
+                  a: ({ href, ...props }) => (
+                    <a
+                      href={href}
+                      className="text-blue-600 dark:text-blue-400 hover:underline inline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      {...props}
+                    />
+                  ),
+                  br: () => <br className="my-2" />,
                   code: ({ inline, className, children, ...props }) =>
                     inline ? (
-                      <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                      <code
+                        className="bg-muted px-1.5 py-0 rounded text-sm font-mono align-text-bottom inline-block"
+                        {...props}
+                      >
                         {children}
                       </code>
                     ) : (

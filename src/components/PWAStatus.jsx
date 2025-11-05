@@ -1,6 +1,6 @@
+import { Download01Icon } from "hugeicons-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Download01Icon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 
 export function PWAStatus() {

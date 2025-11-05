@@ -45,7 +45,6 @@ import { toast } from "sonner";
 import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
 import { useTheme } from "@/components/ThemeProvider";
-import { useThemeTransition } from "@/hooks/useThemeTransition";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -68,6 +67,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
+import { useThemeTransition } from "@/hooks/useThemeTransition";
 import { blocksToMarkdown, exportToHTML, exportToMarkdown, exportToPDF } from "@/lib/exportUtils";
 import { createMarkdown, getMarkdownById, updateMarkdown } from "@/lib/storage";
 

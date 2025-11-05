@@ -1,6 +1,13 @@
 import { AlignCenter, AlignLeft, AlignRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ImageBlock({ block, onUpdate }) {
   const handleContentChange = (value) => {
@@ -26,86 +33,46 @@ export default function ImageBlock({ block, onUpdate }) {
   const align = block.align || "left";
 
   return (
-    <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
-      <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">Image URL</label>
+    <div className="space-y-2 p-3 border rounded-lg bg-muted/30">
+      <Input
+        value={block.content}
+        onChange={(e) => handleContentChange(e.target.value)}
+        placeholder="Image URL"
+        className="bg-background text-sm h-8"
+      />
+      <Input
+        value={block.alt || ""}
+        onChange={(e) => handleAltChange(e.target.value)}
+        placeholder="Alt text (optional)"
+        className="bg-background text-sm h-8"
+      />
+      <div className="grid grid-cols-3 gap-2">
         <Input
-          value={block.content}
-          onChange={(e) => handleContentChange(e.target.value)}
-          placeholder="https://example.com/image.png"
-          className="bg-background"
+          value={block.width || ""}
+          onChange={(e) => handleWidthChange(e.target.value)}
+          placeholder="Width"
+          className="bg-background text-sm h-8"
         />
-      </div>
-      <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">
-          Alt Text (optional)
-        </label>
         <Input
-          value={block.alt || ""}
-          onChange={(e) => handleAltChange(e.target.value)}
-          placeholder="Description of the image"
-          className="bg-background"
+          value={block.height || ""}
+          onChange={(e) => handleHeightChange(e.target.value)}
+          placeholder="Height"
+          className="bg-background text-sm h-8"
         />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">
-            Width (optional)
-          </label>
-          <Input
-            value={block.width || ""}
-            onChange={(e) => handleWidthChange(e.target.value)}
-            placeholder="e.g., 2000 or 100%"
-            className="bg-background"
-          />
-        </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1 block">
-            Height (optional)
-          </label>
-          <Input
-            value={block.height || ""}
-            onChange={(e) => handleHeightChange(e.target.value)}
-            placeholder="e.g., 376 or auto"
-            className="bg-background"
-          />
-        </div>
-      </div>
-      <div>
-        <label className="text-xs font-medium text-muted-foreground mb-1 block">Alignment</label>
-        <div className="flex gap-1">
-          <Button
-            variant={align === "left" ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleAlignChange("left")}
-            className="flex-1"
-          >
-            <AlignLeft className="h-4 w-4 mr-1" />
-            Left
-          </Button>
-          <Button
-            variant={align === "center" ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleAlignChange("center")}
-            className="flex-1"
-          >
-            <AlignCenter className="h-4 w-4 mr-1" />
-            Center
-          </Button>
-          <Button
-            variant={align === "right" ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleAlignChange("right")}
-            className="flex-1"
-          >
-            <AlignRight className="h-4 w-4 mr-1" />
-            Right
-          </Button>
-        </div>
+        <Select value={align} onValueChange={handleAlignChange}>
+          <SelectTrigger className="bg-background h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="left">Left</SelectItem>
+            <SelectItem value="center">Center</SelectItem>
+            <SelectItem value="right">Right</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       {block.content && (
         <p
-          className={`mt-3 ${
+          className={`mt-2 ${
             align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"
           }`}
         >
