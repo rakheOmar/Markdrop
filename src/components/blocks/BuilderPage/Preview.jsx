@@ -19,8 +19,6 @@ const blocksToMarkdown = (blocks) => {
         case "h6":
           return `###### ${block.content}`;
         case "paragraph":
-          // Ensure paragraph content is on its own line and wrapped properly
-          // This ensures ReactMarkdown treats it as a paragraph with inline formatting
           return block.content.trim();
         case "blockquote":
           return `> ${block.content}`;
@@ -38,7 +36,6 @@ const blocksToMarkdown = (blocks) => {
           const align = block.align || "left";
           let imageMarkdown;
 
-          // If width or height is specified, use HTML img tag
           if (block.width || block.height) {
             const attrs = [`src="${block.content}"`];
             if (block.alt) attrs.push(`alt="${block.alt}"`);
@@ -49,7 +46,6 @@ const blocksToMarkdown = (blocks) => {
             imageMarkdown = `![${block.alt || ""}](${block.content})`;
           }
 
-          // Wrap with alignment p tag if not left
           if (align === "center") {
             return `<p align="center">\n\n${imageMarkdown}\n\n</p>`;
           } else if (align === "right") {
@@ -165,11 +161,9 @@ const blocksToMarkdown = (blocks) => {
                 }
                 return `![${label}](${url})`;
               } else {
-                // All other badge types
                 const { type, username, repo, label, package: pkg } = badge;
 
                 switch (type) {
-                  // GitHub badges
                   case "stars":
                     return `![${label}](${baseUrl}/github/stars/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
                       label
@@ -206,8 +200,6 @@ const blocksToMarkdown = (blocks) => {
                     return `![${label}](${baseUrl}/github/issues-pr/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
                       label
                     )}&logo=github&logoColor=white)`;
-
-                  // Documentation platforms
                   case "gitbook":
                     return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
                       label
@@ -232,8 +224,6 @@ const blocksToMarkdown = (blocks) => {
                     return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
                       label
                     )}&message=Sphinx&color=4B8B3B&logo=sphinx&logoColor=white&style=flat-square)`;
-
-                  // Social badges
                   case "twitter":
                     return `![${label}](${baseUrl}/twitter/follow/${username}?style=flat-square&label=${encodeURIComponent(
                       label
@@ -266,8 +256,6 @@ const blocksToMarkdown = (blocks) => {
                     return `![${label}](${baseUrl}/reddit/user-karma/${username}?style=flat-square&label=${encodeURIComponent(
                       label
                     )}&logo=reddit&logoColor=white)`;
-
-                  // Dev metrics
                   case "npm-downloads":
                     return `![${label}](${baseUrl}/npm/dm/${pkg}?style=flat-square&label=${encodeURIComponent(
                       label
@@ -368,7 +356,6 @@ const blocksToMarkdown = (blocks) => {
           params.append("width", width);
           params.append("height", height);
 
-          // Join lines with semicolon separator as a single parameter
           const filteredLines = lines.filter((line) => line.trim() !== "");
           if (filteredLines.length > 0) {
             params.append("lines", filteredLines.join(";"));
@@ -392,12 +379,10 @@ const blocksToMarkdown = (blocks) => {
             .map((card) => {
               let url = `${baseUrl}/${card.cardType}?username=${username}&theme=${card.theme}`;
 
-              // Add utcOffset only for productive-time card
               if (card.cardType === "productive-time") {
                 url += `&utcOffset=${card.utcOffset}`;
               }
 
-              // Use HTML img tag if height or width is specified
               if (card.height || card.width) {
                 const attributes = [];
                 if (card.height) attributes.push(`height="${card.height}"`);
@@ -409,7 +394,6 @@ const blocksToMarkdown = (blocks) => {
             })
             .join(" ");
 
-          // Apply alignment
           if (align === "center") {
             return `<div align="center">\n\n  ${cardMarkdown}\n\n</div>`;
           } else if (align === "right") {
