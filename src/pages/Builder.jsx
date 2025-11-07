@@ -71,7 +71,7 @@ import { useThemeTransition } from "@/hooks/useThemeTransition";
 import { blocksToMarkdown, exportToHTML, exportToMarkdown, exportToPDF } from "@/lib/exportUtils";
 import { createMarkdown, getMarkdownById, updateMarkdown } from "@/lib/storage";
 
-export default function Dashboard() {
+export default function Builder() {
   const { theme, setTheme } = useTheme();
   const { applyCircleExpand } = useThemeTransition();
   const { user } = useAuth();
