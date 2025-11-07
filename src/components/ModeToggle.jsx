@@ -47,7 +47,6 @@ export function ModeToggle() {
     style.textContent = css;
     document.head.appendChild(style);
 
-    // remove sooner so it doesn't block future toggles
     setTimeout(() => {
       const styleEl = document.getElementById(styleId);
       if (styleEl) {

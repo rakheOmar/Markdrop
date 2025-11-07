@@ -26,11 +26,11 @@ export default function Footer() {
           });
           setLastCommitDate(formattedDate);
         } else {
-          setLastCommitDate("October 30, 2025");
+          setLastCommitDate("November 07, 2025");
         }
       } catch (error) {
         console.error("Failed to fetch last commit date:", error);
-        setLastCommitDate("October 30, 2025");
+        setLastCommitDate("November 07, 2025");
       }
     };
 

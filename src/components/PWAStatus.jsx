@@ -10,19 +10,16 @@ export function PWAStatus() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
 
   useEffect(() => {
-    // Check if app is already installed
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setIsInstalled(true);
     }
 
-    // Listen for beforeinstallprompt
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setIsInstallable(true);
     };
 
-    // Handle when app gets installed
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setIsInstallable(false);
@@ -81,7 +78,6 @@ export function PWAStatus() {
   return null;
 }
 
-// Service Worker registration status (for development)
 export function SWStatus() {
   const [swStatus, setSWStatus] = useState("checking");
 
