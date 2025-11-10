@@ -1,15 +1,32 @@
+import { FlickeringGrid } from "@/components/FlickeringGrid";
+
 export default function ContributeSection() {
   return (
     <>
       <div className="border-r border-b border-[#cecece] dark:border-[#16181d] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-auto h-auto px-2 py-1.5 sm:px-2.5 sm:py-2 border-l border-b border-[#cecece] dark:border-[#16181d] sm:flex items-center justify-center hidden">
           <span className="font-mono text-[0.55rem] sm:text-[0.65rem] md:text-xs text-black dark:text-white whitespace-nowrap">
-            02.
+            03.
           </span>
         </div>
       </div>
-      <div className="border-b border-[#cecece] dark:border-[#16181d] bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB] dark:from-[#1a1d23] dark:to-[#0f1115] flex items-center justify-center px-4 md:px-8 py-12 md:py-16">
-        <div className="text-center space-y-6 sm:space-y-7 md:space-y-8 px-4 sm:px-6 md:px-8 max-w-3xl">
+      <div className="border-b border-[#cecece] dark:border-[#16181d] flex items-center justify-center px-4 md:px-8 py-12 md:py-16 relative overflow-hidden bg-background">
+        <div className="absolute inset-0 z-0 overflow-hidden rounded-lg">
+          <FlickeringGrid
+            className="w-full h-full"
+            squareSize={3}
+            gridGap={6}
+            color="#0088ff"
+            maxOpacity={0.3}
+            flickerChance={0.1}
+            width={window.innerWidth}
+            height={window.innerHeight}
+          />
+        </div>
+
+        <div className="pointer-events-none absolute inset-0 z-1 bg-[radial-gradient(circle_at_center,var(--color-background)_0%,var(--color-background)_20%,transparent_100%)]" />
+
+        <div className="text-center space-y-6 sm:space-y-7 md:space-y-8 px-4 sm:px-6 md:px-8 max-w-3xl relative z-10">
           <div className="space-y-3 sm:space-y-4">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-black dark:text-white">
               Join the Community
