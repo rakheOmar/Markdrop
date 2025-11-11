@@ -22,29 +22,44 @@ export default function DetailsSection({ user, loading, error }) {
           <TopRightLabel />
         </div>
         <div
-          className={`${borderClass} flex flex-col md:flex-row items-center md:items-stretch p-4 md:p-6 gap-8`}
+          className={`${borderClass} flex flex-col md:flex-row items-start md:items-stretch p-4 md:p-6 lg:p-8 gap-4 md:gap-6`}
         >
-          <div className="animate-pulse flex flex-col md:flex-row items-center md:items-stretch gap-8 w-full">
-            <div className="shrink-0 flex items-center justify-center">
-              <div className="w-24 h-24 bg-gray-300 dark:bg-gray-600 rounded-full border border-[#cecece] dark:border-[#16181d]" />
+          <div className="animate-pulse w-full space-y-4">
+            <div className="md:hidden w-full space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-gray-300 dark:bg-gray-600 rounded-full shrink-0" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32" />
+                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-40" />
+                </div>
+                <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20 shrink-0" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="h-16 bg-gray-300 dark:bg-gray-600 rounded-lg border border-[#cecece] dark:border-[#16181d]" />
+                <div className="h-16 bg-gray-300 dark:bg-gray-600 rounded-lg border border-[#cecece] dark:border-[#16181d]" />
+              </div>
             </div>
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-              <div className="space-y-2">
+
+            {/* Desktop Layout Skeleton */}
+            <div className="hidden md:flex shrink-0 w-full md:w-auto">
+              <div className="w-full space-y-2">
                 <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-20" />
-                <div className="h-10 bg-gray-300 dark:bg-gray-600 rounded-lg border border-[#cecece] dark:border-[#16181d]" />
+                <div className="h-[100px] md:h-[120px] bg-gray-300 dark:bg-gray-600 rounded-lg border border-[#cecece] dark:border-[#16181d]" />
               </div>
-              <div className="space-y-2">
-                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-24" />
-                <div className="h-10 bg-gray-300 dark:bg-gray-600 rounded-lg border border-[#cecece] dark:border-[#16181d]" />
+            </div>
+
+            <div className="hidden md:flex flex-1 flex-col gap-4 md:gap-6 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-20" />
+                  <div className="h-10 md:h-12 bg-gray-300 dark:bg-gray-600 rounded-lg border border-[#cecece] dark:border-[#16181d]" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-28" />
+                  <div className="h-10 md:h-12 bg-gray-300 dark:bg-gray-600 rounded-lg border border-[#cecece] dark:border-[#16181d]" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-28" />
-                <div className="h-10 bg-gray-300 dark:bg-gray-600 rounded-lg border border-[#cecece] dark:border-[#16181d]" />
-              </div>
-              <div className="space-y-2">
-                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-20" />
-                <div className="h-10 bg-gray-300 dark:bg-gray-600 rounded-lg border border-[#cecece] dark:border-[#16181d]" />
-              </div>
+              <div className="h-10 md:h-12 bg-gray-300 dark:bg-gray-600 rounded-lg border border-[#cecece] dark:border-[#16181d]" />
             </div>
           </div>
         </div>

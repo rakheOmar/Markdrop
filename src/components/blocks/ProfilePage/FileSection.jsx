@@ -106,8 +106,15 @@ export default function FileSection({
         <div className="border-r border-[#cecece] dark:border-[#16181d] relative overflow-hidden">
           <TopRightLabel />
         </div>
-        <div className="border-[#cecece] dark:border-[#16181d] p-4 md:p-6 relative">
+        <div className="border-[#cecece] dark:border-[#16181d] p-4 md:p-6 relative h-full overflow-hidden">
           <div className="animate-pulse h-full flex flex-col">
+            {/* Header skeleton */}
+            <div className="absolute top-2 left-2 z-10 h-auto p-1">
+              <div className="p-2 flex items-center">
+                <div className="h-6 md:h-7 bg-gray-300 dark:bg-gray-600 rounded w-48" />
+              </div>
+            </div>
+
             {/* Tab triggers skeleton */}
             <div className="absolute top-2 right-2 z-10">
               <div className="h-auto p-1 bg-transparent flex gap-1">
@@ -116,23 +123,21 @@ export default function FileSection({
               </div>
             </div>
 
-            {/* Content skeleton */}
-            <div className="flex-1 mt-16">
-              <div className="space-y-2">
-                {/* Card skeletons */}
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="border border-[#cecece] dark:border-[#16181d] rounded-lg">
-                    <div className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-5 h-5 bg-gray-300 dark:bg-gray-600 rounded" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32" />
-                          <div className="flex items-center gap-4">
-                            <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-16" />
-                            <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-20" />
-                          </div>
-                        </div>
-                      </div>
+            {/* Content skeleton - Grid of cards */}
+            <div className="flex-1 mt-14">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 p-1">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div
+                    key={i}
+                    className="border border-[#cecece] dark:border-[#16181d] rounded-lg overflow-hidden"
+                  >
+                    {/* Card image area */}
+                    <div className="aspect-video bg-gray-300 dark:bg-gray-600" />
+                    {/* Card content */}
+                    <div className="p-3 space-y-2">
+                      <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4" />
+                      <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-full" />
+                      <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2" />
                     </div>
                   </div>
                 ))}

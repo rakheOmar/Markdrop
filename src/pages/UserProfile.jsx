@@ -144,7 +144,7 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="w-full h-screen grid grid-rows-[7vh_25vh_1vh_67vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
+    <div className="w-full h-screen grid grid-rows-[7vh_auto_1vh_80vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
       <Navbar />
       <DetailsSection user={user} loading={loading} error={error} />
       <BlankSection />
