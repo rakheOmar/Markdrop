@@ -21,6 +21,7 @@ import {
   Heading5,
   Heading6,
   Image,
+  Info,
   Link,
   List,
   ListOrdered,
@@ -67,6 +68,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
+import { useBuilderTour } from "@/hooks/useBuilderTour";
 import { useThemeTransition } from "@/hooks/useThemeTransition";
 import { blocksToMarkdown, exportToHTML, exportToMarkdown, exportToPDF } from "@/lib/exportUtils";
 import { createMarkdown, getMarkdownById, updateMarkdown } from "@/lib/storage";
@@ -77,6 +79,7 @@ export default function Builder() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();
+  const { startTour } = useBuilderTour();
   const [activeTab, setActiveTab] = useState("editor");
   const [blocks, setBlocks] = useState(() => {
     const saved = localStorage.getItem("markdown-blocks");
@@ -695,10 +698,13 @@ export default function Builder() {
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center justify-between px-2 sm:px-4 border-b">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <SidebarTrigger className="-ml-1" />
+              <SidebarTrigger id="builder-sidebar-trigger" className="-ml-1" />
               <Separator orientation="vertical" className="h-4 hidden sm:block" />
 
-              <div className="hidden lg:flex items-center gap-3 text-sm text-muted-foreground">
+              <div
+                id="builder-stats"
+                className="hidden lg:flex items-center gap-3 text-sm text-muted-foreground"
+              >
                 <span>
                   <span className="font-semibold text-foreground">{stats.readingTime}</span> min
                   read
@@ -714,7 +720,10 @@ export default function Builder() {
 
             <div className="flex-1 flex justify-center px-2">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-3 max-w-[280px] sm:max-w-[300px] bg-muted/50 p-1">
+                <TabsList
+                  id="builder-tabs"
+                  className="grid w-full grid-cols-3 max-w-[280px] sm:max-w-[300px] bg-muted/50 p-1"
+                >
                   <TabsTrigger
                     value="editor"
                     className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200"
@@ -738,7 +747,7 @@ export default function Builder() {
             </div>
 
             <div className="flex items-center gap-1 sm:gap-2">
-              <div className="hidden xl:flex items-center gap-2">
+              <div id="builder-undo-btn" className="hidden xl:flex items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -763,6 +772,7 @@ export default function Builder() {
               </div>
 
               <Button
+                id="builder-import-btn"
                 variant="outline"
                 size="sm"
                 onClick={handleImport}
@@ -773,6 +783,7 @@ export default function Builder() {
               </Button>
 
               <Button
+                id="builder-save-btn"
                 variant="outline"
                 size="sm"
                 onClick={handleSave}
@@ -787,7 +798,7 @@ export default function Builder() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="px-2">
+                  <Button id="builder-menu-btn" variant="ghost" size="sm" className="px-2">
                     <Menu className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -860,6 +871,11 @@ export default function Builder() {
 
                   <DropdownMenuSeparator />
 
+                  <DropdownMenuItem onClick={startTour}>
+                    <Info className="w-4 h-4 mr-2" />
+                    Show Tutorial
+                  </DropdownMenuItem>
+
                   <DropdownMenuItem onClick={toggleTheme}>
                     {theme === "dark" ? (
                       <Sun className="w-4 h-4 mr-2" />
@@ -885,7 +901,7 @@ export default function Builder() {
           </header>
 
           <div className="flex flex-1 flex-col p-4 gap-4">
-            <div className="flex-1 w-full max-w-none">
+            <div id="builder-content-area" className="flex-1 w-full max-w-none">
               <DashboardHome
                 activeTab={activeTab}
                 blocks={blocks}

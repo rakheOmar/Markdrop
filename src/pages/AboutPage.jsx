@@ -153,7 +153,7 @@ function Content() {
 
 export default function AboutPage() {
   return (
-    <div className="w-full h-screen grid grid-rows-[7vh_160vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
+    <div className="w-full h-screen grid grid-rows-[7vh_93vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
       <Navbar />
       <Content />
       <Footer />
