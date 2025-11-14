@@ -1,4 +1,9 @@
 import { Sparkles, Upload, Zap } from "lucide-react";
+import drag_n_drop from "@/assets/drag_n_drop.png";
+import exportFeature from "@/assets/export.png";
+import preview from "@/assets/preview.png";
+import realtime from "@/assets/realtime.png";
+
 import Features from "@/components/ui/custom/features";
 
 const data = [
@@ -6,28 +11,28 @@ const data = [
     id: 1,
     title: "Drag & Drop",
     content: "Simply drag markdown blocks from the sidebar and drop them into your editor",
-    image: "/assets/filter.webp",
+    image: drag_n_drop,
     icon: <Upload className="w-6 h-6 text-primary" />,
   },
   {
     id: 2,
     title: "Edit in Real-Time",
     content: "Edit your content with instant feedback as you type and arrange blocks",
-    image: "/assets/search.webp",
+    image: realtime,
     icon: <Zap className="w-6 h-6 text-primary" />,
   },
   {
     id: 3,
     title: "Preview Live",
     content: "See exactly how your markdown will look with real-time preview rendering",
-    image: "/assets/contribute.webp",
+    image: preview,
     icon: <Sparkles className="w-6 h-6 text-primary" />,
   },
   {
     id: 4,
     title: "Export Anywhere",
     content: "Export your work as markdown, HTML, or PDF ready for GitHub and beyond",
-    image: "/assets/export.webp",
+    image: exportFeature,
     icon: <Sparkles className="w-6 h-6 text-primary" />,
   },
 ];

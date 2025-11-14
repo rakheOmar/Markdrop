@@ -21,16 +21,7 @@
 
 ## Demo
 
-<p align="center">
-  <img width="98%" alt="Markdrop Demo" src="https://github.com/user-attachments/assets/c3056dad-7bd8-4ddb-9274-b12df6fe6119" />
-</p>
-
-#### Builder Preview
-
-<p align="center">
-  <img width="49%" alt="Builder View" src="https://github.com/user-attachments/assets/930555f8-58a8-4e50-be80-19db9e9e4ab8" />
-  <img width="49%" alt="Preview View" src="https://github.com/user-attachments/assets/ccfd8a52-0e73-432b-8934-bfda516ce1d0" />
-</p>
+[Markdrop - A powerful visual markdown editor and builder](https://github.com/user-attachments/assets/e6fcee29-72bd-4e07-818a-dcfd8b7d44dd)
 
 ## Features - Best Markdown Editor Online
 
