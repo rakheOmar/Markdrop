@@ -4,21 +4,20 @@ import { useForm } from "react-hook-form";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Logo as LogoIcon } from "@/components/Logo";
 import Waves from "@/components/backgrounds/Waves";
+import { Logo as LogoIcon } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { signInWithGoogle, signUpWithEmail } from "@/lib/auth";
 
-const formSchema = z
-  .object({
-    firstname: z.string().min(1, "First name is required"),
-    lastname: z.string().min(1, "Last name is required"),
-    email: z.string().email("Please enter a valid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters long"),
-  });
+const formSchema = z.object({
+  firstname: z.string().min(1, "First name is required"),
+  lastname: z.string().min(1, "Last name is required"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+});
 
 export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
@@ -114,7 +113,12 @@ export default function SignUp() {
             <p className="text-sm">Welcome! Create an account to get started</p>
           </div>
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <Button type="button" variant="outline" onClick={handleGoogleSignUp} disabled={googleLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogleSignUp}
+              disabled={googleLoading}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="0.98em"
@@ -162,12 +166,7 @@ export default function SignUp() {
                 <Label htmlFor="firstname" className="block text-sm">
                   Firstname
                 </Label>
-                <Input
-                  type="text"
-                  required
-                  id="firstname"
-                  {...form.register("firstname")}
-                />
+                <Input type="text" required id="firstname" {...form.register("firstname")} />
                 {form.formState.errors.firstname && (
                   <p className="text-xs text-destructive">
                     {form.formState.errors.firstname.message}
@@ -178,12 +177,7 @@ export default function SignUp() {
                 <Label htmlFor="lastname" className="block text-sm">
                   Lastname
                 </Label>
-                <Input
-                  type="text"
-                  required
-                  id="lastname"
-                  {...form.register("lastname")}
-                />
+                <Input type="text" required id="lastname" {...form.register("lastname")} />
                 {form.formState.errors.lastname && (
                   <p className="text-xs text-destructive">
                     {form.formState.errors.lastname.message}
@@ -195,32 +189,18 @@ export default function SignUp() {
               <Label htmlFor="email" className="block text-sm">
                 Email
               </Label>
-              <Input
-                type="email"
-                required
-                id="email"
-                {...form.register("email")}
-              />
+              <Input type="email" required id="email" {...form.register("email")} />
               {form.formState.errors.email && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.email.message}
-                </p>
+                <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
               )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="pwd" className="text-sm">
                 Password
               </Label>
-              <Input
-                type="password"
-                required
-                id="pwd"
-                {...form.register("password")}
-              />
+              <Input type="password" required id="pwd" {...form.register("password")} />
               {form.formState.errors.password && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.password.message}
-                </p>
+                <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
               )}
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
@@ -240,4 +220,3 @@ export default function SignUp() {
     </section>
   );
 }
-

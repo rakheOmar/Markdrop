@@ -56,26 +56,26 @@ We use Biome for linting and formatting. Before committing:
 **Linting:**
 
 ```bash
-npm run lint
+npm run clean:lint
 ```
 
 **Formatting:**
 
 ```bash
-npm run format
+npm run clean:format
 ```
 
 **Or run both:**
 
 ```bash
-npm run clean
+npm run clean:lint-format
 ```
 
 ## Making Changes
 
 1. Make your changes in your feature branch
 2. Test your changes thoroughly
-3. Run `npm run clean` to ensure code quality
+3. Run `npm run clean:lint-format` to ensure code quality
 4. Commit with a clear message following our commit conventions (see below)
 5. Push to your fork
 6. Open a pull request
@@ -146,19 +146,21 @@ feat(api)!: change response format
 
 ```
 📁 Markdrop
+└── 📁public                — Static public assets              
 └── 📁src
-    ├── 📁assets       — Images, icons, and static files
-    ├── 📁components   — Reusable UI components
-    │   ├── 📁blocks   — Block components
-    │   └── 📁ui       — Shadcn/UI components
-    ├── 📁config       — Configuration files
-    ├── 📁context      — React context providers
-    ├── 📁hooks        — Custom React hooks
-    ├── 📁lib          — Utility functions and helpers
-    ├── 📁pages        — Page components
-    ├── App.jsx        — Main app component
-    ├── index.css      — Root styles
-    └── main.jsx       — App entry point
+    ├── 📁assets            — Images, icons, and static files
+    ├── 📁components        — Reusable UI components
+    │   ├── 📁blocks        — Background components
+    │   ├── 📁background    — Block components
+    │   └── 📁ui            — Shadcn/UI components
+    ├── 📁config            — Configuration files
+    ├── 📁context           — React context providers
+    ├── 📁hooks             — Custom React hooks
+    ├── 📁lib               — Utility functions and helpers
+    ├── 📁pages             — Page components
+    ├── App.jsx             — Main app component
+    ├── index.css           — Root styles
+    └── main.jsx            — App entry point
 ```
 
 ## Need Help?

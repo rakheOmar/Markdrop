@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Logo } from "@/components/Logo";
 import Waves from "@/components/backgrounds/Waves";
+import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,7 +88,12 @@ export default function Login() {
             <p className="text-sm">Welcome back! Sign in to continue</p>
           </div>
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <Button type="button" variant="outline" onClick={handleGoogleLogin} disabled={googleLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogleLogin}
+              disabled={googleLoading}
+            >
               <GoogleLogo />
               <span>Google</span>
             </Button>
@@ -113,13 +118,7 @@ export default function Login() {
               <Label htmlFor="email" className="block text-sm">
                 Email
               </Label>
-              <Input
-                type="email"
-                required
-                name="email"
-                id="email"
-                {...form.register("email")}
-              />
+              <Input type="email" required name="email" id="email" {...form.register("email")} />
               {form.formState.errors.email && (
                 <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
               )}
@@ -130,21 +129,12 @@ export default function Login() {
                   Password
                 </Label>
                 <Button asChild variant="link" size="sm">
-                  <RouterLink
-                    to="/forgot-password"
-                    className="text-sm"
-                  >
+                  <RouterLink to="/forgot-password" className="text-sm">
                     Forgot your Password?
                   </RouterLink>
                 </Button>
               </div>
-              <Input
-                type="password"
-                required
-                name="pwd"
-                id="pwd"
-                {...form.register("password")}
-              />
+              <Input type="password" required name="pwd" id="pwd" {...form.register("password")} />
               {form.formState.errors.password && (
                 <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
               )}
@@ -169,12 +159,7 @@ export default function Login() {
 
 function GoogleLogo() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="0.98em"
-      height="1em"
-      viewBox="0 0 256 262"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" width="0.98em" height="1em" viewBox="0 0 256 262">
       <path
         fill="#4285f4"
         d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622l38.755 30.023l2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
