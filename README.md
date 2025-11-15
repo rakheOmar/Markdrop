@@ -71,8 +71,13 @@
 | **Database & Backend**  | Supabase         |
 
 ## Contributing
+> [!NOTE]
+> **We welcome contributions! Read our [contributing guide](.github/CONTRIBUTING.md) to get started.**
 
-We welcome contributions! Read our [contributing guide](.github/CONTRIBUTING.md) to get started.
+
+## Project Board
+> [!NOTE]
+> **View progress, tasks, and upcoming features [here.](https://github.com/users/rakheOmar/projects/4)**
 
 ## Support
 
