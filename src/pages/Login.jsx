@@ -1,22 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Logo } from "@/components/Logo";
+import Waves from "@/components/backgrounds/Waves";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { loginWithEmail, signInWithGoogle } from "@/lib/auth";
 
@@ -39,7 +31,9 @@ export default function Login() {
     },
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    const data = form.getValues();
     setIsLoading(true);
     try {
       const result = await loginWithEmail(data.email, data.password);
@@ -58,7 +52,6 @@ export default function Login() {
     setGoogleLoading(true);
     try {
       await signInWithGoogle();
-      // The redirect will handle the rest
     } catch (error) {
       console.error("Google Login Error:", error);
       toast.error(error.message || "Google login failed.");
@@ -67,155 +60,137 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:px-6 lg:px-8 relative">
-      <Card className="w-full max-w-sm sm:max-w-md mx-auto relative">
-        <Link
-          to="/"
-          className="absolute top-4 left-4 sm:top-6 sm:left-6 p-2 rounded-md hover:bg-muted transition-colors z-10"
-          title="Go to Home"
-        >
-          <HomeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground hover:text-foreground" />
-        </Link>
-        <CardHeader className="text-center space-y-2 px-4 sm:px-6 pt-6 pb-4">
-          <div className="flex justify-center">
-            <Logo className="h-8 w-8 sm:h-9 sm:w-9 text-primary" />
+    <section className="flex min-h-screen bg-zinc-50 px-4 py-16 md:py-32 dark:bg-transparent relative">
+      <Waves
+        lineColor="rgba(0, 0, 0, 0.08)"
+        backgroundColor="transparent"
+        waveSpeedX={0.02}
+        waveSpeedY={0.01}
+        waveAmpX={40}
+        waveAmpY={20}
+        friction={0.9}
+        tension={0.01}
+        maxCursorMove={120}
+        xGap={12}
+        yGap={36}
+        className="opacity-40 dark:filter-[invert(1)]"
+      />
+      <form
+        onSubmit={onSubmit}
+        className="bg-card m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)] relative z-10"
+      >
+        <div className="p-8 pb-6">
+          <div>
+            <RouterLink to="/" aria-label="go home">
+              <Logo />
+            </RouterLink>
+            <h1 className="mb-1 mt-4 text-xl font-semibold">Sign In to Markdrop</h1>
+            <p className="text-sm">Welcome back! Sign in to continue</p>
           </div>
-          <CardTitle className="text-lg sm:text-xl font-bold tracking-tight">
-            Log in to Markdrop
-          </CardTitle>
-          <CardDescription className="text-sm sm:text-base">
-            Welcome back! Please sign in to your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6">
-          <Button
-            className="w-full gap-2 sm:gap-3 h-10 sm:h-11 text-sm sm:text-base"
-            variant="secondary"
-            onClick={handleGoogleLogin}
-            disabled={googleLoading}
-          >
-            <GoogleLogo />
-            {googleLoading ? "Connecting..." : "Continue with Google"}
-          </Button>
-
-          <div className="flex items-center justify-center overflow-hidden">
-            <Separator className="flex-1" />
-            <span className="text-xs sm:text-sm px-2 text-muted-foreground">OR</span>
-            <Separator className="flex-1" />
-          </div>
-
-          <Form {...form}>
-            <form className="space-y-3 sm:space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm sm:text-base">Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Email"
-                        className="h-10 sm:h-11 text-sm sm:text-base"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-xs sm:text-sm" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm sm:text-base">Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        className="h-10 sm:h-11 text-sm sm:text-base"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-xs sm:text-sm" />
-                  </FormItem>
-                )}
-              />
-              <Button
-                type="submit"
-                className="w-full h-10 sm:h-11 text-sm sm:text-base"
-                disabled={isLoading}
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <Button type="button" variant="outline" onClick={handleGoogleLogin} disabled={googleLoading}>
+              <GoogleLogo />
+              <span>Google</span>
+            </Button>
+            <Button type="button" variant="outline" disabled>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1em"
+                height="1em"
+                viewBox="0 0 256 256"
               >
-                {isLoading ? "Signing in..." : "Continue with Email"}
-              </Button>
-            </form>
-          </Form>
-
-          <p className="text-xs sm:text-sm text-center text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/signup" className="underline text-primary hover:text-primary/90">
-              Sign Up!
-            </Link>
+                <path fill="#f1511b" d="M121.666 121.666H0V0h121.666z"></path>
+                <path fill="#80cc28" d="M256 121.666H134.335V0H256z"></path>
+                <path fill="#00adef" d="M121.663 256.002H0V134.336h121.663z"></path>
+                <path fill="#fbbc09" d="M256 256.002H134.335V134.336H256z"></path>
+              </svg>
+              <span>Microsoft</span>
+            </Button>
+          </div>
+          <hr className="my-4 border-dashed" />
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="block text-sm">
+                Email
+              </Label>
+              <Input
+                type="email"
+                required
+                name="email"
+                id="email"
+                {...form.register("email")}
+              />
+              {form.formState.errors.email && (
+                <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+              )}
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="pwd" className="text-sm">
+                  Password
+                </Label>
+                <Button asChild variant="link" size="sm">
+                  <RouterLink
+                    to="/forgot-password"
+                    className="text-sm"
+                  >
+                    Forgot your Password?
+                  </RouterLink>
+                </Button>
+              </div>
+              <Input
+                type="password"
+                required
+                name="pwd"
+                id="pwd"
+                {...form.register("password")}
+              />
+              {form.formState.errors.password && (
+                <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
+              )}
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+          </div>
+        </div>
+        <div className="bg-muted rounded-(--radius) border p-3">
+          <p className="text-accent-foreground text-center text-sm">
+            Don't have an account?
+            <Button asChild variant="link" className="px-2">
+              <RouterLink to="/signup">Create account</RouterLink>
+            </Button>
           </p>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </form>
+    </section>
   );
 }
 
 function GoogleLogo() {
   return (
     <svg
-      width="1.2em"
-      height="1.2em"
-      viewBox="0 0 16 16"
-      fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="inline-block shrink-0 align-sub text-inherit"
-    >
-      <g clipPath="url(#clip0)">
-        <path
-          d="M15.6823 8.18368C15.6823 7.63986 15.6382 7.0931 15.5442 6.55811H7.99829V9.63876H12.3194C12.1401 10.6323 11.564 11.5113 10.7203 12.0698V14.0687H13.2983C14.8122 12.6753 15.6823 10.6176 15.6823 8.18368Z"
-          fill="#4285F4"
-        />
-        <path
-          d="M7.99812 16C10.1558 16 11.9753 15.2915 13.3011 14.0687L10.7231 12.0698C10.0058 12.5578 9.07988 12.8341 8.00106 12.8341C5.91398 12.8341 4.14436 11.426 3.50942 9.53296H0.849121V11.5936C2.2072 14.295 4.97332 16 7.99812 16Z"
-          fill="#34A853"
-        />
-        <path
-          d="M3.50665 9.53295C3.17154 8.53938 3.17154 7.4635 3.50665 6.46993V4.4093H0.849292C-0.285376 6.66982 -0.285376 9.33306 0.849292 11.5936L3.50665 9.53295Z"
-          fill="#FBBC04"
-        />
-        <path
-          d="M7.99812 3.16589C9.13867 3.14825 10.241 3.57743 11.067 4.36523L13.3511 2.0812C11.9048 0.723121 9.98526 -0.0235266 7.99812 -1.02057e-05C4.97332 -1.02057e-05 2.2072 1.70493 0.849121 4.40932L3.50648 6.46995C4.13848 4.57394 5.91104 3.16589 7.99812 3.16589Z"
-          fill="#EA4335"
-        />
-      </g>
-      <defs>
-        <clipPath id="clip0">
-          <rect width="15.6825" height="16" fill="white" />
-        </clipPath>
-      </defs>
-    </svg>
-  );
-}
-
-function HomeIcon({ className }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
+      width="0.98em"
+      height="1em"
+      viewBox="0 0 256 262"
     >
       <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-      />
+        fill="#4285f4"
+        d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622l38.755 30.023l2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
+      ></path>
+      <path
+        fill="#34a853"
+        d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055c-34.523 0-63.824-22.773-74.269-54.25l-1.531.13l-40.298 31.187l-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
+      ></path>
+      <path
+        fill="#fbbc05"
+        d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82c0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602z"
+      ></path>
+      <path
+        fill="#eb4335"
+        d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0C79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
+      ></path>
     </svg>
   );
 }

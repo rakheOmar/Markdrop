@@ -1,4 +1,4 @@
-import Squares from "../../Squares";
+import Squares from "@/components/backgrounds/Squares";
 
 export default function HeroSection() {
   return (

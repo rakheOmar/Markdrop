@@ -1,4 +1,4 @@
-import { FlickeringGrid } from "@/components/FlickeringGrid";
+import { FlickeringGrid } from "@/components/backgrounds/FlickeringGrid";
 
 export default function ContributeSection() {
   return (
