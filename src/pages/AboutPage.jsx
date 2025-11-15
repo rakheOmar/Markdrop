@@ -127,7 +127,7 @@ function Content() {
               <p className="text-base text-[#6b7280] dark:text-[#9ca3af]">
                 <span className="text-black dark:text-white font-semibold">Email:</span>{" "}
                 <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
-                  rakheOmar@outlook.com
+                  dev.markdrop@proton.me
                 </code>
               </p>
               <p className="text-base text-[#6b7280] dark:text-[#9ca3af]">

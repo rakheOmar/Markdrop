@@ -102,7 +102,7 @@ function Content() {
               If you have any questions about this Privacy Policy or our data practices, please
               contact us at:
               <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
-                rakheOmar@outlook.com
+                dev.markdrop@proton.me
               </code>
             </p>
           </section>

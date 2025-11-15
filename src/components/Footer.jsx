@@ -97,7 +97,7 @@ export default function Footer() {
             <NewTwitterIcon size={14} className="sm:w-4 sm:h-4" />
           </a>
           <a
-            href="mailto:rakheomar@outlook.com"
+            href="mailto:dev.markdrop@proton.me"
             className="text-[#6b7280] dark:text-[#9ca3af] hover:text-black dark:hover:text-white transition-colors"
             aria-label="Email"
           >

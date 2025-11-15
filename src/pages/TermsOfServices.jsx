@@ -100,7 +100,7 @@ function Content() {
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
               If you have any questions about these Terms of Service, please contact us at:{" "}
               <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">
-                rakheOmar@outlook.com
+                dev.markdrop@proton.me
               </code>
             </p>
           </section>
