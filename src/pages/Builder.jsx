@@ -47,6 +47,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import AIAssistantSheet from "@/components/blocks/BuilderPage/AIAssistantSheet";
 import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
 import { useTheme } from "@/components/ThemeProvider";
@@ -98,7 +99,7 @@ export default function Builder() {
   const [isSaving, setIsSaving] = useState(false);
   const [currentDocumentId, setCurrentDocumentId] = useState(null);
   const [lastSavedContent, setLastSavedContent] = useState("");
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
+  const [showSparkleDialog, setShowSparkleDialog] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("markdown-blocks", JSON.stringify(blocks));
@@ -911,8 +912,8 @@ export default function Builder() {
                 variant="ghost"
                 size="sm"
                 className="px-2"
-                onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
-                title="Toggle Right Sidebar"
+                onClick={() => setShowSparkleDialog(true)}
+                title="AI Assistant"
               >
                 <Sparkles className="h-4 w-4" />
               </Button>
@@ -966,6 +967,8 @@ export default function Builder() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <AIAssistantSheet open={showSparkleDialog} onOpenChange={setShowSparkleDialog} />
 
         {isImporting && (
           <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50">
