@@ -1,26 +1,13 @@
-/**
- * Export Utilities
- * Purpose: Handle various export formats for markdown documents
- * @version 1.0
- * @package Markdrop
- */
-
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { marked } from "marked";
 
-// Configure marked for GFM support
 marked.setOptions({
   breaks: true,
   gfm: true,
   silent: true,
 });
 
-/**
- * Convert markdown blocks to markdown string
- * @param {Array} blocks - Array of markdown blocks
- * @returns {string} Markdown string
- */
 export const blocksToMarkdown = (blocks) => {
   if (!blocks || blocks.length === 0) {
     return "";
@@ -118,11 +105,6 @@ export const blocksToMarkdown = (blocks) => {
     .join("\n\n");
 };
 
-/**
- * Convert markdown blocks to HTML with proper styling
- * @param {Array} blocks - Array of markdown blocks
- * @returns {string} HTML string with embedded styles
- */
 export const blocksToHTML = (blocks) => {
   if (!blocks || blocks.length === 0) {
     return getHTMLTemplate("");
@@ -131,7 +113,6 @@ export const blocksToHTML = (blocks) => {
   try {
     const markdown = blocksToMarkdown(blocks);
     const html = marked.parse(markdown, { breaks: true, gfm: true });
-    // Inject language badges into code blocks
     const container = document.createElement("div");
     container.innerHTML = html;
     const labelMap = {
@@ -158,7 +139,6 @@ export const blocksToHTML = (blocks) => {
       badge.style.fontSize = "10px";
       badge.style.padding = "2px 6px";
       badge.style.borderRadius = "6px";
-      // Colors
       if (lang === "js" || lang === "javascript") {
         badge.style.background = "#fbbf24";
         badge.style.color = "#111827";
@@ -195,11 +175,6 @@ export const blocksToHTML = (blocks) => {
   }
 };
 
-/**
- * Get HTML template with styles
- * @param {string} content - HTML content
- * @returns {string} Complete HTML document
- */
 const getHTMLTemplate = (content) => {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -224,78 +199,77 @@ const getHTMLTemplate = (content) => {
             font-weight: 600;
             line-height: 1.25;
         }
-        /* Match preview heading sizes/borders */
-        h1 { font-size: 1.875rem; /* text-3xl */ border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem; }
-        h2 { font-size: 1.5rem;   /* text-2xl */ border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem; }
-        h3 { font-size: 1.25rem;  /* text-xl  */ margin-top: 1.5rem; margin-bottom: 0.75rem; }
-        h4 { font-size: 1.125rem; /* text-lg  */ margin-top: 1.5rem; margin-bottom: 0.5rem; }
-        h5 { font-size: 1rem;     /* text-base*/ margin-top: 1.5rem; margin-bottom: 0.5rem; }
-        h6 { font-size: 0.875rem; /* text-sm  */ color: #6b7280; margin-top: 1.5rem; margin-bottom: 0.5rem; }
-        p { margin-bottom: 1rem; line-height: 1.75; /* leading-7 */ }
+        h1 { font-size: 1.875rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem; }
+        h2 { font-size: 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem; }
+        h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        h4 { font-size: 1.125rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        h5 { font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        h6 { font-size: 0.875rem; color: #6b7280; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        p { margin-bottom: 1rem; line-height: 1.75; }
         blockquote {
             margin: 1rem 0;
             padding-left: 1rem;
             color: #6b7280;
-            border-left: 4px solid #e5e7eb; /* border-l-4 border-border */
+            border-left: 4px solid #e5e7eb;
         }
         code {
             padding: 0.15em 0.4em;
             margin: 0;
-            font-size: 0.875rem; /* text-sm */
-            background-color: #f3f4f6; /* muted */
+            font-size: 0.875rem;
+            background-color: #f3f4f6;
             border-radius: 4px;
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
         }
         pre {
             padding: 16px;
             overflow: auto;
-            font-size: 0.875rem; /* text-sm */
+            font-size: 0.875rem;
             line-height: 1.6;
-            background-color: #f3f4f6; /* muted */
-            border-radius: 8px; /* rounded-md */
-            margin: 1rem 0; /* my-4 */
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            margin: 1rem 0;
         }
         pre code {
             background-color: transparent;
             padding: 0;
             border-radius: 0;
             display: block;
-            white-space: pre-wrap; /* whitespace-pre-wrap */
+            white-space: pre-wrap;
         }
         ul, ol {
             margin-bottom: 1rem;
-            padding-left: 1.5rem; /* ml-6 */
+            padding-left: 1.5rem;
         }
         li {
-            margin-bottom: 0.5rem; /* space-y-2 mimic */
-            font-size: 1rem; /* text-base */
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
         }
         table {
             border-collapse: collapse;
             border-spacing: 0;
             width: 100%;
-            margin: 1rem 0; /* my-4 */
+            margin: 1rem 0;
         }
         table th, table td {
-            padding: 10px 16px; /* px-4 py-2 */
-            border: 1px solid #e5e7eb; /* border-border */
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
         }
         table th {
             font-weight: 600;
-            background-color: #f3f4f6; /* bg-muted */
+            background-color: #f3f4f6;
         }
         img {
             max-width: 100%;
             height: auto;
-            margin: 1rem 0; /* my-4 */
-            border-radius: 6px; /* rounded */
+            margin: 1rem 0;
+            border-radius: 6px;
             display: block;
         }
         hr {
             height: 0;
             border: none;
-            border-top: 4px solid #e5e7eb; /* border-t-4 */
-            margin: 2rem 0; /* my-8 */
+            border-top: 4px solid #e5e7eb;
+            margin: 2rem 0;
         }
         a {
             color: #0366d6;
@@ -304,7 +278,6 @@ const getHTMLTemplate = (content) => {
         a:hover {
             text-decoration: underline;
         }
-        /* GitHub task list compatibility */
         .task-list-item { list-style: none; }
         .task-list-item input[type="checkbox"] { margin-right: 0.5em; vertical-align: middle; }
         @media print {
@@ -320,23 +293,12 @@ const getHTMLTemplate = (content) => {
 </html>`;
 };
 
-/**
- * Escape HTML characters
- * @param {string} text - Text to escape
- * @returns {string} Escaped text
- */
 const escapeHtml = (text) => {
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 };
 
-/**
- * Export document as PDF using iframe approach
- * @param {Array} blocks - Array of markdown blocks
- * @param {string} filename - Output filename
- * @returns {Promise<boolean>}
- */
 export const exportToPDF = async (blocks, filename = "document.pdf") => {
   if (!blocks || blocks.length === 0) {
     throw new Error("No content to export");
@@ -444,12 +406,6 @@ export const exportToPDF = async (blocks, filename = "document.pdf") => {
   });
 };
 
-/**
- * Export document as HTML file
- * @param {Array} blocks - Array of markdown blocks
- * @param {string} filename - Output filename
- * @returns {boolean}
- */
 export const exportToHTML = (blocks, filename = "document.html") => {
   if (!blocks || blocks.length === 0) {
     throw new Error("No content to export");
@@ -473,12 +429,6 @@ export const exportToHTML = (blocks, filename = "document.html") => {
   }
 };
 
-/**
- * Export document as Markdown file
- * @param {Array} blocks - Array of markdown blocks
- * @param {string} filename - Output filename
- * @returns {boolean}
- */
 export const exportToMarkdown = (blocks, filename = "document.md") => {
   if (!blocks || blocks.length === 0) {
     throw new Error("No content to export");

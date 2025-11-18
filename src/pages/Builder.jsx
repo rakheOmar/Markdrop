@@ -12,6 +12,8 @@ import { arrayMove } from "@dnd-kit/sortable";
 import {
   CheckSquare,
   Code,
+  Eye,
+  FileCode,
   FileDown,
   FileUp,
   Heading1,
@@ -28,6 +30,8 @@ import {
   Menu,
   Minus,
   Moon,
+  PanelRight,
+  Pencil,
   Quote,
   RefreshCcw,
   RotateCcw,
@@ -94,6 +98,7 @@ export default function Builder() {
   const [isSaving, setIsSaving] = useState(false);
   const [currentDocumentId, setCurrentDocumentId] = useState(null);
   const [lastSavedContent, setLastSavedContent] = useState("");
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("markdown-blocks", JSON.stringify(blocks));
@@ -726,21 +731,24 @@ export default function Builder() {
                 >
                   <TabsTrigger
                     value="editor"
-                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5"
                   >
-                    Editor
+                    <Pencil className="h-4 w-4" />
+                    <span className="hidden sm:inline">Editor</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="raw"
-                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5"
                   >
-                    Raw
+                    <FileCode className="h-4 w-4" />
+                    <span className="hidden sm:inline">Raw</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="preview"
-                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5"
                   >
-                    Preview
+                    <Eye className="h-4 w-4" />
+                    <span className="hidden sm:inline">Preview</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -897,6 +905,17 @@ export default function Builder() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <Button
+                id="builder-right-sidebar-trigger"
+                variant="ghost"
+                size="sm"
+                className="px-2"
+                onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
+                title="Toggle Right Sidebar"
+              >
+                <Sparkles className="h-4 w-4" />
+              </Button>
             </div>
           </header>
 

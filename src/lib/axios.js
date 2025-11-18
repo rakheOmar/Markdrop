@@ -5,9 +5,7 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Debug: log baseURL once in dev and surface network errors
 if (import.meta.env.DEV) {
-  // eslint-disable-next-line no-console
   console.log("[API] baseURL:", axiosInstance.defaults.baseURL);
 }
 

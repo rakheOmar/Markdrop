@@ -64,7 +64,6 @@ export default function SignUp() {
     setGoogleLoading(true);
     try {
       await signInWithGoogle();
-      // The redirect will handle the rest
     } catch (error) {
       console.error("Google SignUp Error:", error);
       toast.error(error.message || "Google sign up failed.");
@@ -86,20 +85,6 @@ export default function SignUp() {
 
   return (
     <section className="flex min-h-screen bg-zinc-50 px-4 py-16 md:py-32 dark:bg-transparent relative">
-      <Waves
-        lineColor="rgba(0, 0, 0, 0.08)"
-        backgroundColor="transparent"
-        waveSpeedX={0.02}
-        waveSpeedY={0.01}
-        waveAmpX={40}
-        waveAmpY={20}
-        friction={0.9}
-        tension={0.01}
-        maxCursorMove={120}
-        xGap={12}
-        yGap={36}
-        className="opacity-40 dark:filter-[invert(1)]"
-      />
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="bg-card m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)] relative z-10"
