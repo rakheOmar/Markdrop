@@ -1,6 +1,25 @@
 import { motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 
 export default function VideoSection() {
+  const [isInView, setIsInView] = useState(false);
+  const iframeRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0.25, rootMargin: "50px" }
+    );
+
+    if (iframeRef.current) {
+      observer.observe(iframeRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <div className="border-r border-b border-[#cecece] dark:border-[#16181d] relative overflow-hidden">
@@ -11,7 +30,7 @@ export default function VideoSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <span className="font-mono text-[0.55rem] sm:text-[0.65rem] md:text-xs text-black dark:text-white whitespace-nowrap">
-            02.
+            01.
           </span>
         </motion.div>
       </div>
@@ -24,16 +43,24 @@ export default function VideoSection() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
         >
-          <div className="aspect-video w-full">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/oYzU5soosMo?autoplay=1&mute=1&loop=1&controls=0&modestbranding=1&rel=0&showinfo=0&playlist=oYzU5soosMo"
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            ></iframe>
+          <div className="aspect-video w-full" ref={iframeRef}>
+            {isInView && (
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/oYzU5soosMo?autoplay=1&mute=1&loop=1&controls=0&modestbranding=1&rel=0&showinfo=0&playlist=oYzU5soosMo&enablejsapi=1"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                loading="lazy"
+                style={{
+                  border: 0,
+                  willChange: "transform",
+                  transform: "translateZ(0)",
+                }}
+              />
+            )}
           </div>
         </motion.div>
       </div>
