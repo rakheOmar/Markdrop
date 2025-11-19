@@ -1,10 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
-import Waves from "@/components/backgrounds/Waves";
+import Squares from "@/components/backgrounds/Squares";
 import { Logo as LogoIcon } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,10 +85,29 @@ export default function SignUp() {
   }
 
   return (
-    <section className="flex min-h-screen bg-zinc-50 px-4 py-16 md:py-32 dark:bg-transparent relative">
-      <form
+    <section className="flex min-h-screen bg-background px-4 py-16 md:py-32 relative overflow-hidden">
+      {/* Squares Background */}
+      <div className="absolute inset-0 z-0">
+        <Squares
+          direction="diagonal"
+          speed={0.1}
+          borderColor="#cecece"
+          darkBorderColor="#16181d"
+          squareSize={25}
+          hoverFillColor="#000000"
+        />
+      </div>
+
+      {/* Radial Mask Overlay */}
+      <div className="absolute inset-0 z-1 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,transparent_40%,var(--background)_100%)]" />
+
+      {/* Form Card */}
+      <motion.form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="bg-card m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-md dark:[--color-muted:var(--color-zinc-900)] relative z-10"
+        className="bg-card m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-lg dark:[--color-muted:var(--color-zinc-900)] relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="p-8 pb-6">
           <div>
@@ -201,7 +221,7 @@ export default function SignUp() {
             </Button>
           </p>
         </div>
-      </form>
+      </motion.form>
     </section>
   );
 }

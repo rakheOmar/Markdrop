@@ -1,6 +1,7 @@
-import { AlertCircleIcon, MessageSquareIcon } from "lucide-react";
+import { AlertCircleIcon, LogIn, MessageSquareIcon } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Context,
   ContextContent,
@@ -25,7 +26,9 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Suggestion } from "@/components/ai-elements/suggestion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useAuth } from "@/context/AuthContext";
 
 const PROMPT_TEMPLATES = [
   { id: 1, text: "How do I format text in markdown?" },
@@ -65,6 +68,8 @@ const saveUsageData = (data) => {
 };
 
 export default function AIAssistantSheet({ open, onOpenChange }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [status, setStatus] = useState("ready");
   const [messages, setMessages] = useState([]);
   const [requestsRemaining, setRequestsRemaining] = useState(MAX_REQUESTS_PER_MONTH);
@@ -157,6 +162,46 @@ export default function AIAssistantSheet({ open, onOpenChange }) {
       handleSubmit({ text: templateText });
     }
   };
+
+  const handleLoginClick = () => {
+    onOpenChange(false);
+    navigate("/login");
+  };
+
+  // If user is not logged in, show login prompt
+  if (!user) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:w-[400px] md:w-[500px] sm:max-w-none flex flex-col p-0"
+        >
+          <div className="border-b px-4 py-3 h-16">
+            <h2 className="text-lg font-semibold">AI Assistant</h2>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <div className="rounded-full bg-muted p-4 mb-4">
+              <LogIn className="size-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Login Required</h3>
+            <p className="text-muted-foreground mb-6 max-w-sm">
+              The AI Assistant is available exclusively for logged-in users. Sign in to get help
+              with your markdown documents.
+            </p>
+            <div className="flex gap-3">
+              <Button onClick={handleLoginClick}>
+                <LogIn className="size-4 mr-2" />
+                Sign In
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/signup")}>
+                Create Account
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

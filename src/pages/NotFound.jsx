@@ -1,4 +1,5 @@
 import { AlertCircle, Home } from "lucide-react";
+import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +14,11 @@ export default function NotFoundPage() {
   return (
     <div className="flex w-full items-center justify-center">
       <div className="flex h-screen items-center border-x">
-        <div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           <div className="absolute inset-x-0 h-px bg-border" />
           <Empty>
             <EmptyHeader>
@@ -44,7 +49,7 @@ export default function NotFoundPage() {
             </EmptyContent>
           </Empty>
           <div className="absolute inset-x-0 h-px bg-border" />
-        </div>
+        </motion.div>
       </div>
     </div>
   );

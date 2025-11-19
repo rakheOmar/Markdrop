@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import BlankSection from "@/components/blocks/Home/BlankSection";
@@ -144,7 +145,12 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="w-full h-screen grid grid-rows-[7vh_auto_1vh_80vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
+    <motion.div
+      className="w-full h-screen grid grid-rows-[7vh_auto_1vh_80vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
       <Navbar />
       <DetailsSection user={user} loading={loading} error={error} />
       <BlankSection />
@@ -159,6 +165,6 @@ export default function UserProfile() {
         onMoveToFolder={handleMoveToFolder}
       />
       <Footer />
-    </div>
+    </motion.div>
   );
 }

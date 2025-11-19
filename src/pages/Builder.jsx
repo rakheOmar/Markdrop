@@ -44,6 +44,7 @@ import {
   Type,
   Video,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -702,7 +703,12 @@ export default function Builder() {
         <AppSidebar onBlockAdd={handleBlockAdd} />
 
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center justify-between px-2 sm:px-4 border-b">
+          <motion.header
+            className="flex h-16 shrink-0 items-center justify-between px-2 sm:px-4 border-b"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <SidebarTrigger id="builder-sidebar-trigger" className="-ml-1" />
               <Separator orientation="vertical" className="h-4 hidden sm:block" />
@@ -918,9 +924,14 @@ export default function Builder() {
                 <Sparkles className="h-4 w-4" />
               </Button>
             </div>
-          </header>
+          </motion.header>
 
-          <div className="flex flex-1 flex-col p-4 gap-4">
+          <motion.div
+            className="flex flex-1 flex-col p-4 gap-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <div id="builder-content-area" className="flex-1 w-full max-w-none">
               <DashboardHome
                 activeTab={activeTab}
@@ -931,7 +942,7 @@ export default function Builder() {
                 onBlockAdd={handleBlockAdd}
               />
             </div>
-          </div>
+          </motion.div>
         </SidebarInset>
 
         <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>

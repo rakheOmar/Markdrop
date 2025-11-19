@@ -1,4 +1,5 @@
 import {
+  CornerDownLeft,
   FileText,
   Home,
   Info,
@@ -141,14 +142,12 @@ export default function Navbar() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/login">Login</Link>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <Link to="/signup">Sign Up</Link>
-                  </Button>
-                </>
+                <Button size="sm" asChild>
+                  <Link to="/signup" className="flex items-center gap-2">
+                    Get Started
+                    <CornerDownLeft className="h-4 w-4" />
+                  </Link>
+                </Button>
               )}
             </>
           )}
@@ -201,20 +200,12 @@ export default function Navbar() {
                     </DropdownMenuItem>
                   </>
                 ) : (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/login" className="flex items-center">
-                        <LogIn className="h-4 w-4 mr-2" />
-                        Login
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/signup" className="flex items-center">
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Sign Up
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
+                  <DropdownMenuItem asChild>
+                    <Link to="/signup" className="flex items-center">
+                      <CornerDownLeft className="h-4 w-4 mr-2" />
+                      Get Started
+                    </Link>
+                  </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
               </>

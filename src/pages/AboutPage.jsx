@@ -1,20 +1,28 @@
+import { motion } from "motion/react";
 import Navbar from "@/components/blocks/Navbar/Navbar";
 import Footer from "@/components/Footer";
+import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
 
 function Content() {
   return (
     <>
       <div className="relative overflow-hidden border-r border-[#cecece] dark:border-[#16181d]">
-        <div className="absolute top-0 right-0 w-auto h-auto px-2 py-1.5 sm:px-2.5 sm:py-2 border-l border-b border-[#cecece] dark:border-[#16181d] lg:flex items-center justify-center hidden">
+        <motion.div
+          className="absolute top-0 right-0 w-auto h-auto px-2 py-1.5 sm:px-2.5 sm:py-2 border-l border-b border-[#cecece] dark:border-[#16181d] lg:flex items-center justify-center hidden"
+          {...fadeInUp}
+        >
           <span className="font-mono text-[0.55rem] sm:text-[0.65rem] md:text-xs text-black dark:text-white whitespace-nowrap leading-tight">
             about_us.md
           </span>
-        </div>
+        </motion.div>
       </div>
 
-      <div className="overflow-y-auto px-4 sm:px-6 md:px-8 py-8 md:py-12">
+      <motion.div
+        className="overflow-y-auto px-4 sm:px-6 md:px-8 py-8 md:py-12"
+        {...staggerContainer}
+      >
         <div className="max-w-4xl mx-auto space-y-8">
-          <section className="space-y-4">
+          <motion.section className="space-y-4" {...staggerItem}>
             <h1 className="text-4xl md:text-5xl font-bold text-black dark:text-white">
               About Markdrop
             </h1>
@@ -24,9 +32,9 @@ function Content() {
               functionality in mind, we empower developers and creators to focus on their content,
               not the tools.
             </p>
-          </section>
+          </motion.section>
 
-          <section className="space-y-4">
+          <motion.section className="space-y-4" {...staggerItem}>
             <h2 className="text-3xl font-bold text-black dark:text-white">Our Mission</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
               We believe that creating markdown content should be fast, visual, and enjoyable.
@@ -35,9 +43,9 @@ function Content() {
               GitHub profile, documenting a project, or writing technical content, Markdrop is here
               to streamline your workflow.
             </p>
-          </section>
+          </motion.section>
 
-          <section className="space-y-4">
+          <motion.section className="space-y-4" {...staggerItem}>
             <h2 className="text-3xl font-bold text-black dark:text-white">
               What Makes Us Different
             </h2>
@@ -85,9 +93,9 @@ function Content() {
                 </span>
               </li>
             </ul>
-          </section>
+          </motion.section>
 
-          <section className="space-y-4">
+          <motion.section className="space-y-4" {...staggerItem}>
             <h2 className="text-3xl font-bold text-black dark:text-white">Built for Creators</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
               Markdrop is built by developers, for developers. We understand the frustration of
@@ -95,9 +103,9 @@ function Content() {
               pain of building GitHub profile READMEs from scratch. That's why we created Markdrop –
               to solve these problems and make markdown creation a delightful experience.
             </p>
-          </section>
+          </motion.section>
 
-          <section className="space-y-4">
+          <motion.section className="space-y-4" {...staggerItem}>
             <h2 className="text-3xl font-bold text-black dark:text-white">
               Open Source & Community
             </h2>
@@ -106,9 +114,9 @@ function Content() {
               back to the developer community. Contributions, feedback, and ideas are always
               welcome. Together, we're building the best markdown editor for modern creators.
             </p>
-          </section>
+          </motion.section>
 
-          <section className="space-y-4">
+          <motion.section className="space-y-4" {...staggerItem}>
             <h2 className="text-3xl font-bold text-black dark:text-white">The Journey Ahead</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
               We're constantly evolving Markdrop with new features, templates, and improvements
@@ -116,9 +124,9 @@ function Content() {
               AI-powered content suggestions, and much more. We're excited to have you join us on
               this journey.
             </p>
-          </section>
+          </motion.section>
 
-          <section className="space-y-4">
+          <motion.section className="space-y-4" {...staggerItem}>
             <h2 className="text-3xl font-bold text-black dark:text-white">Get in Touch</h2>
             <p className="text-base text-[#6b7280] dark:text-[#9ca3af] leading-relaxed">
               Have questions, suggestions, or just want to say hi? We'd love to hear from you!
@@ -142,9 +150,9 @@ function Content() {
                 </a>
               </p>
             </div>
-          </section>
+          </motion.section>
         </div>
-      </div>
+      </motion.div>
 
       <div className="flex items-center justify-center px-4 md:px-8 border-l border-[#cecece] dark:border-[#16181d]" />
     </>
@@ -153,10 +161,15 @@ function Content() {
 
 export default function AboutPage() {
   return (
-    <div className="w-full h-screen grid grid-rows-[7vh_93vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden">
+    <motion.div
+      className="w-full h-screen grid grid-rows-[7vh_93vh_5vh] grid-cols-[5%_90%_5%] md:grid-cols-[10%_80%_10%] lg:grid-cols-[15%_70%_15%] overflow-x-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
       <Navbar />
       <Content />
       <Footer />
-    </div>
+    </motion.div>
   );
 }
