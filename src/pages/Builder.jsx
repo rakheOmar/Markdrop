@@ -704,12 +704,12 @@ export default function Builder() {
 
         <SidebarInset>
           <motion.header
-            className="flex h-16 shrink-0 items-center justify-between px-2 sm:px-4 border-b"
+            className="flex h-16 shrink-0 items-center px-2 sm:px-4 border-b relative"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <SidebarTrigger id="builder-sidebar-trigger" className="-ml-1" />
               <Separator orientation="vertical" className="h-4 hidden sm:block" />
 
@@ -730,7 +730,7 @@ export default function Builder() {
               </div>
             </div>
 
-            <div className="flex-1 flex justify-center px-2">
+            <div className="absolute left-1/2 -translate-x-1/2 px-2">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList
                   id="builder-tabs"
@@ -761,7 +761,7 @@ export default function Builder() {
               </Tabs>
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-1 justify-end">
               <div id="builder-undo-btn" className="hidden xl:flex items-center gap-2">
                 <Button
                   variant="ghost"
