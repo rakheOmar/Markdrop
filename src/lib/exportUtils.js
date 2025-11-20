@@ -32,6 +32,13 @@ export const blocksToMarkdown = (blocks) => {
           return block.content;
         case "blockquote":
           return `> ${block.content}`;
+        case "alert": {
+          const alertType = (block.alertType || "note").toUpperCase();
+          const content = block.content || "";
+          const lines = content.split("\n");
+          const quotedLines = lines.map((line) => `> ${line}`).join("\n");
+          return `> [!${alertType}]\n${quotedLines}`;
+        }
         case "code":
           return block.content;
         case "html":

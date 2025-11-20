@@ -10,6 +10,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import {
+  AlertCircle,
   CheckSquare,
   Code,
   Eye,
@@ -161,6 +162,7 @@ export default function Builder() {
       h6: Heading6,
       paragraph: Type,
       blockquote: Quote,
+      alert: AlertCircle,
       code: Code,
       ul: List,
       ol: ListOrdered,
@@ -186,8 +188,8 @@ export default function Builder() {
       h6: "Heading 6",
       paragraph: "Paragraph",
       blockquote: "Blockquote",
+      alert: "Alert",
       code: "Code Block",
-
       ul: "Bullet List",
       ol: "Numbered List",
       "task-list": "Task List",
@@ -563,8 +565,8 @@ export default function Builder() {
           h6: "Heading 6",
           paragraph: "",
           blockquote: "",
+          alert: "Useful information that users should know, even when skimming content.",
           code: "```javascript\n// Your code here\n```",
-
           ul: "- Item 1\n- Item 2\n- Item 3",
           ol: "1. First item\n2. Second item\n3. Third item",
           "task-list": "- [ ] Task 1\n- [x] Task 2\n- [ ] Task 3",
@@ -610,6 +612,9 @@ export default function Builder() {
             icons: "js,html,css",
             theme: "dark",
             perLine: "15",
+          }),
+          ...(blockType === "alert" && {
+            alertType: "note",
           }),
         };
 

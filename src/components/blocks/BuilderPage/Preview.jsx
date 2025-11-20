@@ -1,3 +1,4 @@
+import { AlertCircle, AlertTriangle, Info, Lightbulb, OctagonAlert } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
@@ -22,6 +23,11 @@ const blocksToMarkdown = (blocks) => {
           return block.content.trim();
         case "blockquote":
           return `> ${block.content}`;
+        case "alert": {
+          const alertType = (block.alertType || "note").toUpperCase();
+          const content = block.content || "";
+          return `<div class="alert alert-${block.alertType || "note"}" data-alert-type="${alertType}">\n\n${content}\n\n</div>`;
+        }
         case "code":
           return block.content;
         case "ul":
@@ -583,6 +589,66 @@ export default function Preview({ blocks = [] }) {
                   td: ({ ...props }) => (
                     <td className="border border-border px-4 py-2" {...props} />
                   ),
+                  div: ({ className, children, ...props }) => {
+                    if (className?.includes("alert")) {
+                      const alertType = props["data-alert-type"] || "NOTE";
+                      const alertTypeClass =
+                        className
+                          .split(" ")
+                          .find((c) => c.startsWith("alert-"))
+                          ?.replace("alert-", "") || "note";
+
+                      const alertConfig = {
+                        note: {
+                          icon: Info,
+                          borderColor: "border-blue-500",
+                          iconColor: "text-blue-500",
+                        },
+                        tip: {
+                          icon: Lightbulb,
+                          borderColor: "border-green-500",
+                          iconColor: "text-green-500",
+                        },
+                        important: {
+                          icon: AlertCircle,
+                          borderColor: "border-purple-500",
+                          iconColor: "text-purple-500",
+                        },
+                        warning: {
+                          icon: AlertTriangle,
+                          borderColor: "border-yellow-500",
+                          iconColor: "text-yellow-600 dark:text-yellow-500",
+                        },
+                        caution: {
+                          icon: OctagonAlert,
+                          borderColor: "border-red-500",
+                          iconColor: "text-red-500",
+                        },
+                      };
+
+                      const config = alertConfig[alertTypeClass] || alertConfig.note;
+                      const Icon = config.icon;
+
+                      return (
+                        <div className={`border-l-4 p-4 my-4 ${config.borderColor}`} {...props}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <Icon className={`h-5 w-5 shrink-0 ${config.iconColor}`} />
+                            <span className={`font-semibold text-sm ${config.iconColor}`}>
+                              {alertType}
+                            </span>
+                          </div>
+                          <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-0 [&>p]:leading-normal">
+                            {children}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className={className} {...props}>
+                        {children}
+                      </div>
+                    );
+                  },
                 }}
               >
                 {markdown}

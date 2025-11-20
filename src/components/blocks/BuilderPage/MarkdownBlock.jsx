@@ -3,11 +3,11 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Trash2 } from "lucide-react";
 import { memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import AlertBlock from "./blocks/AlertBlock";
 import BlockquoteBlock from "./blocks/BlockquoteBlock";
 import CodeBlock from "./blocks/CodeBlock";
 import GithubProfileCardsBlock from "./blocks/GithubProfileCardsBlock";
 import HeadingBlock from "./blocks/HeadingBlock";
-
 import ImageBlock from "./blocks/ImageBlock";
 import LinkBlock from "./blocks/LinkBlock";
 import ListBlock from "./blocks/ListBlock";
@@ -46,9 +46,10 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
         return <ParagraphBlock block={block} onUpdate={onUpdate} />;
       case "blockquote":
         return <BlockquoteBlock block={block} onUpdate={onUpdate} />;
+      case "alert":
+        return <AlertBlock block={block} onUpdate={onUpdate} />;
       case "code":
         return <CodeBlock block={block} onUpdate={onUpdate} />;
-
       case "separator":
         return <SeparatorBlock />;
       case "image":
@@ -76,14 +77,14 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
   };
 
   return (
-    <div className="relative mx-12">
+    <div className="relative mx-8">
       <div
         ref={setNodeRef}
         style={style}
         className="group relative rounded-lg border border-transparent hover:border-muted-foreground/20 transition-all p-3 touch-manipulation"
       >
         {/* Controls - always visible on mobile, hover on desktop */}
-        <div className="absolute -left-12 top-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col gap-1">
+        <div className="absolute -left-8 top-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col gap-1">
           <Button
             variant="ghost"
             size="icon"
@@ -96,7 +97,7 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
           </Button>
         </div>
 
-        <div className="absolute -right-12 top-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+        <div className="absolute -right-8 top-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="icon"

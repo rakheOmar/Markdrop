@@ -1,5 +1,6 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import {
+  AlertCircle,
   Code2,
   CreditCard,
   Heading1,
@@ -104,7 +105,7 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       paragraph: "",
       blockquote: "",
       code: "```javascript\n// Your code here\n```",
-
+      alert: "Useful information that users should know, even when skimming content.",
       ul: "- Item 1\n- Item 2\n- Item 3",
       ol: "1. First item\n2. Second item\n3. Third item",
       "task-list": "- [ ] Task 1\n- [x] Task 2\n- [ ] Task 3",
@@ -168,6 +169,9 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
           },
         ],
       }),
+      ...(blockType === "alert" && {
+        alertType: "note",
+      }),
     };
 
     // Add the block using the existing onBlockAdd function structure
@@ -203,6 +207,7 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       { title: "Table", key: "table", icon: Table },
       { title: "Separator", key: "separator", icon: Minus },
       { title: "Blockquote", key: "blockquote", icon: Quote },
+      { title: "Alert", key: "alert", icon: AlertCircle },
       { title: "Code Block", key: "code", icon: Code2 },
     ],
     lists: [

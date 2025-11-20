@@ -25,6 +25,13 @@ const blocksToMarkdown = (blocks) => {
           return block.content;
         case "blockquote":
           return `> ${block.content}`;
+        case "alert": {
+          const alertType = (block.alertType || "note").toUpperCase();
+          const content = block.content || "";
+          const lines = content.split("\n");
+          const quotedLines = lines.map((line) => `> ${line}`).join("\n");
+          return `> [!${alertType}]\n${quotedLines}`;
+        }
         case "code":
           return block.content;
         case "ul":
@@ -636,11 +643,37 @@ const markdownToBlocks = (markdown) => {
         content: line.slice(7),
       });
     } else if (line.startsWith("> ")) {
-      blocks.push({
-        id: generateUniqueId(),
-        type: "blockquote",
-        content: line.slice(2),
-      });
+      // Check if it's an alert (GitHub-flavored markdown alert)
+      const alertMatch = line.match(/^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
+      if (alertMatch) {
+        const alertType = alertMatch[1].toLowerCase();
+        const alertContent = [];
+
+        // Collect all subsequent lines that start with >
+        i++;
+        while (i < lines.length && lines[i].startsWith(">")) {
+          const contentLine = lines[i].slice(1).trim();
+          if (contentLine) {
+            alertContent.push(contentLine);
+          }
+          i++;
+        }
+        i--; // Step back one line since the loop will increment
+
+        blocks.push({
+          id: generateUniqueId(),
+          type: "alert",
+          alertType: alertType,
+          content: alertContent.join("\n"),
+        });
+      } else {
+        // Regular blockquote
+        blocks.push({
+          id: generateUniqueId(),
+          type: "blockquote",
+          content: line.slice(2),
+        });
+      }
     } else if (line === "---") {
       blocks.push({ id: generateUniqueId(), type: "separator", content: "" });
     } else if (line.match(/^<img\s+[^>]*>/)) {
