@@ -12,10 +12,10 @@
 
 <p align="center">
   <a href="https://markdrop.vercel.app/">Website</a> •
-  <a href=".github/ROADMAP.md">Roadmap</a> •
   <a href=".github/CONTRIBUTING.md">Contributing</a> •
   <a href=".github/CODE_OF_CONDUCT.md">Code of Conduct</a> •
   <a href=".github/PRIVACY_POLICY.md">Privacy Policy</a> •
+  <a href=".github/TERMS_OF_SERVICES.md">Terms of Services</a> •
   <a href="LICENSE">License</a>
 </p>
 
