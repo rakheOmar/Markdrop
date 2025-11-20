@@ -145,6 +145,16 @@ export default function Login() {
                 <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
               )}
             </div>
+            <p className="text-xs text-muted-foreground text-center">
+              By signing up, you agree to our{" "}
+              <RouterLink to="/terms-of-services" className="underline hover:text-foreground">
+                Terms of Service
+              </RouterLink>{" "}
+              and{" "}
+              <RouterLink to="/privacy-policy" className="underline hover:text-foreground">
+                Privacy Policy
+              </RouterLink>
+            </p>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>

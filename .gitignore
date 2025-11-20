@@ -121,6 +121,8 @@ types/generated/
 dist-ssr/
 *.local
 
+# Kiro 
+.kiro
 
 # Supabase Config 
 setup-database.sql
