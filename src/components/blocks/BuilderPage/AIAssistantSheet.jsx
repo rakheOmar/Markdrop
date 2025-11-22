@@ -1,26 +1,18 @@
 import { AlertCircleIcon, LogIn, MessageSquareIcon } from "lucide-react";
 import { nanoid } from "nanoid";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Context,
-  ContextContent,
-  ContextContentBody,
-  ContextContentHeader,
-  ContextTrigger,
-} from "@/components/ai-elements/context";
 import {
   Conversation,
   ConversationContent,
   ConversationEmptyState,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
-import { Message, MessageContent } from "@/components/ai-elements/message";
+import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
 import {
   PromptInput,
   PromptInputBody,
   PromptInputFooter,
-  PromptInputProvider,
   PromptInputSubmit,
   PromptInputTextarea,
 } from "@/components/ai-elements/prompt-input";
@@ -37,8 +29,6 @@ const PROMPT_TEMPLATES = [
   { id: 4, text: "Explain markdown headings" },
 ];
 
-const SUBMITTING_TIMEOUT = 200;
-const STREAMING_TIMEOUT = 2000;
 const MAX_REQUESTS_PER_MONTH = 3;
 const STORAGE_KEY = "ai_assistant_usage";
 
@@ -73,7 +63,7 @@ export default function AIAssistantSheet({ open, onOpenChange }) {
   const [status, setStatus] = useState("ready");
   const [messages, setMessages] = useState([]);
   const [requestsRemaining, setRequestsRemaining] = useState(MAX_REQUESTS_PER_MONTH);
-  const textareaRef = useRef(null);
+  const [text, setText] = useState("");
 
   // Load usage data on mount
   useEffect(() => {
@@ -82,6 +72,68 @@ export default function AIAssistantSheet({ open, onOpenChange }) {
     const currentMonthUsage = usageData[monthKey] || 0;
     setRequestsRemaining(MAX_REQUESTS_PER_MONTH - currentMonthUsage);
   }, []);
+
+  const streamResponse = useCallback(async (messageId, content) => {
+    setStatus("streaming");
+
+    const words = content.split(" ");
+    let currentContent = "";
+
+    for (let i = 0; i < words.length; i++) {
+      currentContent += (i > 0 ? " " : "") + words[i];
+      setMessages((prev) =>
+        prev.map((msg) => (msg.key === messageId ? { ...msg, value: currentContent } : msg))
+      );
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 100 + 50));
+    }
+
+    setStatus("ready");
+  }, []);
+
+  const addUserMessage = useCallback(
+    (content) => {
+      const userMessage = {
+        key: nanoid(),
+        value: content,
+        from: "user",
+      };
+      setMessages((prev) => [...prev, userMessage]);
+
+      setTimeout(() => {
+        const assistantMessageId = nanoid();
+        const userText = content.toLowerCase();
+        let responseText = "I'm here to help with your markdown document. ";
+
+        if (userText.includes("format") || userText.includes("style")) {
+          responseText +=
+            "You can format text using markdown syntax like **bold**, *italic*, or `code`. Would you like specific formatting help?";
+        } else if (userText.includes("table")) {
+          responseText +=
+            "To create a table, use pipes (|) and hyphens (-). For example:\n\n| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |";
+        } else if (userText.includes("link")) {
+          responseText += "To add a link, use this syntax: [link text](https://example.com)";
+        } else if (userText.includes("image") || userText.includes("picture")) {
+          responseText += "To add an image, use: ![alt text](image-url.jpg)";
+        } else if (userText.includes("list")) {
+          responseText += "For bullet lists use -, *, or +. For numbered lists use 1., 2., etc.";
+        } else if (userText.includes("heading") || userText.includes("title")) {
+          responseText += "Use # for headings. # for H1, ## for H2, ### for H3, and so on.";
+        } else {
+          responseText +=
+            "I can help you with markdown formatting, tables, links, lists, headings, and more. What would you like to know?";
+        }
+
+        const assistantMessage = {
+          key: assistantMessageId,
+          value: "",
+          from: "assistant",
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+        streamResponse(assistantMessageId, responseText);
+      }, 500);
+    },
+    [streamResponse]
+  );
 
   const handleSubmit = (message) => {
     const hasText = Boolean(message.text);
@@ -103,14 +155,6 @@ export default function AIAssistantSheet({ open, onOpenChange }) {
 
     setStatus("submitted");
 
-    // Add user message
-    const userMessage = {
-      key: nanoid(),
-      value: message.text,
-      from: "user",
-    };
-    setMessages((prev) => [...prev, userMessage]);
-
     // Update usage count
     const monthKey = getCurrentMonthKey();
     const usageData = getUsageData();
@@ -119,47 +163,23 @@ export default function AIAssistantSheet({ open, onOpenChange }) {
     saveUsageData(usageData);
     setRequestsRemaining(MAX_REQUESTS_PER_MONTH - currentMonthUsage);
 
-    setTimeout(() => {
-      setStatus("streaming");
-    }, SUBMITTING_TIMEOUT);
-
-    // Simulate assistant response with context-aware replies
-    setTimeout(() => {
-      const userText = message.text.toLowerCase();
-      let responseText = "I'm here to help with your markdown document. ";
-
-      if (userText.includes("format") || userText.includes("style")) {
-        responseText +=
-          "You can format text using markdown syntax like **bold**, *italic*, or `code`. Would you like specific formatting help?";
-      } else if (userText.includes("table")) {
-        responseText +=
-          "To create a table, use pipes (|) and hyphens (-). For example:\n\n| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |";
-      } else if (userText.includes("link")) {
-        responseText += "To add a link, use this syntax: [link text](https://example.com)";
-      } else if (userText.includes("image") || userText.includes("picture")) {
-        responseText += "To add an image, use: ![alt text](image-url.jpg)";
-      } else if (userText.includes("list")) {
-        responseText += "For bullet lists use -, *, or +. For numbered lists use 1., 2., etc.";
-      } else if (userText.includes("heading") || userText.includes("title")) {
-        responseText += "Use # for headings. # for H1, ## for H2, ### for H3, and so on.";
-      } else {
-        responseText +=
-          "I can help you with markdown formatting, tables, links, lists, headings, and more. What would you like to know?";
-      }
-
-      const assistantMessage = {
-        key: nanoid(),
-        value: responseText,
-        from: "assistant",
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-      setStatus("ready");
-    }, STREAMING_TIMEOUT);
+    addUserMessage(message.text);
+    setText("");
   };
 
-  const handleTemplateClick = (templateText) => {
+  const handleSuggestionClick = (suggestion) => {
     if (requestsRemaining > 0) {
-      handleSubmit({ text: templateText });
+      setStatus("submitted");
+
+      // Update usage count
+      const monthKey = getCurrentMonthKey();
+      const usageData = getUsageData();
+      const currentMonthUsage = (usageData[monthKey] || 0) + 1;
+      usageData[monthKey] = currentMonthUsage;
+      saveUsageData(usageData);
+      setRequestsRemaining(MAX_REQUESTS_PER_MONTH - currentMonthUsage);
+
+      addUserMessage(suggestion);
     }
   };
 
@@ -227,7 +247,7 @@ export default function AIAssistantSheet({ open, onOpenChange }) {
                     {PROMPT_TEMPLATES.map((template) => (
                       <Suggestion
                         key={template.id}
-                        onClick={() => handleTemplateClick(template.text)}
+                        onClick={() => handleSuggestionClick(template.text)}
                         disabled={requestsRemaining === 0}
                       >
                         {template.text}
@@ -238,7 +258,9 @@ export default function AIAssistantSheet({ open, onOpenChange }) {
               ) : (
                 messages.map(({ key, value, from }) => (
                   <Message from={from} key={key}>
-                    <MessageContent>{value}</MessageContent>
+                    <MessageContent>
+                      <MessageResponse>{value}</MessageResponse>
+                    </MessageContent>
                   </Message>
                 ))
               )}
@@ -254,43 +276,33 @@ export default function AIAssistantSheet({ open, onOpenChange }) {
                 </AlertDescription>
               </Alert>
             )}
-            <PromptInputProvider>
-              <PromptInput onSubmit={handleSubmit}>
-                <PromptInputBody>
-                  <PromptInputTextarea
-                    ref={textareaRef}
-                    placeholder={
-                      requestsRemaining > 0
-                        ? "Ask me anything about markdown..."
-                        : "Monthly limit reached"
-                    }
-                    disabled={requestsRemaining === 0}
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <Context
-                      usedTokens={MAX_REQUESTS_PER_MONTH - requestsRemaining}
-                      maxTokens={MAX_REQUESTS_PER_MONTH}
-                    >
-                      <ContextTrigger />
-                      <ContextContent>
-                        <ContextContentHeader />
-                        <ContextContentBody>
-                          <div className="text-sm">
-                            <p className="text-muted-foreground">
-                              You have {requestsRemaining} of {MAX_REQUESTS_PER_MONTH} requests
-                              remaining this month.
-                            </p>
-                          </div>
-                        </ContextContentBody>
-                      </ContextContent>
-                    </Context>
+            <PromptInput onSubmit={handleSubmit}>
+              <PromptInputBody>
+                <PromptInputTextarea
+                  onChange={(event) => setText(event.target.value)}
+                  value={text}
+                  placeholder={
+                    requestsRemaining > 0
+                      ? "Ask me anything about markdown..."
+                      : "Monthly limit reached"
+                  }
+                  disabled={requestsRemaining === 0}
+                />
+              </PromptInputBody>
+              <PromptInputFooter>
+                <div className="flex items-center justify-between w-full">
+                  <div className="text-xs text-muted-foreground">
+                    {requestsRemaining} of {MAX_REQUESTS_PER_MONTH} requests remaining
                   </div>
-                </PromptInputBody>
-                <PromptInputFooter>
-                  <PromptInputSubmit status={status} disabled={requestsRemaining === 0} />
-                </PromptInputFooter>
-              </PromptInput>
-            </PromptInputProvider>
+                  <PromptInputSubmit
+                    status={status}
+                    disabled={
+                      !(text.trim() || status) || status === "streaming" || requestsRemaining === 0
+                    }
+                  />
+                </div>
+              </PromptInputFooter>
+            </PromptInput>
           </div>
         </div>
       </SheetContent>

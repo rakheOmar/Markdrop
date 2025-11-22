@@ -11,6 +11,7 @@ import HeadingBlock from "./blocks/HeadingBlock";
 import ImageBlock from "./blocks/ImageBlock";
 import LinkBlock from "./blocks/LinkBlock";
 import ListBlock from "./blocks/ListBlock";
+import MathBlock from "./blocks/MathBlock";
 import ParagraphBlock from "./blocks/ParagraphBlock";
 import SeparatorBlock from "./blocks/SeparatorBlock";
 import ShieldBadgeBlock from "./blocks/ShieldBadgeBlock";
@@ -50,6 +51,8 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
         return <AlertBlock block={block} onUpdate={onUpdate} />;
       case "code":
         return <CodeBlock block={block} onUpdate={onUpdate} />;
+      case "math":
+        return <MathBlock block={block} onUpdate={onUpdate} />;
       case "separator":
         return <SeparatorBlock />;
       case "image":

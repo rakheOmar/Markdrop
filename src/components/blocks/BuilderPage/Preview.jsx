@@ -1,7 +1,10 @@
 import { AlertCircle, AlertTriangle, Info, Lightbulb, OctagonAlert } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import "katex/dist/katex.min.css";
 
 const blocksToMarkdown = (blocks) => {
   return blocks
@@ -29,6 +32,8 @@ const blocksToMarkdown = (blocks) => {
           return `<div class="alert alert-${block.alertType || "note"}" data-alert-type="${alertType}">\n\n${content}\n\n</div>`;
         }
         case "code":
+          return block.content;
+        case "math":
           return block.content;
         case "ul":
           return block.content;
@@ -433,8 +438,8 @@ export default function Preview({ blocks = [] }) {
           <div className="p-2 sm:p-4">
             <div className="prose prose-slate dark:prose-invert max-w-none prose-sm">
               <ReactMarkdown
-                remarkPlugins={[[remarkGfm, { singleTilde: false }]]}
-                rehypePlugins={[rehypeRaw]}
+                remarkPlugins={[[remarkGfm, { singleTilde: false }], remarkMath]}
+                rehypePlugins={[rehypeRaw, rehypeKatex]}
                 skipHtml={false}
                 components={{
                   h1: ({ ...props }) => (
@@ -483,8 +488,16 @@ export default function Preview({ blocks = [] }) {
                     />
                   ),
                   br: () => <br className="my-2" />,
-                  code: ({ inline, className, children, ...props }) =>
-                    inline ? (
+                  code: ({ inline, className, children, ...props }) => {
+                    // Don't style math code blocks
+                    if (className?.includes("language-math")) {
+                      return (
+                        <code className={className} {...props}>
+                          {children}
+                        </code>
+                      );
+                    }
+                    return inline ? (
                       <code
                         className="bg-muted px-1.5 py-0 rounded text-sm font-mono align-text-bottom inline-block"
                         {...props}
@@ -498,11 +511,24 @@ export default function Preview({ blocks = [] }) {
                       >
                         {children}
                       </code>
-                    ),
+                    );
+                  },
                   pre: ({ children, ...props }) => {
                     let lang = "";
                     const child = Array.isArray(children) ? children[0] : children;
                     lang = child?.props?.className?.match(/language-([a-z0-9+#]+)/i)?.[1] || "";
+
+                    // Handle math blocks differently
+                    if (lang === "math") {
+                      return (
+                        <div className="my-6 overflow-x-auto">
+                          <pre className="text-center" {...props}>
+                            {children}
+                          </pre>
+                        </div>
+                      );
+                    }
+
                     const labelMap = {
                       js: "JS",
                       javascript: "JS",

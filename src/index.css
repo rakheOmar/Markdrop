@@ -271,3 +271,63 @@ body {
     }
   }
 }
+
+/* KaTeX Math Expression Styling */
+.katex {
+  font-size: 1.1em;
+}
+
+.katex-display {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+}
+
+.katex-display > .katex {
+  text-align: center;
+  white-space: normal;
+}
+
+/* Dark mode adjustments for KaTeX */
+.dark .katex {
+  color: oklch(0.9 0.005 255);
+}
+
+.dark .katex .mord,
+.dark .katex .mop,
+.dark .katex .mbin,
+.dark .katex .mrel,
+.dark .katex .mopen,
+.dark .katex .mclose,
+.dark .katex .mpunct {
+  color: oklch(0.9 0.005 255);
+}
+
+/* Ensure math expressions don't break layout */
+.katex-html {
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* Scrollbar for long math expressions */
+.katex-display::-webkit-scrollbar {
+  height: 6px;
+}
+
+.katex-display::-webkit-scrollbar-track {
+  background: oklch(0.95 0.002 255);
+}
+
+.katex-display::-webkit-scrollbar-thumb {
+  background: oklch(0.7 0.01 255);
+  border-radius: 3px;
+}
+
+.dark .katex-display::-webkit-scrollbar-track {
+  background: oklch(0.18 0.01 255);
+}
+
+.dark .katex-display::-webkit-scrollbar-thumb {
+  background: oklch(0.35 0.01 255);
+}
