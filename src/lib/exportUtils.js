@@ -8,12 +8,20 @@ marked.setOptions({
   silent: true,
 });
 
-export const blocksToMarkdown = (blocks) => {
+const ATTRIBUTION_FOOTER = `
+
+---
+
+<div align="center">
+  <sub>Created with <a href="https://markdrop.vercel.app">Markdrop</a> | <a href="https://github.com/rakheOmar/Markdrop">⭐ Star on GitHub</a></sub>
+</div>`;
+
+export const blocksToMarkdown = (blocks, includeAttribution = true) => {
   if (!blocks || blocks.length === 0) {
     return "";
   }
 
-  return blocks
+  const content = blocks
     .map((block) => {
       switch (block.type) {
         case "h1":
@@ -110,15 +118,17 @@ export const blocksToMarkdown = (blocks) => {
     })
     .filter(Boolean)
     .join("\n\n");
+
+  return includeAttribution ? content + ATTRIBUTION_FOOTER : content;
 };
 
-export const blocksToHTML = (blocks) => {
+export const blocksToHTML = (blocks, includeAttribution = true) => {
   if (!blocks || blocks.length === 0) {
-    return getHTMLTemplate("");
+    return getHTMLTemplate("", includeAttribution);
   }
 
   try {
-    const markdown = blocksToMarkdown(blocks);
+    const markdown = blocksToMarkdown(blocks, includeAttribution);
     const html = marked.parse(markdown, { breaks: true, gfm: true });
     const container = document.createElement("div");
     container.innerHTML = html;
@@ -167,7 +177,7 @@ export const blocksToHTML = (blocks) => {
       wrapper.appendChild(pre);
       wrapper.appendChild(badge);
     });
-    return getHTMLTemplate(container.innerHTML);
+    return getHTMLTemplate(container.innerHTML, includeAttribution);
   } catch (error) {
     console.error("Error converting blocks to HTML:", error);
     const fallbackHTML = blocks
@@ -178,11 +188,20 @@ export const blocksToHTML = (blocks) => {
         return `<p>${escapeHtml(block.content || "")}</p>`;
       })
       .join("\n");
-    return getHTMLTemplate(fallbackHTML);
+    return getHTMLTemplate(fallbackHTML, includeAttribution);
   }
 };
 
-const getHTMLTemplate = (content) => {
+const getHTMLTemplate = (content, includeAttribution = true) => {
+  const attribution = includeAttribution
+    ? `
+    <hr style="margin: 3rem 0 2rem; border: none; border-top: 1px solid #e5e7eb;">
+    <div style="text-align: center; font-size: 0.875rem; color: #6b7280; margin-top: 2rem;">
+        <p>Created with <a href="https://markdrop.vercel.app" style="color: #0366d6; text-decoration: none;">Markdrop</a> | 
+        <a href="https://github.com/rakheOmar/Markdrop" style="color: #0366d6; text-decoration: none;">⭐ Star on GitHub</a></p>
+    </div>`
+    : "";
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -296,6 +315,7 @@ const getHTMLTemplate = (content) => {
 </head>
 <body>
     ${content}
+    ${attribution}
 </body>
 </html>`;
 };
@@ -306,12 +326,12 @@ const escapeHtml = (text) => {
   return div.innerHTML;
 };
 
-export const exportToPDF = async (blocks, filename = "document.pdf") => {
+export const exportToPDF = async (blocks, filename = "document.pdf", includeAttribution = true) => {
   if (!blocks || blocks.length === 0) {
     throw new Error("No content to export");
   }
 
-  const htmlContent = blocksToHTML(blocks);
+  const htmlContent = blocksToHTML(blocks, includeAttribution);
   const iframe = document.createElement("iframe");
   iframe.style.position = "absolute";
   iframe.style.left = "-9999px";
@@ -413,13 +433,13 @@ export const exportToPDF = async (blocks, filename = "document.pdf") => {
   });
 };
 
-export const exportToHTML = (blocks, filename = "document.html") => {
+export const exportToHTML = (blocks, filename = "document.html", includeAttribution = true) => {
   if (!blocks || blocks.length === 0) {
     throw new Error("No content to export");
   }
 
   try {
-    const htmlContent = blocksToHTML(blocks);
+    const htmlContent = blocksToHTML(blocks, includeAttribution);
     const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -436,13 +456,13 @@ export const exportToHTML = (blocks, filename = "document.html") => {
   }
 };
 
-export const exportToMarkdown = (blocks, filename = "document.md") => {
+export const exportToMarkdown = (blocks, filename = "document.md", includeAttribution = true) => {
   if (!blocks || blocks.length === 0) {
     throw new Error("No content to export");
   }
 
   try {
-    const markdown = blocksToMarkdown(blocks);
+    const markdown = blocksToMarkdown(blocks, includeAttribution);
     const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

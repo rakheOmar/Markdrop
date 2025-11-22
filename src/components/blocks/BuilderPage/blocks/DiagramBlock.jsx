@@ -1,9 +1,9 @@
 import { Code2, Wand2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useTheme } from "@/components/ThemeProvider";
 
 const parseDiagramBlock = (content) => {
   if (!content) return "";
@@ -23,9 +23,14 @@ const TEMPLATE = `graph TD;
 export default function DiagramBlock({ block, onUpdate }) {
   const [code, setCode] = useState(() => parseDiagramBlock(block.content));
   const previewRef = useRef(null);
+  const renderTimeoutRef = useRef(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
+  const trimmedCode = useMemo(() => code.trim(), [code]);
+  const isValidCode = trimmedCode.length >= 5;
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: needed
   useEffect(() => {
     const incomingCode = parseDiagramBlock(block.content);
     if (incomingCode !== code) {
@@ -34,11 +39,18 @@ export default function DiagramBlock({ block, onUpdate }) {
   }, [block.content]);
 
   useEffect(() => {
-    if (!previewRef.current || !code.trim() || code.trim().length < 5) {
+    if (!previewRef.current || !isValidCode) {
+      if (previewRef.current && !isValidCode) {
+        previewRef.current.innerHTML = "";
+      }
       return;
     }
 
-    const renderDiagram = async () => {
+    if (renderTimeoutRef.current) {
+      clearTimeout(renderTimeoutRef.current);
+    }
+
+    renderTimeoutRef.current = setTimeout(async () => {
       try {
         mermaid.initialize({
           startOnLoad: false,
@@ -47,11 +59,11 @@ export default function DiagramBlock({ block, onUpdate }) {
           fontFamily: "inherit",
         });
 
-        const id = `mermaid-${Math.random().toString(36).substring(2, 11)}`;
+        const id = `mermaid-${Date.now()}`;
 
         if (previewRef.current) {
           previewRef.current.innerHTML = "";
-          const { svg } = await mermaid.render(id, code.trim());
+          const { svg } = await mermaid.render(id, trimmedCode);
           if (previewRef.current) {
             previewRef.current.innerHTML = svg;
           }
@@ -62,19 +74,26 @@ export default function DiagramBlock({ block, onUpdate }) {
           previewRef.current.innerHTML = `<div class="text-destructive text-sm p-4 rounded bg-destructive/10">Mermaid Error: ${error.message}</div>`;
         }
       }
+    }, 300);
+
+    return () => {
+      if (renderTimeoutRef.current) {
+        clearTimeout(renderTimeoutRef.current);
+      }
     };
+  }, [trimmedCode, isDark, isValidCode]);
 
-    renderDiagram();
-  }, [code, isDark]);
+  const handleChange = useCallback(
+    (value) => {
+      setCode(value);
+      onUpdate(block.id, { ...block, content: generateMarkdown(value) });
+    },
+    [block, onUpdate]
+  );
 
-  const handleChange = (value) => {
-    setCode(value);
-    onUpdate(block.id, { ...block, content: generateMarkdown(value) });
-  };
-
-  const loadTemplate = () => {
+  const loadTemplate = useCallback(() => {
     handleChange(TEMPLATE);
-  };
+  }, [handleChange]);
 
   return (
     <div className="group relative rounded-md border border-border bg-background transition-all hover:border-ring/50 focus-within:border-ring">

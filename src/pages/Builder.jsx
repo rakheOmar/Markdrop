@@ -54,6 +54,7 @@ import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
 import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -76,13 +77,11 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
 import { useBuilderTour } from "@/hooks/useBuilderTour";
-import { useThemeTransition } from "@/hooks/useThemeTransition";
 import { blocksToMarkdown, exportToHTML, exportToMarkdown, exportToPDF } from "@/lib/exportUtils";
 import { createMarkdown, getMarkdownById, updateMarkdown } from "@/lib/storage";
 
 export default function Builder() {
   const { theme, setTheme } = useTheme();
-  const { applyCircleExpand } = useThemeTransition();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -102,6 +101,9 @@ export default function Builder() {
   const [currentDocumentId, setCurrentDocumentId] = useState(null);
   const [lastSavedContent, setLastSavedContent] = useState("");
   const [showSparkleDialog, setShowSparkleDialog] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportFormat, setExportFormat] = useState("md");
+  const [includeAttribution, setIncludeAttribution] = useState(true);
 
   useEffect(() => {
     localStorage.setItem("markdown-blocks", JSON.stringify(blocks));
@@ -298,38 +300,43 @@ export default function Builder() {
   }, [handleUndo, handleRedo, handleSave]);
 
   const toggleTheme = () => {
-    applyCircleExpand(() => setTheme(theme === "dark" ? "light" : "dark"));
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const handleExport = async (format) => {
+  const openExportDialog = (format) => {
     if (blocks.length === 0) {
       toast.error("No content to export");
       return;
     }
+    setExportFormat(format);
+    setShowExportDialog(true);
+  };
 
+  const handleExport = async () => {
     const timestamp = new Date().toISOString().split("T")[0];
     const filename = `markdrop-document-${timestamp}`;
 
     try {
-      switch (format) {
+      switch (exportFormat) {
         case "md":
-          exportToMarkdown(blocks, `${filename}.md`);
+          exportToMarkdown(blocks, `${filename}.md`, includeAttribution);
           toast.success("Markdown exported!");
           break;
         case "html":
-          exportToHTML(blocks, `${filename}.html`);
+          exportToHTML(blocks, `${filename}.html`, includeAttribution);
           toast.success("HTML exported!");
           break;
         case "pdf":
-          await exportToPDF(blocks, `${filename}.pdf`);
+          await exportToPDF(blocks, `${filename}.pdf`, includeAttribution);
           toast.success("PDF exported!");
           break;
         default:
-          toast.error(`Unsupported format: ${format}`);
+          toast.error(`Unsupported format: ${exportFormat}`);
       }
+      setShowExportDialog(false);
     } catch (error) {
-      console.error(`Export error for ${format}:`, error);
-      toast.error(`Failed to export ${format.toUpperCase()}`);
+      console.error(`Export error for ${exportFormat}:`, error);
+      toast.error(`Failed to export ${exportFormat.toUpperCase()}`);
     }
   };
 
@@ -866,7 +873,7 @@ export default function Builder() {
                   </div>
 
                   <DropdownMenuItem
-                    onClick={() => handleExport("md")}
+                    onClick={() => openExportDialog("md")}
                     disabled={blocks.length === 0}
                   >
                     <FileDown className="w-4 h-4 mr-2" />
@@ -874,7 +881,7 @@ export default function Builder() {
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
-                    onClick={() => handleExport("pdf")}
+                    onClick={() => openExportDialog("pdf")}
                     disabled={blocks.length === 0}
                   >
                     <FileDown className="w-4 h-4 mr-2" />
@@ -882,7 +889,7 @@ export default function Builder() {
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
-                    onClick={() => handleExport("html")}
+                    onClick={() => openExportDialog("html")}
                     disabled={blocks.length === 0}
                   >
                     <FileDown className="w-4 h-4 mr-2" />
@@ -980,6 +987,41 @@ export default function Builder() {
               <Button onClick={handleSaveConfirm} disabled={isSaving || !saveTitle.trim()}>
                 {isSaving ? "Saving..." : "Save"}
               </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Export Document</DialogTitle>
+              <DialogDescription>
+                Choose your export options for {exportFormat.toUpperCase()} format.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="attribution"
+                  checked={includeAttribution}
+                  onCheckedChange={setIncludeAttribution}
+                />
+                <Label
+                  htmlFor="attribution"
+                  className="text-sm font-normal cursor-pointer leading-relaxed"
+                >
+                  Include attribution footer (Created with Markdrop)
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2 ml-6">
+                Help us grow by keeping the attribution link
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleExport}>Export</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

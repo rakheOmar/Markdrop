@@ -1,16 +1,12 @@
 import { Moon, Sun } from "lucide-react";
-import { useCallback } from "react";
 import { useTheme } from "@/components/ThemeProvider";
-import { useThemeTransition } from "@/hooks/useThemeTransition";
 
 export default function NavModeToggle() {
   const { theme, setTheme } = useTheme();
-  const { applyCircleExpand } = useThemeTransition();
 
-  const toggleTheme = useCallback(() => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    applyCircleExpand(() => setTheme(newTheme), "100", "0");
-  }, [theme, setTheme, applyCircleExpand]);
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   return (
     <button

@@ -29,17 +29,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { NAV_LINKS } from "@/config/nav";
 import { useAuth } from "@/context/AuthContext";
-import { useThemeTransition } from "@/hooks/useThemeTransition";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
-  const { applyCircleExpand } = useThemeTransition();
   const { user, logout, loading } = useAuth();
   const location = useLocation();
   const currentPath = location.pathname;
 
   const toggleTheme = () => {
-    applyCircleExpand(() => setTheme(theme === "dark" ? "light" : "dark"));
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
   const handleLogout = async () => {
