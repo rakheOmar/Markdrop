@@ -117,7 +117,7 @@ export default function MathBlock({ block, onUpdate }) {
             {parsed.type}
           </Button>
 
-          <div className="h-3 w-[1px] bg-border/60" />
+          <div className="h-3 w-px bg-border/60" />
 
           <Button
             variant="ghost"

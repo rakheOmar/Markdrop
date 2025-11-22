@@ -261,7 +261,7 @@ export default function ListBlock({ block, onUpdate }) {
                 />
               )}
               {blockType === "ol" && (
-                <span className="text-sm font-mono text-muted-foreground w-6 flex-shrink-0 text-right">
+                <span className="text-sm font-mono text-muted-foreground w-6 shrink-0 text-right">
                   {item.number}.
                 </span>
               )}
