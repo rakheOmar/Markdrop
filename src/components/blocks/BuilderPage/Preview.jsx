@@ -9,46 +9,46 @@ import "katex/dist/katex.min.css";
 import mermaid from "mermaid";
 import { useTheme } from "@/components/ThemeProvider";
 
-// Mermaid component
 function MermaidDiagram({ chart }) {
   const ref = useRef(null);
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   useEffect(() => {
-    if (ref.current && chart) {
-      // Initialize Mermaid with theme
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: isDark ? "dark" : "default",
-        securityLevel: "loose",
-        fontFamily: "inherit",
-      });
+    if (!ref.current || !chart || !chart.trim() || chart.trim().length < 5) {
+      return;
+    }
 
+    const renderDiagram = async () => {
       try {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: isDark ? "dark" : "default",
+          securityLevel: "loose",
+          fontFamily: "inherit",
+        });
+
         const id = `mermaid-${Math.random().toString(36).substring(2, 11)}`;
-        ref.current.innerHTML = "";
-        mermaid
-          .render(id, chart)
-          .then(({ svg }) => {
-            if (ref.current) {
-              ref.current.innerHTML = svg;
-            }
-          })
-          .catch((error) => {
-            if (ref.current) {
-              ref.current.innerHTML = `<div class="text-destructive text-sm p-4 rounded bg-destructive/10">Error: ${error.message}</div>`;
-            }
-          });
-      } catch (error) {
+
         if (ref.current) {
-          ref.current.innerHTML = `<div class="text-destructive text-sm p-4 rounded bg-destructive/10">Error: ${error.message}</div>`;
+          ref.current.innerHTML = "";
+          const { svg } = await mermaid.render(id, chart.trim());
+          if (ref.current) {
+            ref.current.innerHTML = svg;
+          }
+        }
+      } catch (error) {
+        console.error("Mermaid render error:", error, "Chart:", chart);
+        if (ref.current) {
+          ref.current.innerHTML = `<div class="text-destructive text-sm p-4 rounded bg-destructive/10">Mermaid Error: ${error.message}</div>`;
         }
       }
-    }
+    };
+
+    renderDiagram();
   }, [chart, isDark]);
 
-  return <div ref={ref} className="mermaid-diagram my-4" />;
+  return <div ref={ref} className="mermaid-diagram my-4 flex items-center justify-center" />;
 }
 
 const blocksToMarkdown = (blocks) => {
@@ -536,7 +536,6 @@ export default function Preview({ blocks = [] }) {
                   ),
                   br: () => <br className="my-2" />,
                   code: ({ inline, className, children, ...props }) => {
-                    // Don't style math code blocks
                     if (className?.includes("language-math")) {
                       return (
                         <code className={className} {...props}>
@@ -565,7 +564,6 @@ export default function Preview({ blocks = [] }) {
                     const child = Array.isArray(children) ? children[0] : children;
                     lang = child?.props?.className?.match(/language-([a-z0-9+#]+)/i)?.[1] || "";
 
-                    // Handle math blocks
                     if (lang === "math") {
                       return (
                         <div className="my-6 overflow-x-auto">
@@ -576,10 +574,18 @@ export default function Preview({ blocks = [] }) {
                       );
                     }
 
-                    // Handle Mermaid diagrams
                     if (lang === "mermaid") {
-                      const code = child?.props?.children?.[0] || "";
-                      return <MermaidDiagram chart={code} />;
+                      let code = "";
+                      if (typeof child?.props?.children === "string") {
+                        code = child.props.children;
+                      } else if (Array.isArray(child?.props?.children)) {
+                        code = child.props.children[0] || "";
+                      }
+
+                      if (code && typeof code === "string" && code.trim()) {
+                        return <MermaidDiagram chart={code.trim()} />;
+                      }
+                      return null;
                     }
 
                     const labelMap = {

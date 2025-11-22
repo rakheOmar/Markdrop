@@ -1,7 +1,9 @@
 import { Code2, Wand2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import mermaid from "mermaid";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useTheme } from "@/components/ThemeProvider";
 
 const parseDiagramBlock = (content) => {
   if (!content) return "";
@@ -20,14 +22,50 @@ const TEMPLATE = `graph TD;
 
 export default function DiagramBlock({ block, onUpdate }) {
   const [code, setCode] = useState(() => parseDiagramBlock(block.content));
+  const previewRef = useRef(null);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: needed
   useEffect(() => {
     const incomingCode = parseDiagramBlock(block.content);
     if (incomingCode !== code) {
       setCode(incomingCode);
     }
   }, [block.content]);
+
+  useEffect(() => {
+    if (!previewRef.current || !code.trim() || code.trim().length < 5) {
+      return;
+    }
+
+    const renderDiagram = async () => {
+      try {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: isDark ? "dark" : "default",
+          securityLevel: "loose",
+          fontFamily: "inherit",
+        });
+
+        const id = `mermaid-${Math.random().toString(36).substring(2, 11)}`;
+
+        if (previewRef.current) {
+          previewRef.current.innerHTML = "";
+          const { svg } = await mermaid.render(id, code.trim());
+          if (previewRef.current) {
+            previewRef.current.innerHTML = svg;
+          }
+        }
+      } catch (error) {
+        console.error("Mermaid render error:", error);
+        if (previewRef.current) {
+          previewRef.current.innerHTML = `<div class="text-destructive text-sm p-4 rounded bg-destructive/10">Mermaid Error: ${error.message}</div>`;
+        }
+      }
+    };
+
+    renderDiagram();
+  }, [code, isDark]);
 
   const handleChange = (value) => {
     setCode(value);
@@ -57,18 +95,25 @@ export default function DiagramBlock({ block, onUpdate }) {
         </Button>
       </div>
 
-      <div className="relative">
-        <Textarea
-          value={code}
-          onChange={(e) => handleChange(e.target.value)}
-          placeholder="graph TD;..."
-          className="min-h-[150px] w-full resize-y border-0 bg-transparent p-3 font-mono text-sm leading-relaxed focus-visible:ring-0"
-          spellCheck={false}
-        />
-      </div>
+      <div className="p-3 space-y-3">
+        {code.trim() && (
+          <div className="w-full rounded-md border border-border/50 bg-muted/5 p-4 overflow-auto">
+            <div ref={previewRef} className="mermaid-diagram flex items-center justify-center" />
+          </div>
+        )}
 
-      <div className="absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
-        <span className="text-[10px] text-muted-foreground/50 font-mono">```mermaid</span>
+        <div className="relative">
+          <Textarea
+            value={code}
+            onChange={(e) => handleChange(e.target.value)}
+            placeholder="graph TD;..."
+            className="min-h-[150px] w-full resize-y border-0 bg-muted/20 p-3 font-mono text-sm leading-relaxed focus-visible:ring-1 focus-visible:bg-background transition-colors"
+            spellCheck={false}
+          />
+          <div className="absolute bottom-2 right-2 opacity-50 pointer-events-none">
+            <span className="text-[10px] text-muted-foreground/50 font-mono">```mermaid</span>
+          </div>
+        </div>
       </div>
     </div>
   );
