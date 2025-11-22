@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import AlertBlock from "./blocks/AlertBlock";
 import BlockquoteBlock from "./blocks/BlockquoteBlock";
 import CodeBlock from "./blocks/CodeBlock";
+import DiagramBlock from "./blocks/DiagramBlock";
 import GithubProfileCardsBlock from "./blocks/GithubProfileCardsBlock";
 import HeadingBlock from "./blocks/HeadingBlock";
 import ImageBlock from "./blocks/ImageBlock";
@@ -53,6 +54,8 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
         return <CodeBlock block={block} onUpdate={onUpdate} />;
       case "math":
         return <MathBlock block={block} onUpdate={onUpdate} />;
+      case "diagram":
+        return <DiagramBlock block={block} onUpdate={onUpdate} />;
       case "separator":
         return <SeparatorBlock />;
       case "image":

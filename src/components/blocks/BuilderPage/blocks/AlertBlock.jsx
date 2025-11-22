@@ -1,18 +1,18 @@
 import {
-  AlertCircle,
   AlertTriangle,
   Bold,
+  CheckCircle2,
   Code,
   Info,
   Italic,
   Lightbulb,
-  Link,
+  Link as LinkIcon,
   OctagonAlert,
   Strikethrough,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import {
   Dialog,
   DialogContent,
@@ -22,50 +22,45 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 const alertTypes = {
   note: {
     icon: Info,
-    label: "NOTE",
+    label: "Note",
     borderColor: "border-blue-500",
-    iconColor: "text-blue-500",
-    bgColor: "bg-blue-50/50 dark:bg-blue-950/10",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    bgColor: "bg-blue-50/30 dark:bg-blue-950/10",
   },
   tip: {
     icon: Lightbulb,
-    label: "TIP",
+    label: "Tip",
     borderColor: "border-green-500",
-    iconColor: "text-green-500",
-    bgColor: "bg-green-50/50 dark:bg-green-950/10",
+    iconColor: "text-green-600 dark:text-green-400",
+    bgColor: "bg-green-50/30 dark:bg-green-950/10",
   },
   important: {
-    icon: AlertCircle,
-    label: "IMPORTANT",
+    icon: CheckCircle2,
+    label: "Important",
     borderColor: "border-purple-500",
-    iconColor: "text-purple-500",
-    bgColor: "bg-purple-50/50 dark:bg-purple-950/10",
+    iconColor: "text-purple-600 dark:text-purple-400",
+    bgColor: "bg-purple-50/30 dark:bg-purple-950/10",
   },
   warning: {
     icon: AlertTriangle,
-    label: "WARNING",
-    borderColor: "border-yellow-500",
-    iconColor: "text-yellow-600 dark:text-yellow-500",
-    bgColor: "bg-yellow-50/50 dark:bg-yellow-950/10",
+    label: "Warning",
+    borderColor: "border-amber-500",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    bgColor: "bg-amber-50/30 dark:bg-amber-950/10",
   },
   caution: {
     icon: OctagonAlert,
-    label: "CAUTION",
+    label: "Caution",
     borderColor: "border-red-500",
-    iconColor: "text-red-500",
-    bgColor: "bg-red-50/50 dark:bg-red-950/10",
+    iconColor: "text-red-600 dark:text-red-400",
+    bgColor: "bg-red-50/30 dark:bg-red-950/10",
   },
 };
 
@@ -73,6 +68,7 @@ export default function AlertBlock({ block, onUpdate }) {
   const alertType = block.alertType || "note";
   const alertConfig = alertTypes[alertType];
   const Icon = alertConfig.icon;
+
   const textareaRef = useRef(null);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("https://");
@@ -86,72 +82,60 @@ export default function AlertBlock({ block, onUpdate }) {
     onUpdate(block.id, { ...block, alertType: value });
   };
 
-  const handleSelect = (e) => {
-    const textarea = e.target;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
+  const getTrimmedSelection = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return null;
 
-    if (start !== end) {
-      const selectedText = block.content.substring(start, end);
-      return { start, end, selectedText };
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    const text = block.content;
+
+    while (start < end && /\s/.test(text[start])) {
+      start++;
     }
-    return null;
-  };
 
-  const getTrimmedSelection = (fullSelection) => {
-    const trimmed = fullSelection.trim();
-    const startOffset = fullSelection.indexOf(trimmed);
-    const endOffset = startOffset + trimmed.length;
-    return { trimmed, startOffset, endOffset };
+    while (end > start && /\s/.test(text[end - 1])) {
+      end--;
+    }
+
+    if (start === end) return null;
+
+    return {
+      start,
+      end,
+      selectedText: text.substring(start, end),
+    };
   };
 
   const applyFormatting = (prefix, suffix = prefix) => {
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = block.content.substring(start, end);
+    const selection = getTrimmedSelection();
+    if (!selection) return;
 
-    if (!selectedText.trim()) return;
-
-    const { trimmed, startOffset } = getTrimmedSelection(selectedText);
-
-    const beforeSelection = block.content.substring(0, start);
-    const ignoredLeadingSpace = selectedText.substring(0, startOffset);
-    const formattedPart = prefix + trimmed + suffix;
-    const ignoredTrailingSpace = selectedText.substring(startOffset + trimmed.length);
-    const afterSelection = block.content.substring(end);
+    const { start, end, selectedText } = selection;
 
     const newText =
-      beforeSelection + ignoredLeadingSpace + formattedPart + ignoredTrailingSpace + afterSelection;
+      block.content.substring(0, start) +
+      prefix +
+      selectedText +
+      suffix +
+      block.content.substring(end);
 
     handleContentChange(newText);
 
     setTimeout(() => {
-      textarea.focus();
-      const newStart = start + startOffset + prefix.length;
-      const newEnd = newStart + trimmed.length;
-      textarea.setSelectionRange(newStart, newEnd);
+      const textarea = textareaRef.current;
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+      }
     }, 0);
   };
 
   const applyLink = () => {
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = block.content.substring(start, end);
+    const selection = getTrimmedSelection();
+    if (!selection) return;
 
-    if (!selectedText.trim()) return;
-
-    const { trimmed, startOffset } = getTrimmedSelection(selectedText);
-
-    setLinkSelection({
-      start: start + startOffset,
-      end: start + startOffset + trimmed.length,
-      selectedText: trimmed,
-      originalStart: start,
-      originalEnd: end,
-    });
-
+    setLinkSelection(selection);
     setLinkUrl("https://");
     setLinkDialogOpen(true);
   };
@@ -159,23 +143,15 @@ export default function AlertBlock({ block, onUpdate }) {
   const handleApplyLink = () => {
     if (!linkSelection || !linkUrl) return;
 
-    const { selectedText, originalStart, originalEnd } = linkSelection;
-
-    const beforeOriginal = block.content.substring(0, originalStart);
-    const rawSelection = block.content.substring(originalStart, originalEnd);
-    const leadingSpace = rawSelection.substring(0, rawSelection.indexOf(selectedText));
-    const trailingSpace = rawSelection.substring(leadingSpace.length + selectedText.length);
-    const afterOriginal = block.content.substring(originalEnd);
-
+    const { start, end, selectedText } = linkSelection;
     const newText =
-      beforeOriginal +
-      leadingSpace +
+      block.content.substring(0, start) +
       `[${selectedText}](${linkUrl})` +
-      trailingSpace +
-      afterOriginal;
+      block.content.substring(end);
 
     handleContentChange(newText);
     setLinkDialogOpen(false);
+
     setTimeout(() => {
       textareaRef.current?.focus();
     }, 0);
@@ -183,104 +159,116 @@ export default function AlertBlock({ block, onUpdate }) {
 
   return (
     <div
-      className={`relative rounded-r-lg border border-l-4 p-2.5 ${alertConfig.borderColor} ${alertConfig.bgColor || ""}`}
+      className={cn(
+        "group relative rounded-md border border-border border-l-4 transition-all focus-within:border-ring",
+        alertConfig.borderColor,
+        alertConfig.bgColor
+      )}
     >
-      <div className="flex items-start gap-2.5">
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <Icon className={`h-5 w-5 shrink-0 ${alertConfig.iconColor}`} />
-              <span className={`font-semibold text-sm uppercase ${alertConfig.iconColor}`}>
-                {alertType}
-              </span>
-            </div>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-background/40">
+        <Select value={alertType} onValueChange={handleTypeChange}>
+          <SelectTrigger className="h-7 w-fit gap-2 border-none bg-transparent px-2 text-xs font-semibold uppercase tracking-wider hover:bg-background/50 focus:ring-0">
+            <Icon className={cn("h-4 w-4", alertConfig.iconColor)} />
+            <span className={alertConfig.iconColor}>{alertConfig.label}</span>
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(alertTypes).map(([key, config]) => {
+              const TypeIcon = config.icon;
+              return (
+                <SelectItem key={key} value={key} className="text-xs">
+                  <div className="flex items-center gap-2">
+                    <TypeIcon className={cn("h-3.5 w-3.5", config.iconColor)} />
+                    <span>{config.label}</span>
+                  </div>
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
 
-            <div className="overflow-x-auto -mx-2.5 px-2.5 sm:mx-0 sm:px-0">
-              <ButtonGroup className="w-fit">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => applyFormatting("**")}
-                  title="Bold"
-                >
-                  <Bold />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => applyFormatting("*")}
-                  title="Italic"
-                >
-                  <Italic />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => applyFormatting("~~")}
-                  title="Strikethrough"
-                >
-                  <Strikethrough />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => applyFormatting("`")}
-                  title="Inline Code"
-                >
-                  <Code />
-                </Button>
-                <Button variant="outline" size="icon" onClick={applyLink} title="Link">
-                  <Link />
-                </Button>
-                <Select value={alertType} onValueChange={handleTypeChange}>
-                  <SelectTrigger className="w-[110px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="note">Note</SelectItem>
-                    <SelectItem value="tip">Tip</SelectItem>
-                    <SelectItem value="important">Important</SelectItem>
-                    <SelectItem value="warning">Warning</SelectItem>
-                    <SelectItem value="caution">Caution</SelectItem>
-                  </SelectContent>
-                </Select>
-              </ButtonGroup>
-            </div>
-          </div>
+        <ButtonGroup className="bg-background/80">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => applyFormatting("**")}
+            title="Bold"
+          >
+            <Bold className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => applyFormatting("*")}
+            title="Italic"
+          >
+            <Italic className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => applyFormatting("~~")}
+            title="Strikethrough"
+          >
+            <Strikethrough className="h-3.5 w-3.5" />
+          </Button>
 
-          <Textarea
-            ref={textareaRef}
-            value={block.content}
-            onChange={(e) => handleContentChange(e.target.value)}
-            onSelect={handleSelect}
-            placeholder={`Enter ${alertConfig.label.toLowerCase()}...`}
-            className="min-h-[60px] border-none shadow-none focus-visible:ring-0 px-3 py-2 resize-none bg-transparent text-sm leading-relaxed"
-          />
-        </div>
+          <ButtonGroupSeparator />
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => applyFormatting("`")}
+            title="Inline Code"
+          >
+            <Code className="h-3.5 w-3.5" />
+          </Button>
+
+          <ButtonGroupSeparator />
+
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={applyLink} title="Link">
+            <LinkIcon className="h-3.5 w-3.5" />
+          </Button>
+        </ButtonGroup>
       </div>
 
+      <Textarea
+        ref={textareaRef}
+        value={block.content}
+        onChange={(e) => handleContentChange(e.target.value)}
+        placeholder={`Enter ${alertConfig.label.toLowerCase()} text...`}
+        className="min-h-[80px] w-full resize-y border-0 bg-transparent p-3 text-sm leading-relaxed focus-visible:ring-0 placeholder:text-muted-foreground/50"
+      />
+
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle>Add Link</DialogTitle>
-            <DialogDescription>Enter the URL for "{linkSelection?.selectedText}"</DialogDescription>
+            <DialogTitle>Insert Link</DialogTitle>
+            <DialogDescription>Add a URL for the selected text.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="url">URL</Label>
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-2">
+              <Label htmlFor="url" className="text-xs">
+                URL
+              </Label>
               <Input
                 id="url"
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
-                placeholder="https://example.com"
+                className="h-8 text-sm"
                 autoFocus
               />
             </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setLinkDialogOpen(false)}>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setLinkDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleApplyLink}>Add Link</Button>
+              <Button size="sm" onClick={handleApplyLink}>
+                Save
+              </Button>
             </div>
           </div>
         </DialogContent>

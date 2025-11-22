@@ -1,8 +1,17 @@
-import { CreditCard, Plus, Trash2 } from "lucide-react";
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  CreditCard,
+  Github,
+  Maximize,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,36 +19,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
-// Common countries with their UTC offsets
 const COUNTRIES_WITH_UTC = [
   { name: "United States (EST)", offset: "-5" },
   { name: "United States (PST)", offset: "-8" },
   { name: "United Kingdom", offset: "0" },
   { name: "Germany", offset: "1" },
-  { name: "France", offset: "1" },
   { name: "India", offset: "5.5" },
   { name: "China", offset: "8" },
   { name: "Japan", offset: "9" },
-  { name: "Australia (Sydney)", offset: "11" },
   { name: "Brazil", offset: "-3" },
-  { name: "Canada (EST)", offset: "-5" },
-  { name: "Russia (Moscow)", offset: "3" },
   { name: "South Korea", offset: "9" },
   { name: "Singapore", offset: "8" },
-  { name: "UAE", offset: "4" },
-  { name: "Netherlands", offset: "1" },
-  { name: "Spain", offset: "1" },
-  { name: "Italy", offset: "1" },
-  { name: "Mexico", offset: "-6" },
-  { name: "Argentina", offset: "-3" },
+];
+
+const THEMES = [
+  { value: "default", label: "Default" },
+  { value: "material_palenight", label: "Material Palenight" },
+  { value: "solarized", label: "Solarized" },
+  { value: "solarized_dark", label: "Solarized Dark" },
+  { value: "github", label: "GitHub" },
+  { value: "github_dark", label: "GitHub Dark" },
+  { value: "vue", label: "Vue" },
+  { value: "dracula", label: "Dracula" },
+  { value: "monokai", label: "Monokai" },
+  { value: "nord_dark", label: "Nord Dark" },
+];
+
+const CARD_TYPES = [
+  { value: "profile-details", label: "Profile Details" },
+  { value: "repos-per-language", label: "Repos per Language" },
+  { value: "most-commit-language", label: "Most Commit Language" },
+  { value: "stats", label: "Stats" },
+  { value: "productive-time", label: "Productive Time" },
 ];
 
 const GithubProfileCardsBlock = memo(function GithubProfileCardsBlock({ block, onUpdate }) {
   const cards = block.cards || [
     {
       cardType: "profile-details",
-      theme: "material_palenight",
+      theme: "github_dark",
       utcOffset: "8",
       height: "",
       width: "",
@@ -48,16 +68,9 @@ const GithubProfileCardsBlock = memo(function GithubProfileCardsBlock({ block, o
   const username = block.username || "";
   const align = block.align || "left";
 
-  const handleUsernameChange = useCallback(
-    (value) => {
-      onUpdate(block.id, { ...block, username: value });
-    },
-    [block, onUpdate]
-  );
-
-  const handleAlignChange = useCallback(
-    (value) => {
-      onUpdate(block.id, { ...block, align: value });
+  const handleUpdate = useCallback(
+    (updates) => {
+      onUpdate(block.id, { ...block, ...updates });
     },
     [block, onUpdate]
   );
@@ -66,218 +79,226 @@ const GithubProfileCardsBlock = memo(function GithubProfileCardsBlock({ block, o
     (index, field, value) => {
       const newCards = [...cards];
       newCards[index] = { ...newCards[index], [field]: value };
-      onUpdate(block.id, { ...block, cards: newCards });
+      handleUpdate({ cards: newCards });
     },
-    [block, cards, onUpdate]
+    [cards, handleUpdate]
   );
 
   const addCard = useCallback(() => {
     const newCards = [
       ...cards,
       {
-        cardType: "profile-details",
-        theme: "material_palenight",
+        cardType: "stats",
+        theme: "github_dark",
         utcOffset: "8",
         height: "",
         width: "",
       },
     ];
-    onUpdate(block.id, { ...block, cards: newCards });
-  }, [block, cards, onUpdate]);
+    handleUpdate({ cards: newCards });
+  }, [cards, handleUpdate]);
 
   const removeCard = useCallback(
     (index) => {
       if (cards.length === 1) return;
       const newCards = cards.filter((_, i) => i !== index);
-      onUpdate(block.id, { ...block, cards: newCards });
+      handleUpdate({ cards: newCards });
     },
-    [block, cards, onUpdate]
+    [cards, handleUpdate]
   );
 
   const generateCardUrl = useCallback(
     (card) => {
       if (!username.trim()) return null;
-
       const baseUrl = "http://github-profile-summary-cards.vercel.app/api/cards";
       let url = `${baseUrl}/${card.cardType}?username=${username}&theme=${card.theme}`;
-
-      // Add utcOffset only for productive-time card
       if (card.cardType === "productive-time") {
         url += `&utcOffset=${card.utcOffset}`;
       }
-
       return url;
     },
     [username]
   );
 
   return (
-    <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <CreditCard className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs font-medium text-muted-foreground">GitHub Profile Cards</span>
+    <div className="group relative rounded-md border border-border bg-background transition-all focus-within:border-ring">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-muted/10">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <CreditCard className="h-3.5 w-3.5" />
+          <span>Profile Cards</span>
         </div>
-        <Button onClick={addCard} size="sm" variant="outline" className="h-7 text-xs">
-          <Plus className="w-3 h-3 mr-1" />
-          Add Card
-        </Button>
+
+        <ButtonGroup className="bg-background/80">
+          <Button variant="ghost" size="sm" onClick={addCard} className="h-7 text-xs gap-1.5 px-2">
+            <Plus className="h-3 w-3" /> Add Card
+          </Button>
+
+          <ButtonGroupSeparator />
+
+          <Button
+            variant={align === "left" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => handleUpdate({ align: "left" })}
+          >
+            <AlignLeft className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant={align === "center" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => handleUpdate({ align: "center" })}
+          >
+            <AlignCenter className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant={align === "right" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => handleUpdate({ align: "right" })}
+          >
+            <AlignRight className="h-3.5 w-3.5" />
+          </Button>
+        </ButtonGroup>
       </div>
 
-      <div>
-        <Label className="text-xs font-medium text-muted-foreground mb-1">GitHub Username</Label>
-        <Input
-          type="text"
-          value={username}
-          onChange={(e) => handleUsernameChange(e.target.value)}
-          placeholder="your-github-username"
-          className="bg-background h-8 text-xs"
-        />
-      </div>
+      <div className="p-3 space-y-3">
+        <div className="relative">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <Github className="h-3.5 w-3.5" />
+          </div>
+          <Input
+            value={username}
+            onChange={(e) => handleUpdate({ username: e.target.value })}
+            placeholder="GitHub Username (required to view preview)"
+            className="pl-9 border-0 bg-muted/20 h-9 shadow-none focus-visible:ring-1 focus-visible:bg-background transition-colors text-sm"
+          />
+        </div>
 
-      <div>
-        <Label className="text-xs font-medium text-muted-foreground mb-1">Alignment</Label>
-        <Select value={align} onValueChange={handleAlignChange}>
-          <SelectTrigger className="bg-background h-8 text-xs">
-            <SelectValue placeholder="Select alignment" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="left">Left</SelectItem>
-            <SelectItem value="center">Center</SelectItem>
-            <SelectItem value="right">Right</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        {cards.map((card, index) => {
+          const previewUrl = generateCardUrl(card);
 
-      {cards.map((card, index) => {
-        const previewUrl = generateCardUrl(card);
+          return (
+            <div
+              key={index}
+              className="rounded-md border border-border/50 bg-background p-3 space-y-3 shadow-sm"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Card {index + 1}
+                </span>
+                {cards.length > 1 && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeCard(index)}
+                    className="h-5 w-5 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
 
-        return (
-          <div key={index} className="space-y-2 p-3 border rounded-md bg-background/50">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-muted-foreground">Card {index + 1}</span>
-              {cards.length > 1 && (
-                <Button
-                  onClick={() => removeCard(index)}
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              )}
-            </div>
-
-            <div className="flex items-end gap-2">
-              <div className="flex-1 min-w-0">
-                <Label className="text-xs font-medium text-muted-foreground mb-1">Card Type</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Select
                   value={card.cardType}
-                  onValueChange={(value) => handleCardChange(index, "cardType", value)}
+                  onValueChange={(val) => handleCardChange(index, "cardType", val)}
                 >
-                  <SelectTrigger className="bg-background h-8 text-xs">
+                  <SelectTrigger className="h-8 text-xs bg-muted/5">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="profile-details">Profile Details</SelectItem>
-                    <SelectItem value="repos-per-language">Repos per Language</SelectItem>
-                    <SelectItem value="most-commit-language">Most Commit Language</SelectItem>
-                    <SelectItem value="stats">Stats</SelectItem>
-                    <SelectItem value="productive-time">Productive Time</SelectItem>
+                    {CARD_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value} className="text-xs">
+                        {t.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-              </div>
 
-              <div className="flex-1 min-w-0">
-                <Label className="text-xs font-medium text-muted-foreground mb-1">Theme</Label>
                 <Select
                   value={card.theme}
-                  onValueChange={(value) => handleCardChange(index, "theme", value)}
+                  onValueChange={(val) => handleCardChange(index, "theme", val)}
                 >
-                  <SelectTrigger className="bg-background h-8 text-xs">
+                  <SelectTrigger className="h-8 text-xs bg-muted/5">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="material_palenight">Material Palenight</SelectItem>
-                    <SelectItem value="default">Default</SelectItem>
-                    <SelectItem value="solarized">Solarized</SelectItem>
-                    <SelectItem value="solarized_dark">Solarized Dark</SelectItem>
-                    <SelectItem value="github">GitHub</SelectItem>
-                    <SelectItem value="github_dark">GitHub Dark</SelectItem>
-                    <SelectItem value="vue">Vue</SelectItem>
-                    <SelectItem value="dracula">Dracula</SelectItem>
-                    <SelectItem value="monokai">Monokai</SelectItem>
-                    <SelectItem value="nord_dark">Nord Dark</SelectItem>
-                    <SelectItem value="nord_bright">Nord Bright</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {card.cardType === "productive-time" && (
-              <div>
-                <Label className="text-xs font-medium text-muted-foreground mb-1">Country</Label>
-                <Select
-                  value={card.utcOffset}
-                  onValueChange={(value) => handleCardChange(index, "utcOffset", value)}
-                >
-                  <SelectTrigger className="bg-background h-8 text-xs">
-                    <SelectValue placeholder="Select country" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[200px]">
-                    {COUNTRIES_WITH_UTC.map((country, countryIndex) => (
-                      <SelectItem key={`${country.name}-${countryIndex}`} value={country.offset}>
-                        {country.name}
+                    {THEMES.map((t) => (
+                      <SelectItem key={t.value} value={t.value} className="text-xs">
+                        {t.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            )}
 
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <Label className="text-xs font-medium text-muted-foreground mb-1">
-                  Height (optional)
-                </Label>
-                <Input
-                  type="text"
-                  value={card.height || ""}
-                  onChange={(e) => handleCardChange(index, "height", e.target.value)}
-                  placeholder="180em"
-                  className="bg-background h-8 text-xs"
-                />
-              </div>
-              <div className="flex-1">
-                <Label className="text-xs font-medium text-muted-foreground mb-1">
-                  Width (optional)
-                </Label>
-                <Input
-                  type="text"
-                  value={card.width || ""}
-                  onChange={(e) => handleCardChange(index, "width", e.target.value)}
-                  placeholder="49%"
-                  className="bg-background h-8 text-xs"
-                />
-              </div>
-            </div>
+              {card.cardType === "productive-time" && (
+                <Select
+                  value={card.utcOffset}
+                  onValueChange={(val) => handleCardChange(index, "utcOffset", val)}
+                >
+                  <SelectTrigger className="h-8 text-xs bg-muted/5">
+                    <SelectValue placeholder="Select Timezone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRIES_WITH_UTC.map((c, i) => (
+                      <SelectItem key={i} value={c.offset} className="text-xs">
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
-            {previewUrl && username.trim() && (
-              <div className="mt-2 p-2 bg-muted/30 rounded border">
-                <div className="text-[10px] text-muted-foreground mb-2 font-mono">Preview:</div>
-                <div className="flex justify-center items-center">
-                  <img
-                    src={previewUrl}
-                    alt={`GitHub ${card.cardType} card`}
-                    className="block mx-auto max-w-full h-auto"
-                    loading="lazy"
+              <div className="grid grid-cols-2 gap-2">
+                <div className="relative">
+                  <div className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground opacity-50">
+                    <Maximize className="h-3 w-3" />
+                  </div>
+                  <Input
+                    value={card.width}
+                    onChange={(e) => handleCardChange(index, "width", e.target.value)}
+                    placeholder="Width (e.g. 100%)"
+                    className="h-8 text-xs pl-7 bg-muted/5"
+                  />
+                </div>
+                <div className="relative">
+                  <div className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground opacity-50">
+                    <Maximize className="h-3 w-3 rotate-90" />
+                  </div>
+                  <Input
+                    value={card.height}
+                    onChange={(e) => handleCardChange(index, "height", e.target.value)}
+                    placeholder="Height"
+                    className="h-8 text-xs pl-7 bg-muted/5"
                   />
                 </div>
               </div>
-            )}
-          </div>
-        );
-      })}
+
+              {previewUrl && username.trim() && (
+                <div
+                  className={cn(
+                    "rounded bg-muted/5 p-2 flex overflow-hidden",
+                    align === "center"
+                      ? "justify-center"
+                      : align === "right"
+                        ? "justify-end"
+                        : "justify-start"
+                  )}
+                >
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="max-w-full h-auto rounded-sm shadow-sm"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 });

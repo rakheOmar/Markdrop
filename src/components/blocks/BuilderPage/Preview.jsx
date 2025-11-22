@@ -1,10 +1,55 @@
 import { AlertCircle, AlertTriangle, Info, Lightbulb, OctagonAlert } from "lucide-react";
+import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
+import mermaid from "mermaid";
+import { useTheme } from "@/components/ThemeProvider";
+
+// Mermaid component
+function MermaidDiagram({ chart }) {
+  const ref = useRef(null);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
+  useEffect(() => {
+    if (ref.current && chart) {
+      // Initialize Mermaid with theme
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? "dark" : "default",
+        securityLevel: "loose",
+        fontFamily: "inherit",
+      });
+
+      try {
+        const id = `mermaid-${Math.random().toString(36).substring(2, 11)}`;
+        ref.current.innerHTML = "";
+        mermaid
+          .render(id, chart)
+          .then(({ svg }) => {
+            if (ref.current) {
+              ref.current.innerHTML = svg;
+            }
+          })
+          .catch((error) => {
+            if (ref.current) {
+              ref.current.innerHTML = `<div class="text-destructive text-sm p-4 rounded bg-destructive/10">Error: ${error.message}</div>`;
+            }
+          });
+      } catch (error) {
+        if (ref.current) {
+          ref.current.innerHTML = `<div class="text-destructive text-sm p-4 rounded bg-destructive/10">Error: ${error.message}</div>`;
+        }
+      }
+    }
+  }, [chart, isDark]);
+
+  return <div ref={ref} className="mermaid-diagram my-4" />;
+}
 
 const blocksToMarkdown = (blocks) => {
   return blocks
@@ -34,6 +79,8 @@ const blocksToMarkdown = (blocks) => {
         case "code":
           return block.content;
         case "math":
+          return block.content;
+        case "diagram":
           return block.content;
         case "ul":
           return block.content;
@@ -518,7 +565,7 @@ export default function Preview({ blocks = [] }) {
                     const child = Array.isArray(children) ? children[0] : children;
                     lang = child?.props?.className?.match(/language-([a-z0-9+#]+)/i)?.[1] || "";
 
-                    // Handle math blocks differently
+                    // Handle math blocks
                     if (lang === "math") {
                       return (
                         <div className="my-6 overflow-x-auto">
@@ -527,6 +574,12 @@ export default function Preview({ blocks = [] }) {
                           </pre>
                         </div>
                       );
+                    }
+
+                    // Handle Mermaid diagrams
+                    if (lang === "mermaid") {
+                      const code = child?.props?.children?.[0] || "";
+                      return <MermaidDiagram chart={code} />;
                     }
 
                     const labelMap = {

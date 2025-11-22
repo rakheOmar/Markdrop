@@ -13,6 +13,7 @@ import {
   Link2,
   ListChecks,
   Minus,
+  Network,
   ListOrdered as OrderedList,
   Pilcrow,
   Quote,
@@ -107,6 +108,7 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       blockquote: "",
       code: "```javascript\n// Your code here\n```",
       math: "$\\sqrt{3x-1}+(1+x)^2$",
+      diagram: "```mermaid\ngraph TD;\n    A-->B;\n    A-->C;\n    B-->D;\n    C-->D;\n```",
       alert: "Useful information that users should know, even when skimming content.",
       ul: "- Item 1\n- Item 2\n- Item 3",
       ol: "1. First item\n2. Second item\n3. Third item",
@@ -212,6 +214,7 @@ export default function AppSidebar({ onBlockAdd, ...props }) {
       { title: "Alert", key: "alert", icon: AlertCircle },
       { title: "Code Block", key: "code", icon: Code2 },
       { title: "Math Expression", key: "math", icon: Sigma },
+      { title: "Diagram", key: "diagram", icon: Network },
     ],
     lists: [
       { title: "Ordered List", key: "ol", icon: OrderedList },

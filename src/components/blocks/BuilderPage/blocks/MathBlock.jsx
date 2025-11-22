@@ -1,32 +1,27 @@
-import { Info } from "lucide-react";
+import { AlertTriangle, Settings2, Sigma } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 const parseMathBlock = (content) => {
   if (!content) return { type: "inline", expression: "", syntax: "dollar" };
 
-  // Check for block math with $$
   const blockMatch = content.match(/^\$\$([\s\S]*?)\$\$/);
   if (blockMatch) {
     return { type: "block", expression: blockMatch[1].trim(), syntax: "dollar" };
   }
 
-  // Check for block math with ```math
   const codeBlockMatch = content.match(/^```math\n([\s\S]*?)\n```$/);
   if (codeBlockMatch) {
     return { type: "block", expression: codeBlockMatch[1].trim(), syntax: "codeblock" };
   }
 
-  // Check for inline math with $` and `$
   const inlineAltMatch = content.match(/^\$`([\s\S]*?)`\$$/);
   if (inlineAltMatch) {
     return { type: "inline", expression: inlineAltMatch[1], syntax: "backtick" };
   }
 
-  // Check for inline math with $
   const inlineMatch = content.match(/^\$([\s\S]*?)\$/);
   if (inlineMatch) {
     return { type: "inline", expression: inlineMatch[1], syntax: "dollar" };
@@ -42,7 +37,6 @@ const generateMarkdown = (type, expression, syntax) => {
     }
     return `$$${expression}$$`;
   }
-  // Inline
   if (syntax === "backtick") {
     return `$\`${expression}\`$`;
   }
@@ -51,13 +45,9 @@ const generateMarkdown = (type, expression, syntax) => {
 
 export default function MathBlock({ block, onUpdate }) {
   const [parsed, setParsed] = useState(() => parseMathBlock(block.content));
-  const [isUpdating, setIsUpdating] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <needed>
   useEffect(() => {
-    if (isUpdating) {
-      setIsUpdating(false);
-      return;
-    }
     const newParsed = parseMathBlock(block.content);
     if (
       newParsed.type !== parsed.type ||
@@ -66,144 +56,113 @@ export default function MathBlock({ block, onUpdate }) {
     ) {
       setParsed(newParsed);
     }
-  }, [block.content, isUpdating, parsed.expression, parsed.type, parsed.syntax]);
+  }, [block.content]);
+
+  const updateBlock = (newState) => {
+    setParsed(newState);
+    const markdown = generateMarkdown(newState.type, newState.expression, newState.syntax);
+    onUpdate(block.id, { ...block, content: markdown });
+  };
 
   const handleExpressionChange = (value) => {
-    const markdown = generateMarkdown(parsed.type, value, parsed.syntax);
-    setParsed({ ...parsed, expression: value });
-    setIsUpdating(true);
-    onUpdate(block.id, { ...block, content: markdown });
+    updateBlock({ ...parsed, expression: value });
   };
 
-  const handleTypeChange = (type) => {
-    // When switching to block, prefer $$ syntax
-    const newSyntax = type === "block" ? "dollar" : parsed.syntax;
-    const markdown = generateMarkdown(type, parsed.expression, newSyntax);
-    setParsed({ ...parsed, type, syntax: newSyntax });
-    setIsUpdating(true);
-    onUpdate(block.id, { ...block, content: markdown });
+  const toggleType = () => {
+    const newType = parsed.type === "inline" ? "block" : "inline";
+    const newSyntax = newType === "block" ? "dollar" : "dollar";
+    updateBlock({ ...parsed, type: newType, syntax: newSyntax });
   };
 
-  const handleSyntaxChange = (syntax) => {
-    const markdown = generateMarkdown(parsed.type, parsed.expression, syntax);
-    setParsed({ ...parsed, syntax });
-    setIsUpdating(true);
-    onUpdate(block.id, { ...block, content: markdown });
+  const cycleSyntax = () => {
+    let newSyntax = parsed.syntax;
+    if (parsed.type === "block") {
+      newSyntax = parsed.syntax === "dollar" ? "codeblock" : "dollar";
+    } else {
+      newSyntax = parsed.syntax === "dollar" ? "backtick" : "dollar";
+    }
+    updateBlock({ ...parsed, syntax: newSyntax });
   };
 
-  // Check if expression contains dollar signs
-  const hasDollarSign = parsed.expression.includes("$");
+  const hasDollarConflict =
+    parsed.type === "inline" && parsed.syntax === "dollar" && parsed.expression.includes("$");
 
   return (
-    <div className="rounded-lg border border-border overflow-hidden bg-muted/50">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted">
-        <RadioGroup
-          value={parsed.type}
-          onValueChange={handleTypeChange}
-          className="flex items-center gap-4"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="inline" id="inline" />
-            <Label htmlFor="inline" className="text-xs cursor-pointer">
-              Inline
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="block" id="block" />
-            <Label htmlFor="block" className="text-xs cursor-pointer">
-              Block
-            </Label>
-          </div>
-        </RadioGroup>
-        <span className="text-xs text-muted-foreground">Math Expression</span>
+    <div className="group relative rounded-md border border-border bg-background transition-all hover:border-ring/50 focus-within:border-ring">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/40">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <Sigma className="h-3.5 w-3.5" />
+          <span>Math</span>
+        </div>
+
+        <div className="flex items-center gap-1">
+          {hasDollarConflict && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => updateBlock({ ...parsed, syntax: "backtick" })}
+              className="h-6 px-2 text-[10px] text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+            >
+              <AlertTriangle className="mr-1 h-3 w-3" />
+              Fix Syntax
+            </Button>
+          )}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleType}
+            className="h-6 px-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:text-primary"
+          >
+            {parsed.type}
+          </Button>
+
+          <div className="h-3 w-[1px] bg-border/60" />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={cycleSyntax}
+            className="h-6 px-2 text-[10px] font-mono text-muted-foreground hover:text-primary"
+            title="Switch Syntax"
+          >
+            {parsed.type === "block"
+              ? parsed.syntax === "dollar"
+                ? "$$...$$"
+                : "```math"
+              : parsed.syntax === "dollar"
+                ? "$...$"
+                : "$`...`$"}
+            <Settings2 className="ml-1.5 h-3 w-3 opacity-50" />
+          </Button>
+        </div>
       </div>
 
-      {hasDollarSign && parsed.type === "inline" && parsed.syntax === "dollar" && (
-        <Alert className="m-3 mb-0">
-          <Info className="h-4 w-4" />
-          <AlertDescription className="text-xs">
-            Your expression contains a $ sign. Consider using{" "}
-            <button
-              type="button"
-              onClick={() => handleSyntaxChange("backtick")}
-              className="underline font-medium hover:text-foreground"
-            >
-              $` and `$ syntax
-            </button>{" "}
-            to avoid conflicts.
-          </AlertDescription>
-        </Alert>
-      )}
+      <div className="relative">
+        <Textarea
+          value={parsed.expression}
+          onChange={(e) => handleExpressionChange(e.target.value)}
+          placeholder="e.g., \sqrt{3x-1}+(1+x)^2"
+          className="min-h-[80px] w-full resize-y border-0 bg-transparent p-3 font-mono text-sm leading-relaxed focus-visible:ring-0"
+          spellCheck={false}
+        />
+      </div>
 
-      <Textarea
-        value={parsed.expression}
-        onChange={(e) => handleExpressionChange(e.target.value)}
-        placeholder="Enter LaTeX expression (e.g., \sqrt{3x-1}+(1+x)^2)"
-        className="font-mono text-sm p-3 resize-y border-none shadow-none focus-visible:ring-1 bg-transparent rounded-none"
-        rows={Math.max(3, parsed.expression.split("\n").length + 1)}
-      />
-
-      <div className="px-4 py-2 border-t border-border bg-muted/30 space-y-2">
-        {parsed.type === "inline" && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Syntax:</span>
-            <RadioGroup
-              value={parsed.syntax}
-              onValueChange={handleSyntaxChange}
-              className="flex items-center gap-3"
-            >
-              <div className="flex items-center space-x-1.5">
-                <RadioGroupItem value="dollar" id="syntax-dollar" />
-                <Label htmlFor="syntax-dollar" className="text-xs cursor-pointer">
-                  <code>$...$</code>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <RadioGroupItem value="backtick" id="syntax-backtick" />
-                <Label htmlFor="syntax-backtick" className="text-xs cursor-pointer">
-                  <code>$`...`$</code>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-        )}
-
-        {parsed.type === "block" && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Syntax:</span>
-            <RadioGroup
-              value={parsed.syntax}
-              onValueChange={handleSyntaxChange}
-              className="flex items-center gap-3"
-            >
-              <div className="flex items-center space-x-1.5">
-                <RadioGroupItem value="dollar" id="syntax-block-dollar" />
-                <Label htmlFor="syntax-block-dollar" className="text-xs cursor-pointer">
-                  <code>$$...$$</code>
-                </Label>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <RadioGroupItem value="codeblock" id="syntax-codeblock" />
-                <Label htmlFor="syntax-codeblock" className="text-xs cursor-pointer">
-                  <code>```math</code>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-        )}
-
-        <p className="text-xs text-muted-foreground pt-1">
-          {parsed.type === "inline" ? (
-            <>
-              Use <code className="text-xs">$`...`$</code> when expression contains $ or markdown
-              characters
-            </>
-          ) : (
-            <>
-              Use <code className="text-xs">```math</code> for better compatibility in .md files
-            </>
+      <div className="absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
+        <span
+          className={cn(
+            "text-[10px] font-mono",
+            hasDollarConflict ? "text-amber-600" : "text-muted-foreground/50"
           )}
-        </p>
+        >
+          {parsed.type === "block"
+            ? parsed.syntax === "dollar"
+              ? "$$"
+              : "```math"
+            : parsed.syntax === "dollar"
+              ? "$"
+              : "$`"}
+        </span>
       </div>
     </div>
   );

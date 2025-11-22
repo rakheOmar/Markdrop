@@ -1,6 +1,7 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Table as TableIcon, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
 
 const parseMarkdownTable = (content) => {
@@ -24,7 +25,7 @@ const parseMarkdownTable = (content) => {
 export default function TableBlock({ block, onUpdate }) {
   const [tableData, setTableData] = useState(() => {
     const parsed = parseMarkdownTable(block.content);
-    return parsed || { headers: ["Header 1", "Header 2"], rows: [["Add text..", "Add text.."]] };
+    return parsed || { headers: ["Header 1", "Header 2"], rows: [["Cell 1", "Cell 2"]] };
   });
   const isUpdatingRef = useRef(false);
 
@@ -67,8 +68,8 @@ export default function TableBlock({ block, onUpdate }) {
   };
 
   const addColumn = () => {
-    const newHeaders = [...tableData.headers, "Add text.."];
-    const newRows = tableData.rows.map((row) => [...row, "Add text.."]);
+    const newHeaders = [...tableData.headers, "New Header"];
+    const newRows = tableData.rows.map((row) => [...row, "New Cell"]);
     setTableData({ headers: newHeaders, rows: newRows });
   };
 
@@ -80,7 +81,7 @@ export default function TableBlock({ block, onUpdate }) {
   };
 
   const addRow = () => {
-    const newRow = tableData.headers.map(() => "Add text..");
+    const newRow = tableData.headers.map(() => "New Cell");
     setTableData({ ...tableData, rows: [...tableData.rows, newRow] });
   };
 
@@ -91,28 +92,45 @@ export default function TableBlock({ block, onUpdate }) {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="rounded-lg border border-border overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+    <div className="group relative rounded-md border border-border bg-background transition-all focus-within:border-ring">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-muted/10">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <TableIcon className="h-3.5 w-3.5" />
+          <span>Table</span>
+        </div>
+
+        <ButtonGroup className="bg-background/80">
+          <Button variant="ghost" size="sm" onClick={addRow} className="h-7 text-xs gap-1.5">
+            <Plus className="h-3 w-3" /> Row
+          </Button>
+          <ButtonGroupSeparator />
+          <Button variant="ghost" size="sm" onClick={addColumn} className="h-7 text-xs gap-1.5">
+            <Plus className="h-3 w-3" /> Col
+          </Button>
+        </ButtonGroup>
+      </div>
+
+      <div className="overflow-x-auto p-3">
+        <div className="rounded-md border border-border overflow-hidden">
+          <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="bg-muted border-b-2 border-border">
+              <tr className="bg-muted/40 border-b border-border">
                 {tableData.headers.map((header, index) => (
                   <th
                     key={index}
-                    className="relative group border-r last:border-r-0 border-border min-w-[150px]"
+                    className="relative group border-r last:border-r-0 border-border min-w-[120px]"
                   >
                     <Input
                       value={header}
                       onChange={(e) => updateHeader(index, e.target.value)}
-                      className="border-0 font-semibold h-11 px-3 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-primary bg-transparent text-left shadow-none"
-                      placeholder="Add text.."
+                      className="border-0 font-semibold h-9 px-3 bg-transparent text-left shadow-none focus-visible:ring-0"
+                      placeholder="Header"
                     />
                     {tableData.headers.length > 1 && (
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute top-1.5 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-sm shadow-sm"
+                        className="absolute top-1.5 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                         onClick={() => removeColumn(index)}
                       >
                         <Trash2 className="h-3 w-3" />
@@ -120,31 +138,33 @@ export default function TableBlock({ block, onUpdate }) {
                     )}
                   </th>
                 ))}
-                {tableData.rows.length > 1 && <th className="w-12 border-l border-border"></th>}
+                {tableData.rows.length > 1 && (
+                  <th className="w-10 border-l border-border bg-muted/20"></th>
+                )}
               </tr>
             </thead>
             <tbody>
               {tableData.rows.map((row, rowIndex) => (
                 <tr
                   key={rowIndex}
-                  className="group border-b last:border-b-0 border-border hover:bg-muted/50 transition-colors"
+                  className="group border-b last:border-b-0 border-border hover:bg-muted/20 transition-colors"
                 >
                   {row.map((cell, colIndex) => (
                     <td key={colIndex} className="border-r last:border-r-0 border-border p-0">
                       <Input
                         value={cell}
                         onChange={(e) => updateCell(rowIndex, colIndex, e.target.value)}
-                        className="border-0 h-11 px-3 focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-primary bg-transparent rounded-none shadow-none"
-                        placeholder="Add text.."
+                        className="border-0 h-9 px-3 bg-transparent shadow-none focus-visible:ring-0"
+                        placeholder="Cell"
                       />
                     </td>
                   ))}
                   {tableData.rows.length > 1 && (
-                    <td className="w-12 border-l border-border text-center p-0">
+                    <td className="w-10 border-l border-border text-center p-0 bg-muted/20">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-11 w-11 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-9 w-full opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-none"
                         onClick={() => removeRow(rowIndex)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -156,15 +176,6 @@ export default function TableBlock({ block, onUpdate }) {
             </tbody>
           </table>
         </div>
-      </div>
-
-      <div className="flex gap-2">
-        <Button variant="outline" size="sm" onClick={addRow} className="gap-1.5">
-          <Plus className="h-3.5 w-3.5" /> Add Row
-        </Button>
-        <Button variant="outline" size="sm" onClick={addColumn} className="gap-1.5">
-          <Plus className="h-3.5 w-3.5" /> Add Column
-        </Button>
       </div>
     </div>
   );

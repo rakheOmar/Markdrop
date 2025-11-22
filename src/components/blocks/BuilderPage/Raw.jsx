@@ -34,6 +34,10 @@ const blocksToMarkdown = (blocks) => {
         }
         case "code":
           return block.content;
+        case "math":
+          return block.content;
+        case "diagram":
+          return block.content;
         case "ul":
           return block.content;
         case "ol":

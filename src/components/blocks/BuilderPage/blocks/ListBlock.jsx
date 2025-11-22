@@ -1,6 +1,17 @@
-import { Bold, Code, Italic, Plus, Strikethrough, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Bold,
+  CheckSquare,
+  Code,
+  Italic,
+  List,
+  ListOrdered,
+  Plus,
+  Strikethrough,
+  Trash2,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 
@@ -35,7 +46,7 @@ const parseList = (content, type) => {
       text = line.replace(/^\s*\d+\.\s*/, "");
     }
 
-    return { id: `${index}`, text, indent, checked, number };
+    return { id: `${index}-${Date.now()}`, text, indent, checked, number };
   });
 };
 
@@ -48,7 +59,7 @@ const generateMarkdown = (items, type) => {
       } else if (type === "ul") {
         return `${indentation}- ${item.text}`;
       } else if (type === "ol") {
-        return `${indentation}${item.number || parseInt(item.id) + 1}. ${item.text}`;
+        return `${indentation}${item.number}. ${item.text}`;
       }
       return item.text;
     })
@@ -60,133 +71,145 @@ export default function ListBlock({ block, onUpdate }) {
   const blockType = block.type;
   const blockContent = block.content;
 
-  const initializedRef = useRef(false);
   const [items, setItems] = useState(() => {
     const parsed = parseList(blockContent, blockType);
     return parsed.length > 0
       ? parsed
       : [{ id: "0", text: "", indent: 0, checked: false, number: 1 }];
   });
-  const [showToolbar, setShowToolbar] = useState(false);
-  const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
-  const [activeInputRef, setActiveInputRef] = useState(null);
 
-  // Memoize the markdown generation to prevent unnecessary recalculations
+  const [activeItemId, setActiveItemId] = useState(null);
+  const inputRefs = useRef(new Map());
+  const isUpdatingRef = useRef(false);
+
   const markdown = useMemo(() => generateMarkdown(items, blockType), [items, blockType]);
 
-  // Use useCallback to prevent function recreation on every render
-  const handleUpdate = useCallback(() => {
-    if (!initializedRef.current) {
-      initializedRef.current = true;
+  useEffect(() => {
+    if (isUpdatingRef.current) {
+      isUpdatingRef.current = false;
       return;
     }
-    onUpdate(blockId, { ...block, content: markdown });
-  }, [blockId, block, markdown, onUpdate]);
+    const parsed = parseList(blockContent, blockType);
+    if (parsed.length > 0) {
+      setItems(parsed);
+    }
+  }, [blockContent, blockType]);
 
-  // Only update when markdown actually changes
   useEffect(() => {
     if (markdown !== blockContent) {
-      handleUpdate();
+      isUpdatingRef.current = true;
+      onUpdate(blockId, { ...block, content: markdown });
     }
-  }, [markdown, blockContent, handleUpdate]);
+  }, [markdown, blockId, block, onUpdate, blockContent]);
 
-  const updateItem = useCallback((id, updates) => {
+  const updateItem = (id, updates) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...updates } : item)));
-  }, []);
+  };
 
-  const addItem = useCallback(() => {
+  const addItem = () => {
     const newId = Date.now().toString();
     setItems((prev) => {
-      const lastNumber = prev.length > 0 ? prev[prev.length - 1].number || prev.length : 0;
+      const lastNumber = prev.length > 0 ? prev[prev.length - 1].number : 0;
       return [...prev, { id: newId, text: "", indent: 0, checked: false, number: lastNumber + 1 }];
     });
-  }, []);
+    setTimeout(() => {
+      const el = inputRefs.current.get(newId);
+      if (el) el.focus();
+    }, 0);
+  };
 
-  const removeItem = useCallback(
-    (id) => {
-      setItems((prev) => {
-        if (prev.length <= 1) return prev;
-        const filtered = prev.filter((item) => item.id !== id);
+  const removeItem = (id) => {
+    setItems((prev) => {
+      if (prev.length <= 1) return prev;
+      const filtered = prev.filter((item) => item.id !== id);
 
-        // Recalculate sequence numbers for ordered lists
-        if (blockType === "ol") {
-          return filtered.map((item, index) => ({
-            ...item,
-            number: index + 1,
-          }));
-        }
-
-        return filtered;
-      });
-    },
-    [blockType]
-  );
-
-  const handleSelect = useCallback((e, itemId) => {
-    const input = e.target;
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
-
-    if (start !== end) {
-      const rect = input.getBoundingClientRect();
-      setToolbarPosition({
-        top: rect.top - 45,
-        left: rect.left + rect.width / 2 - 100,
-      });
-      setShowToolbar(true);
-      setActiveInputRef({ input, itemId });
-    } else {
-      setShowToolbar(false);
-    }
-  }, []);
-
-  const wrapSelection = useCallback(
-    (prefix, suffix = prefix) => {
-      if (!activeInputRef) return;
-
-      const { input, itemId } = activeInputRef;
-      const start = input.selectionStart;
-      const end = input.selectionEnd;
-      const item = items.find((i) => i.id === itemId);
-      if (!item) return;
-
-      const selectedText = item.text.substring(start, end);
-      const newText =
-        item.text.substring(0, start) + prefix + selectedText + suffix + item.text.substring(end);
-
-      updateItem(itemId, { text: newText });
-      setShowToolbar(false);
-
-      setTimeout(() => {
-        input.focus();
-        input.setSelectionRange(start + prefix.length, end + prefix.length);
-      }, 0);
-    },
-    [activeInputRef, items, updateItem]
-  );
-
-  const handleKeyDown = useCallback(
-    (e, itemId) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        addItem();
+      if (blockType === "ol") {
+        return filtered.map((item, index) => ({
+          ...item,
+          number: index + 1,
+        }));
       }
-    },
-    [addItem]
-  );
+      return filtered;
+    });
+  };
+
+  const getTrimmedSelection = (input) => {
+    let start = input.selectionStart;
+    let end = input.selectionEnd;
+    const text = input.value;
+
+    while (start < end && /\s/.test(text[start])) {
+      start++;
+    }
+
+    while (end > start && /\s/.test(text[end - 1])) {
+      end--;
+    }
+
+    if (start === end) return null;
+
+    return {
+      start,
+      end,
+      selectedText: text.substring(start, end),
+    };
+  };
+
+  const applyFormatting = (prefix, suffix = prefix) => {
+    if (!activeItemId) return;
+
+    const input = inputRefs.current.get(activeItemId);
+    if (!input) return;
+
+    const selection = getTrimmedSelection(input);
+    if (!selection) return;
+
+    const { start, end, selectedText } = selection;
+    const currentText = items.find((i) => i.id === activeItemId)?.text || "";
+
+    const newText =
+      currentText.substring(0, start) + prefix + selectedText + suffix + currentText.substring(end);
+
+    updateItem(activeItemId, { text: newText });
+
+    setTimeout(() => {
+      input.focus();
+      input.setSelectionRange(start + prefix.length, end + prefix.length);
+    }, 0);
+  };
+
+  const handleKeyDown = (e, itemId) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addItem();
+    } else if (e.key === "Backspace" && items.length > 1) {
+      const item = items.find((i) => i.id === itemId);
+      if (item && item.text === "") {
+        e.preventDefault();
+        removeItem(itemId);
+      }
+    }
+  };
+
+  const ListIcon =
+    blockType === "ol" ? ListOrdered : blockType === "task-list" ? CheckSquare : List;
+  const listLabel =
+    blockType === "ol" ? "Ordered List" : blockType === "task-list" ? "Task List" : "Bullet List";
 
   return (
-    <>
-      {showToolbar && (
-        <div
-          className="fixed z-50 flex items-center gap-1 bg-popover border border-border rounded-md shadow-lg p-1"
-          style={{ top: `${toolbarPosition.top}px`, left: `${toolbarPosition.left}px` }}
-        >
+    <div className="group relative rounded-md border border-border bg-background transition-all focus-within:border-ring">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-muted/10">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <ListIcon className="h-3.5 w-3.5" />
+          <span>{listLabel}</span>
+        </div>
+
+        <ButtonGroup className="bg-background/80">
           <Button
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => wrapSelection("**")}
+            onClick={() => applyFormatting("**")}
             title="Bold"
           >
             <Bold className="h-3.5 w-3.5" />
@@ -195,7 +218,7 @@ export default function ListBlock({ block, onUpdate }) {
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => wrapSelection("*")}
+            onClick={() => applyFormatting("*")}
             title="Italic"
           >
             <Italic className="h-3.5 w-3.5" />
@@ -204,25 +227,29 @@ export default function ListBlock({ block, onUpdate }) {
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => wrapSelection("~~")}
+            onClick={() => applyFormatting("~~")}
             title="Strikethrough"
           >
             <Strikethrough className="h-3.5 w-3.5" />
           </Button>
+
+          <ButtonGroupSeparator />
+
           <Button
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => wrapSelection("`")}
+            onClick={() => applyFormatting("`")}
             title="Inline Code"
           >
             <Code className="h-3.5 w-3.5" />
           </Button>
-        </div>
-      )}
-      <div className="space-y-2">
+        </ButtonGroup>
+      </div>
+
+      <div className="p-3 space-y-2">
         {items.map((item, index) => (
-          <div key={item.id} className="flex items-center gap-2 group">
+          <div key={item.id} className="flex items-center gap-2 group/item">
             <div
               className="flex items-center gap-2 flex-1"
               style={{ paddingLeft: `${item.indent * 24}px` }}
@@ -234,27 +261,30 @@ export default function ListBlock({ block, onUpdate }) {
                 />
               )}
               {blockType === "ol" && (
-                <span className="text-sm font-medium text-muted-foreground w-6">
-                  {item.number || index + 1}.
+                <span className="text-sm font-mono text-muted-foreground w-6 flex-shrink-0 text-right">
+                  {item.number}.
                 </span>
               )}
-              {blockType === "ul" && <span className="text-muted-foreground">•</span>}
+              {blockType === "ul" && <span className="text-muted-foreground px-1">•</span>}
 
               <Input
+                ref={(el) => {
+                  if (el) inputRefs.current.set(item.id, el);
+                  else inputRefs.current.delete(item.id);
+                }}
                 value={item.text}
                 onChange={(e) => updateItem(item.id, { text: e.target.value })}
-                onSelect={(e) => handleSelect(e, item.id)}
+                onFocus={() => setActiveItemId(item.id)}
                 onKeyDown={(e) => handleKeyDown(e, item.id)}
-                onBlur={() => setTimeout(() => setShowToolbar(false), 200)}
                 placeholder="List item..."
-                className="border-0 h-9 px-3 py-2 focus-visible:ring-1 shadow-none bg-transparent"
+                className="border-0 h-8 px-2 py-1 focus-visible:ring-0 shadow-none bg-transparent text-sm"
               />
             </div>
 
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="h-7 w-7 opacity-0 group-hover/item:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               onClick={() => removeItem(item.id)}
               disabled={items.length <= 1}
             >
@@ -263,18 +293,16 @@ export default function ListBlock({ block, onUpdate }) {
           </div>
         ))}
 
-        <div className="flex items-center gap-2 mt-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={addItem}
-            className="h-8 px-2 text-muted-foreground hover:text-foreground"
-          >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            Add item
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={addItem}
+          className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground ml-1"
+        >
+          <Plus className="h-3 w-3" />
+          Add item
+        </Button>
       </div>
-    </>
+    </div>
   );
 }
