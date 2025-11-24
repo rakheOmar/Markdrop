@@ -1,6 +1,7 @@
 import Editor from "../BuilderPage/Editor";
 import Preview from "../BuilderPage/Preview";
 import Raw from "../BuilderPage/Raw";
+import { useRef, useState } from "react";
 
 export default function DashboardHome({
   activeTab,
@@ -10,11 +11,74 @@ export default function DashboardHome({
   onBlockDelete,
   onBlockAdd,
 }) {
+  const dropZoneRef= useRef(null);
+  const [isDraggingFile, setIsDraggingFile]= useState(false);
+
+  const handleDragOver=(e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFile(true);
+  };
+
+  const handleDragLeave=(e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFile(false);
+  };
+
+  const handleDrop=(e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFile(false);
+
+  const files= e.dataTransfer.files;
+  if(files.length === 0) return;
+
+  const file= files[0];
+  const reader= new FileReader();
+  reader.onload= (event)=>{
+    const text= event.target.result;
+
+  onBlocksChange([
+    {
+      id: Date.now(),
+      type: "paragraph",
+      content: text,
+    },
+  ]);
+};
+reader.readAsText(file);
+};
   return (
     <div className="w-full h-full">
       <div className="w-full h-[calc(100vh-8rem)] rounded-xl border bg-card shadow-sm overflow-hidden">
         {activeTab === "editor" && (
-          <div className="w-full h-full">
+          <div className="w-full h-full"
+            onDragOver={(e)=>{
+              // if dragging a file, allow file drop
+              if(e.dataTransfer.types.includes("Files")) return;
+              //block browser behavior  
+              e.preventDefault();
+              
+            }}
+            onDrop={(e)=>{
+              //if a file then let DashboardHome handle it
+              if(e.dataTransfer.types.includes("Files")){
+                handleDrop(e);
+                return;
+              }
+              //block open in new tab
+              e.preventDefault()
+              }}
+            onDragStart={(e)=>{
+              //allow only dnd draggable handles
+              if(e.target.closest("[data-dnd-draggable]")){
+                 e.preventDefault();
+              }
+             
+              }}
+          >
+
             <Editor
               blocks={blocks}
               onBlockUpdate={onBlockUpdate}
