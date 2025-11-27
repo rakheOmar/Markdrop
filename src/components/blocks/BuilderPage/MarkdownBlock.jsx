@@ -94,12 +94,16 @@ const MarkdownBlock = memo(function MarkdownBlock({ block, onUpdate, onDelete, o
           <Button
             variant="ghost"
             size="icon"
+            data-dnd-draggable
             className="h-8 w-8 md:h-7 md:w-7 cursor-grab active:cursor-grabbing touch-manipulation"
             {...attributes}
             {...listeners}
             style={{ touchAction: "none" }}
+            draggable={false}
           >
-            <GripVertical className="h-5 w-5 md:h-4 md:w-4" />
+            <GripVertical 
+            data-dnd-draggable
+            className="h-5 w-5 md:h-4 md:w-4" />
           </Button>
         </div>
 

@@ -79,6 +79,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useBuilderTour } from "@/hooks/useBuilderTour";
 import { blocksToMarkdown, exportToHTML, exportToMarkdown, exportToPDF } from "@/lib/exportUtils";
 import { createMarkdown, getMarkdownById, updateMarkdown } from "@/lib/storage";
+import FileTabs from "@/components/ui/filetabs";
+import {useFiles} from "@/context/FileContext";
 
 export default function Builder() {
   const { theme, setTheme } = useTheme();
@@ -87,10 +89,13 @@ export default function Builder() {
   const { id } = useParams();
   const { startTour } = useBuilderTour();
   const [activeTab, setActiveTab] = useState("editor");
-  const [blocks, setBlocks] = useState(() => {
-    const saved = localStorage.getItem("markdown-blocks");
-    return saved ? JSON.parse(saved) : [];
-  });
+  // const [blocks, setBlocks] = useState(() => {
+  //   const saved = localStorage.getItem("markdown-blocks");
+  //   return saved ? JSON.parse(saved) : [];
+  // });
+  const {files, addFile, switchFile, updateFileBlocks} = useFiles();
+  const activeFile= files.find((f)=> f.isActive);
+  const blocks = activeFile?.blocks || [];
   const [isImporting, setIsImporting] = useState(false);
   const [history, setHistory] = useState([[]]);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -117,7 +122,7 @@ export default function Builder() {
           const document = await getMarkdownById(id);
           if (document && document.user_id === user.id) {
             const parsedBlocks = JSON.parse(document.content);
-            setBlocks(parsedBlocks);
+            updateFileBlocks(activeFile.id,parsedBlocks);
             setCurrentDocumentId(document.id);
             setSaveTitle(document.title);
             setLastSavedContent(document.content);
@@ -217,7 +222,7 @@ export default function Builder() {
   );
 
   const handleReset = () => {
-    setBlocks([]);
+    updateFileBlocks([]);
     saveToHistory([]);
     toast.success("Editor reset");
   };
@@ -225,14 +230,14 @@ export default function Builder() {
   const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
-      setBlocks(history[historyIndex - 1]);
+      updateFileBlocks(history[historyIndex - 1]);
     }
   }, [historyIndex, history]);
 
   const handleRedo = useCallback(() => {
     if (historyIndex < history.length - 1) {
       setHistoryIndex(historyIndex + 1);
-      setBlocks(history[historyIndex + 1]);
+      updateFileBlocks(history[historyIndex + 1]);
     }
   }, [historyIndex, history]);
 
@@ -299,6 +304,22 @@ export default function Builder() {
     };
   }, [handleUndo, handleRedo, handleSave]);
 
+  //prevent browser from opening dropped file in a new tab
+  useEffect(()=>{
+    const preventDefaultFileOpen=(e)=>{
+      if(e.dataTransfer?.types?.includes("Files")){
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("dragover", preventDefaultFileOpen);
+    window.addEventListener("drop",preventDefaultFileOpen);
+
+    return()=>{
+      window.removeEventListener("dragover", preventDefaultFileOpen);
+      window.removeEventListener("drop",preventDefaultFileOpen);
+    };
+  },[]);
+
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
@@ -344,18 +365,30 @@ export default function Builder() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".md,.markdown,.txt";
+    input.multiple= true;
     input.onchange = async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
 
       setIsImporting(true);
       try {
+        for(let i=0;i<files.length;i++){
+        const file=files[i];
         const text = await file.text();
         const newBlocks = markdownToBlocks(text);
-        setBlocks(newBlocks);
+        updateFileBlocks(activeFile.id,newBlocks);
         saveToHistory(newBlocks);
         toast.success("Markdown imported!");
-      } catch {
+        addFile({
+          name: file.name,
+          content: text,
+          blocks: newBlocks,
+        });
+        //saveToHistory((prev)=>[...prev, ...newBlocks]);
+      }
+        toast.success(`${files.length} Markdown file(s) imported!`);
+      } catch(error) {
+        console.error(error);
         toast.error("Failed to import file");
       } finally {
         setIsImporting(false);
@@ -400,7 +433,7 @@ export default function Builder() {
     (document) => {
       try {
         const parsedBlocks = JSON.parse(document.content);
-        setBlocks(parsedBlocks);
+        updateFileBlocks(activeFile.id,parsedBlocks);
         setCurrentDocumentId(document.id);
         setSaveTitle(document.title);
         setLastSavedContent(document.content);
@@ -531,6 +564,10 @@ export default function Builder() {
     return blocks;
   };
 
+  useEffect(()=>{
+    window.markdownToBlocks= markdownToBlocks;
+  },[]);
+  
   const handleDragStart = (event) => {
     setActiveId(event.active.id);
   };
@@ -552,7 +589,7 @@ export default function Builder() {
 
       if (oldIndex !== -1 && newIndex !== -1) {
         const newBlocks = arrayMove(blocks, oldIndex, newIndex);
-        setBlocks(newBlocks);
+        updateFileBlocks(activeFile.id,newBlocks);
         saveToHistory(newBlocks);
       }
       return;
@@ -633,7 +670,7 @@ export default function Builder() {
           newBlocks = [...blocks.slice(0, overIndex + 1), newBlock, ...blocks.slice(overIndex + 1)];
         }
 
-        setBlocks(newBlocks);
+        updateFileBlocks(activeFile.id,newBlocks);
         saveToHistory(newBlocks);
       }
     }
@@ -645,18 +682,18 @@ export default function Builder() {
 
   const handleBlockUpdate = (blockId, updatedBlock) => {
     const newBlocks = blocks.map((b) => (b.id === blockId ? updatedBlock : b));
-    setBlocks(newBlocks);
+    updateFileBlocks(activeFile.id,newBlocks);
   };
 
   const handleBlockDelete = (blockId) => {
     const newBlocks = blocks.filter((b) => b.id !== blockId);
-    setBlocks(newBlocks);
+    updateFileBlocks(activeFile.id,newBlocks);
     saveToHistory(newBlocks);
     toast.success("Block deleted");
   };
 
   const handleBlocksChange = (newBlocks) => {
-    setBlocks(newBlocks);
+    updateFileBlocks(activeFile.id, newBlocks);
     saveToHistory(newBlocks);
   };
 
@@ -683,7 +720,7 @@ export default function Builder() {
       newBlocks = [...blocks, newBlock];
     }
 
-    setBlocks(newBlocks);
+    updateFileBlocks(activeFile.id,newBlocks);
     saveToHistory(newBlocks);
   };
 
@@ -707,8 +744,15 @@ export default function Builder() {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
+        onDragStart={(event)=>{
+          if (event?.active?.data?.current?.type === "native") return; 
+          handleDragStart(event);
+        }}
+
+        onDragOver={(event)=>{
+          if (event?.over == null && event?.active?.data?.current === null) return; 
+          handleDragOver(event);
+        }}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
@@ -945,6 +989,7 @@ export default function Builder() {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <div id="builder-content-area" className="flex-1 w-full max-w-none">
+              <FileTabs/>
               <DashboardHome
                 activeTab={activeTab}
                 blocks={blocks}
