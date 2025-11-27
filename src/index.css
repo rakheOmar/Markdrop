@@ -389,3 +389,11 @@ body {
 .mermaid-diagram .arrowheadPath {
   fill: oklch(0.45 0.13 252);
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -488,7 +488,7 @@ export default function MainSection({ onTemplatesChange }) {
                 value={templateDescription}
                 onChange={(e) => setTemplateDescription(e.target.value)}
                 placeholder="What makes this template special?"
-                className="min-h-[80px] resize-none"
+                className="min-h-20 resize-none"
               />
             </div>
 
@@ -591,7 +591,7 @@ export default function MainSection({ onTemplatesChange }) {
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col">
           {selectedTemplate && (
             <>
-              <DialogHeader className="flex-shrink-0">
+              <DialogHeader className="shrink-0">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <DialogTitle className="text-xl">{selectedTemplate.title}</DialogTitle>

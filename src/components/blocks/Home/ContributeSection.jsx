@@ -12,7 +12,7 @@ export default function ContributeSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <span className="font-mono text-[0.55rem] sm:text-[0.65rem] md:text-xs text-black dark:text-white whitespace-nowrap">
-            02.
+            03.
           </span>
         </motion.div>
       </div>
