@@ -306,7 +306,8 @@ export default function MainSection({ onTemplatesChange }) {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-9 w-9 shrink-0 border-border bg-background text-muted-foreground hover:text-foreground"
+                    style={{cursor:"pointer"}}
+                    className="h-9 w-9 shrink-0 border-border bg-background text-muted-foreground hover:text-foreground hover:scale-108"
                     title="Filter Categories"
                   >
                     <Filter className="h-4 w-4" />
@@ -339,7 +340,7 @@ export default function MainSection({ onTemplatesChange }) {
                 </PopoverContent>
               </Popover>
 
-              <Button size="sm" className="h-9 gap-1.5" onClick={handleAddTemplate}>
+              <Button style={{cursor:"pointer"}} size="sm" className="h-9 gap-1.5 hover:scale-105" onClick={handleAddTemplate}>
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Create</span>
               </Button>

@@ -79,6 +79,12 @@ import { useAuth } from "@/context/AuthContext";
 import { useBuilderTour } from "@/hooks/useBuilderTour";
 import { blocksToMarkdown, exportToHTML, exportToMarkdown, exportToPDF } from "@/lib/exportUtils";
 import { createMarkdown, getMarkdownById, updateMarkdown } from "@/lib/storage";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default function Builder() {
   const { theme, setTheme } = useTheme();
@@ -750,24 +756,27 @@ export default function Builder() {
                 >
                   <TabsTrigger
                     value="editor"
-                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5"
+                    style={{cursor:"pointer"}}
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-105"
                   >
                     <Pencil className="h-4 w-4" />
-                    <span className="hidden sm:inline">Editor</span>
+                    <span  className="hidden sm:inline">Editor</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="raw"
-                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5"
+                    style={{cursor:"pointer"}}
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-105"
                   >
-                    <FileCode className="h-4 w-4" />
-                    <span className="hidden sm:inline">Raw</span>
+                    <FileCode className="h-4 w-4s" />
+                    <span  className="hidden sm:inline">Raw</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="preview"
-                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5"
+                    style={{cursor:"pointer"}}
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-105"
                   >
                     <Eye className="h-4 w-4" />
-                    <span className="hidden sm:inline">Preview</span>
+                    <span  className="hidden sm:inline">Preview</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -801,9 +810,10 @@ export default function Builder() {
               <Button
                 id="builder-import-btn"
                 variant="outline"
+                style={{cursor:"pointer"}}
                 size="sm"
                 onClick={handleImport}
-                className="hidden lg:flex gap-1.5"
+                className="hidden lg:flex gap-1.5 hover:scale-105"
               >
                 <FileUp className="w-4 h-4" />
                 <span className="hidden lg:inline">Import</span>
@@ -813,8 +823,9 @@ export default function Builder() {
                 id="builder-save-btn"
                 variant="outline"
                 size="sm"
+                style={{cursor:"pointer"}}
                 onClick={handleSave}
-                className="hidden md:flex gap-1.5 relative"
+                className="hidden md:flex gap-1.5 relative hover:scale-105"
               >
                 <Save className="w-4 h-4" />
                 <span className="hidden lg:inline">Save</span>
@@ -825,7 +836,7 @@ export default function Builder() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button id="builder-menu-btn" variant="ghost" size="sm" className="px-2">
+                  <Button style={{cursor:"pointer"}} id="builder-menu-btn" variant="ghost" size="sm" className="px-2">
                     <Menu className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -872,29 +883,65 @@ export default function Builder() {
                     )}
                   </div>
 
-                  <DropdownMenuItem
-                    onClick={() => openExportDialog("md")}
-                    disabled={blocks.length === 0}
-                  >
-                    <FileDown className="w-4 h-4 mr-2" />
-                    Export Markdown
-                  </DropdownMenuItem>
+                  <TooltipProvider>
 
-                  <DropdownMenuItem
-                    onClick={() => openExportDialog("pdf")}
-                    disabled={blocks.length === 0}
-                  >
-                    <FileDown className="w-4 h-4 mr-2" />
-                    Export as PDF
-                  </DropdownMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <DropdownMenuItem
+                            onClick={() => openExportDialog("md")}
+                            disabled={blocks.length === 0}
+                          >
+                            <FileDown className="w-4 h-4 mr-2" />
+                            Export Markdown
+                          </DropdownMenuItem>
+                        </div>
+                      </TooltipTrigger>
+                      {blocks.length === 0 && (
+                        <TooltipContent>
+                          <p>Disabled while empty</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
 
-                  <DropdownMenuItem
-                    onClick={() => openExportDialog("html")}
-                    disabled={blocks.length === 0}
-                  >
-                    <FileDown className="w-4 h-4 mr-2" />
-                    Export as HTML
-                  </DropdownMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <DropdownMenuItem
+                            onClick={() => openExportDialog("pdf")}
+                            disabled={blocks.length === 0}
+                          >
+                            <FileDown className="w-4 h-4 mr-2" />
+                            Export as PDF
+                          </DropdownMenuItem>
+                        </div>
+                      </TooltipTrigger>
+                      {blocks.length === 0 && (
+                        <TooltipContent>
+                          <p>Disabled while empty</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <DropdownMenuItem
+                            onClick={() => openExportDialog("html")}
+                            disabled={blocks.length === 0}
+                          >
+                            <FileDown className="w-4 h-4 mr-2" />
+                            Export as HTML
+                          </DropdownMenuItem>
+                        </div>
+                      </TooltipTrigger>
+                      {blocks.length === 0 && (
+                        <TooltipContent>
+                          <p>Disabled while empty</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
 
                   <DropdownMenuSeparator />
 
@@ -929,7 +976,8 @@ export default function Builder() {
                 id="builder-right-sidebar-trigger"
                 variant="ghost"
                 size="sm"
-                className="px-2"
+                style={{cursor:"pointer"}}
+                className="px-2 hover:scale-110"
                 onClick={() => setShowSparkleDialog(true)}
                 title="AI Assistant"
               >
