@@ -8,13 +8,19 @@ export default function DashboardHome({
   onBlocksChange,
   onBlockUpdate,
   onBlockDelete,
+  onBlockAdd,
 }) {
   return (
-    <div className="flex flex-col h-full items-center justify-start py-4">
-      <div className="w-full max-w-[95vw] min-h-[calc(100vh-12rem)] rounded-xl border bg-card shadow-sm p-4">
+    <div className="w-full h-full">
+      <div className="w-full h-[calc(100vh-8rem)] rounded-xl border bg-card shadow-sm overflow-hidden">
         {activeTab === "editor" && (
           <div className="w-full h-full">
-            <Editor blocks={blocks} onBlockUpdate={onBlockUpdate} onBlockDelete={onBlockDelete} />
+            <Editor
+              blocks={blocks}
+              onBlockUpdate={onBlockUpdate}
+              onBlockDelete={onBlockDelete}
+              onBlockAdd={onBlockAdd}
+            />
           </div>
         )}
 

@@ -1,291 +1,237 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Logo } from "@/components/Logo";
+import Squares from "@/components/backgrounds/Squares";
+import { Logo as LogoIcon } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import axiosInstance from "@/lib/axios";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/context/AuthContext";
+import { signInWithGoogle, signUpWithEmail } from "@/lib/auth";
 
 const formSchema = z.object({
-  fullname: z.string().min(1, "Full name is required"),
+  firstname: z.string().min(1, "First name is required"),
+  lastname: z.string().min(1, "Last name is required"),
   email: z.string().email("Please enter a valid email address"),
-  phoneNumber: z.string().min(10, "Enter a valid phone number"),
-  countryCode: z.string().min(1, "Country code is required"),
-  address: z.string().min(1, "Address is required"),
-  avatar: z.instanceof(File).optional(),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 
-const SignUp = () => {
-  const [avatarPreview, setAvatarPreview] = useState(null);
+export default function SignUp() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullname: "",
+      firstname: "",
+      lastname: "",
       email: "",
-      countryCode: "+91",
-      phoneNumber: "",
-      address: "",
       password: "",
-      avatar: undefined,
     },
   });
 
-  const navigate = useNavigate();
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/");
+    }
+  }, [user, loading, navigate]);
 
   const onSubmit = async (data) => {
-    const formData = new FormData();
-    Object.keys(data).forEach((key) => {
-      if (data[key]) {
-        formData.append(key, data[key]);
-      }
-    });
-
+    setIsLoading(true);
     try {
-      await axiosInstance.post("/users/register", formData);
-      toast.success("User registered successfully!");
+      await signUpWithEmail(data.email, data.password, {
+        full_name: `${data.firstname} ${data.lastname}`,
+      });
+      toast.success(
+        "Account created successfully! Please check your email to verify your account."
+      );
       setTimeout(() => navigate("/login"), 2000);
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Registration failed.");
+    } catch (error) {
+      console.error("SignUp Error:", error);
+      toast.error(error.message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleAvatarChange = (event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setAvatarPreview(URL.createObjectURL(file));
-      form.setValue("avatar", file);
-    } else {
-      setAvatarPreview(null);
-      form.setValue("avatar", undefined);
+  const handleGoogleSignUp = async () => {
+    setGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error("Google SignUp Error:", error);
+      toast.error(error.message || "Google sign up failed.");
+      setGoogleLoading(false);
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (avatarPreview) {
-        URL.revokeObjectURL(avatarPreview);
-      }
-    };
-  }, [avatarPreview]);
+  // Show loading while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="max-w-md w-full bg-card border border-border p-8 rounded-lg shadow-lg flex flex-col items-center">
-        <Logo className="h-12 w-12 text-primary" />
-        <p className="mt-4 text-2xl font-bold tracking-tight text-foreground">
-          Create your account
-        </p>
-        <p className="mt-2 text-sm text-muted-foreground text-center">
-          Join the community and start making a difference today.
-        </p>
-
-        <Form {...form}>
-          <form className="w-full space-y-4 mt-6" onSubmit={form.handleSubmit(onSubmit)}>
-            <Button className="w-full gap-3" variant="secondary">
-              <GoogleLogo />
-              Continue with Google
-            </Button>
-
-            <div className="my-7 w-full flex items-center justify-center overflow-hidden">
-              <Separator />
-              <span className="text-sm px-2 text-muted-foreground">OR</span>
-              <Separator />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="avatar"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Avatar</FormLabel>
-                  {avatarPreview && (
-                    <div className="mt-3 flex justify-center">
-                      <img
-                        src={avatarPreview}
-                        alt="Avatar Preview"
-                        className="h-20 w-20 rounded-full object-cover border-2 border-primary"
-                      />
-                    </div>
-                  )}
-                  <FormMessage />
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      ref={field.ref}
-                      name={field.name}
-                      onBlur={field.onBlur}
-                      onChange={handleAvatarChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="fullname"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Full name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="Email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex gap-2">
-              <FormField
-                control={form.control}
-                name="countryCode"
-                render={({ field }) => (
-                  <FormItem className="w-28">
-                    <FormLabel>Code</FormLabel>
-                    <FormControl>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Code" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="+91">+91 (India)</SelectItem>
-                          <SelectItem value="+1">+1 (USA)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem className="flex-grow">
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Phone number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Address" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="Password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type="submit" className="mt-4 w-full">
-              Continue with Email
-            </Button>
-          </form>
-        </Form>
-
-        <p className="mt-5 text-sm text-center text-muted-foreground">
-          Already have an account?
-          <Link to="/login" className="ml-1 underline text-primary">
-            Log in
-          </Link>
-        </p>
+    <section className="flex min-h-screen bg-background px-4 py-16 md:py-32 relative overflow-hidden">
+      {/* Squares Background */}
+      <div className="absolute inset-0 z-0">
+        <Squares
+          direction="diagonal"
+          speed={0.1}
+          borderColor="#cecece"
+          darkBorderColor="#16181d"
+          squareSize={25}
+          hoverFillColor="#000000"
+        />
       </div>
-    </div>
+
+      {/* Radial Mask Overlay */}
+      <div className="absolute inset-0 z-1 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,transparent_40%,var(--background)_100%)]" />
+
+      {/* Form Card */}
+      <motion.form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="bg-card m-auto h-fit w-full max-w-sm rounded-[calc(var(--radius)+.125rem)] border p-0.5 shadow-lg dark:[--color-muted:var(--color-zinc-900)] relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <div className="p-8 pb-6">
+          <div>
+            <RouterLink to="/" aria-label="go home">
+              <LogoIcon />
+            </RouterLink>
+            <h1 className="mb-1 mt-4 text-xl font-semibold">Create a Markdrop Account</h1>
+            <p className="text-sm">Welcome! Create an account to get started</p>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogleSignUp}
+              disabled={googleLoading}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="0.98em"
+                height="1em"
+                viewBox="0 0 256 262"
+              >
+                <path
+                  fill="#4285f4"
+                  d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622l38.755 30.023l2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
+                ></path>
+                <path
+                  fill="#34a853"
+                  d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055c-34.523 0-63.824-22.773-74.269-54.25l-1.531.13l-40.298 31.187l-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
+                ></path>
+                <path
+                  fill="#fbbc05"
+                  d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82c0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602z"
+                ></path>
+                <path
+                  fill="#eb4335"
+                  d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0C79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
+                ></path>
+              </svg>
+              <span>{googleLoading ? "Connecting..." : "Google"}</span>
+            </Button>
+            <Button type="button" variant="outline" disabled>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1em"
+                height="1em"
+                viewBox="0 0 256 256"
+              >
+                <path fill="#f1511b" d="M121.666 121.666H0V0h121.666z"></path>
+                <path fill="#80cc28" d="M256 121.666H134.335V0H256z"></path>
+                <path fill="#00adef" d="M121.663 256.002H0V134.336h121.663z"></path>
+                <path fill="#fbbc09" d="M256 256.002H134.335V134.336H256z"></path>
+              </svg>
+              <span>Microsoft</span>
+            </Button>
+          </div>
+          <hr className="my-4 border-dashed" />
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="firstname" className="block text-sm">
+                  Firstname
+                </Label>
+                <Input type="text" required id="firstname" {...form.register("firstname")} />
+                {form.formState.errors.firstname && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.firstname.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastname" className="block text-sm">
+                  Lastname
+                </Label>
+                <Input type="text" required id="lastname" {...form.register("lastname")} />
+                {form.formState.errors.lastname && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.lastname.message}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="block text-sm">
+                Email
+              </Label>
+              <Input type="email" required id="email" {...form.register("email")} />
+              {form.formState.errors.email && (
+                <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pwd" className="text-sm">
+                Password
+              </Label>
+              <Input type="password" required id="pwd" {...form.register("password")} />
+              {form.formState.errors.password && (
+                <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              By signing up, you agree to our{" "}
+              <RouterLink to="/terms-of-services" className="underline hover:text-foreground">
+                Terms of Service{" "}
+              </RouterLink>
+              and{" "}
+              <RouterLink to="/privacy-policy" className="underline hover:text-foreground">
+                Privacy Policy
+              </RouterLink>
+            </p>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Creating account..." : "Continue"}
+            </Button>
+          </div>
+        </div>
+        <div className="bg-muted rounded-(--radius) border p-3">
+          <p className="text-accent-foreground text-center text-sm">
+            Have an account?
+            <Button asChild variant="link" className="px-2">
+              <RouterLink to="/login">Sign In</RouterLink>
+            </Button>
+          </p>
+        </div>
+      </motion.form>
+    </section>
   );
-};
-
-const GoogleLogo = () => (
-  <svg
-    width="1.2em"
-    height="1.2em"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="inline-block shrink-0 align-sub text-[inherit]"
-  >
-    <g clipPath="url(#clip0)">
-      <path
-        d="M15.6823 8.18368C15.6823 7.63986 15.6382 7.0931 15.5442 6.55811H7.99829V9.63876H12.3194C12.1401 10.6323 11.564 11.5113 10.7203 12.0698V14.0687H13.2983C14.8122 12.6753 15.6823 10.6176 15.6823 8.18368Z"
-        fill="#4285F4"
-      ></path>
-      <path
-        d="M7.99812 16C10.1558 16 11.9753 15.2915 13.3011 14.0687L10.7231 12.0698C10.0058 12.5578 9.07988 12.8341 8.00106 12.8341C5.91398 12.8341 4.14436 11.426 3.50942 9.53296H0.849121V11.5936C2.2072 14.295 4.97332 16 7.99812 16Z"
-        fill="#34A853"
-      ></path>
-      <path
-        d="M3.50665 9.53295C3.17154 8.53938 3.17154 7.4635 3.50665 6.46993V4.4093H0.849292C-0.285376 6.66982 -0.285376 9.33306 0.849292 11.5936L3.50665 9.53295Z"
-        fill="#FBBC04"
-      ></path>
-      <path
-        d="M7.99812 3.16589C9.13867 3.14825 10.241 3.57743 11.067 4.36523L13.3511 2.0812C11.9048 0.723121 9.98526 -0.0235266 7.99812 -1.02057e-05C4.97332 -1.02057e-05 2.2072 1.70493 0.849121 4.40932L3.50648 6.46995C4.13848 4.57394 5.91104 3.16589 7.99812 3.16589Z"
-        fill="#EA4335"
-      ></path>
-    </g>
-    <defs>
-      <clipPath id="clip0">
-        <rect width="15.6825" height="16" fill="white"></rect>
-      </clipPath>
-    </defs>
-  </svg>
-);
-
-export default SignUp;
+}

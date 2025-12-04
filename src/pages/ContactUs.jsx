@@ -1,5 +1,4 @@
 import FeatureSection from "@/components/blocks/Home/FeatureSection";
-import HeroSection from "@/components/blocks/Home/HeroSection";
 import Navbar from "@/components/blocks/Navbar/Navbar";
 import Footer from "@/components/Footer";
 

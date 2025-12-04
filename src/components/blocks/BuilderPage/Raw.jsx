@@ -25,7 +25,18 @@ const blocksToMarkdown = (blocks) => {
           return block.content;
         case "blockquote":
           return `> ${block.content}`;
+        case "alert": {
+          const alertType = (block.alertType || "note").toUpperCase();
+          const content = block.content || "";
+          const lines = content.split("\n");
+          const quotedLines = lines.map((line) => `> ${line}`).join("\n");
+          return `> [!${alertType}]\n${quotedLines}`;
+        }
         case "code":
+          return block.content;
+        case "math":
+          return block.content;
+        case "diagram":
           return block.content;
         case "ul":
           return block.content;
@@ -81,33 +92,249 @@ const blocksToMarkdown = (blocks) => {
 
           if (badges.length === 0) return "";
 
-          const badgeMarkdown = badges
-            .filter((b) => b.label && b.message)
-            .map((badge) => {
-              const label = badge.label;
-              const message = badge.message;
-              const color = badge.color || "blue";
-              let url = `https://img.shields.io/badge/${encodeURIComponent(label)}-${encodeURIComponent(message)}-${color}`;
-              const params = [];
-              if (badge.style && badge.style !== "flat") {
-                params.push(`style=${badge.style}`);
+          const badgesMarkdown = badges
+            .filter((badge) => {
+              if (badge.type === "custom") {
+                return badge.label && badge.message;
+              } else {
+                const githubBadges = [
+                  "stars",
+                  "forks",
+                  "issues",
+                  "license",
+                  "last-commit",
+                  "repo-size",
+                  "languages",
+                  "contributors",
+                  "pull-requests",
+                ];
+                const socialBadges = [
+                  "twitter",
+                  "youtube",
+                  "discord",
+                  "twitch",
+                  "instagram",
+                  "linkedin",
+                  "github-followers",
+                  "reddit",
+                ];
+                const devMetrics = [
+                  "npm-downloads",
+                  "npm-version",
+                  "pypi-downloads",
+                  "pypi-version",
+                  "codecov",
+                  "coveralls",
+                  "travis-ci",
+                  "github-actions",
+                  "docker-pulls",
+                  "docker-stars",
+                ];
+                const docPlatforms = [
+                  "gitbook",
+                  "notion",
+                  "confluence",
+                  "docusaurus",
+                  "mkdocs",
+                  "sphinx",
+                ];
+
+                const needsRepo =
+                  githubBadges.includes(badge.type) ||
+                  ["codecov", "coveralls", "travis-ci", "github-actions"].includes(badge.type);
+                const needsPackage =
+                  devMetrics.includes(badge.type) &&
+                  !["codecov", "coveralls", "travis-ci", "github-actions"].includes(badge.type);
+                const needsUsername = socialBadges.includes(badge.type);
+
+                return (
+                  (needsRepo && badge.username && badge.repo) ||
+                  (needsPackage && badge.package) ||
+                  (needsUsername && badge.username) ||
+                  (docPlatforms.includes(badge.type) && badge.label)
+                );
               }
-              if (badge.logo) {
-                params.push(`logo=${encodeURIComponent(badge.logo)}`);
-              }
-              if (params.length > 0) {
-                url += `?${params.join("&")}`;
-              }
-              return `![${label}: ${message}](${url})`;
             })
+            .map((badge) => {
+              const baseUrl = "https://img.shields.io";
+
+              if (badge.type === "custom") {
+                const label = badge.label;
+                const message = badge.message;
+                const color = badge.color || "blue";
+                let url = `${baseUrl}/badge/${encodeURIComponent(
+                  label
+                )}-${encodeURIComponent(message)}-${color}`;
+                const params = [];
+                if (badge.style && badge.style !== "flat") {
+                  params.push(`style=${badge.style}`);
+                }
+                if (badge.logo) {
+                  params.push(`logo=${encodeURIComponent(badge.logo)}`);
+                }
+                if (params.length > 0) {
+                  url += `?${params.join("&")}`;
+                }
+                return `![${label}](${url})`;
+              } else {
+                // All other badge types
+                const { type, username, repo, label, package: pkg } = badge;
+
+                switch (type) {
+                  // GitHub badges
+                  case "stars":
+                    return `![${label}](${baseUrl}/github/stars/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github&logoColor=white)`;
+                  case "forks":
+                    return `![${label}](${baseUrl}/github/forks/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github&logoColor=white)`;
+                  case "issues":
+                    return `![${label}](${baseUrl}/github/issues/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github&logoColor=white)`;
+                  case "license":
+                    return `![${label}](${baseUrl}/github/license/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github&logoColor=white)`;
+                  case "last-commit":
+                    return `![${label}](${baseUrl}/github/last-commit/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github&logoColor=white)`;
+                  case "repo-size":
+                    return `![${label}](${baseUrl}/github/repo-size/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github&logoColor=white)`;
+                  case "languages":
+                    return `![${label}](${baseUrl}/github/languages/top/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github&logoColor=white)`;
+                  case "contributors":
+                    return `![${label}](${baseUrl}/github/contributors/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github&logoColor=white)`;
+                  case "pull-requests":
+                    return `![${label}](${baseUrl}/github/issues-pr/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github&logoColor=white)`;
+
+                  // Documentation platforms
+                  case "gitbook":
+                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                      label
+                    )}&message=GitBook&color=3884FF&logo=gitbook&logoColor=white&style=flat-square)`;
+                  case "notion":
+                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                      label
+                    )}&message=Notion&color=000000&logo=notion&logoColor=white&style=flat-square)`;
+                  case "confluence":
+                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                      label
+                    )}&message=Confluence&color=172B4D&logo=confluence&logoColor=white&style=flat-square)`;
+                  case "docusaurus":
+                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                      label
+                    )}&message=Docusaurus&color=2E8555&logo=docusaurus&logoColor=white&style=flat-square)`;
+                  case "mkdocs":
+                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                      label
+                    )}&message=MkDocs&color=000000&logo=markdown&logoColor=white&style=flat-square)`;
+                  case "sphinx":
+                    return `![${label}](${baseUrl}/static/v1?label=${encodeURIComponent(
+                      label
+                    )}&message=Sphinx&color=4B8B3B&logo=sphinx&logoColor=white&style=flat-square)`;
+
+                  // Social badges
+                  case "twitter":
+                    return `![${label}](${baseUrl}/twitter/follow/${username}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=twitter&logoColor=white)`;
+                  case "youtube":
+                    return `![${label}](${baseUrl}/youtube/channel/subscribers/${username}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=youtube&logoColor=red)`;
+                  case "discord":
+                    return `![${label}](${baseUrl}/discord/${username}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=discord&logoColor=white)`;
+                  case "twitch":
+                    return `![${label}](${baseUrl}/twitch/status/${username}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=twitch&logoColor=white)`;
+                  case "instagram":
+                    return `![${label}](${baseUrl}/instagram/followers/${username}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=instagram&logoColor=white)`;
+                  case "linkedin":
+                    return `![${label}](${baseUrl}/linkedin/followers/${username}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=linkedin&logoColor=white)`;
+                  case "github-followers":
+                    return `![${label}](${baseUrl}/github/followers/${username}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github&logoColor=white)`;
+                  case "reddit":
+                    return `![${label}](${baseUrl}/reddit/user-karma/${username}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=reddit&logoColor=white)`;
+
+                  // Dev metrics
+                  case "npm-downloads":
+                    return `![${label}](${baseUrl}/npm/dm/${pkg}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=npm&logoColor=white)`;
+                  case "npm-version":
+                    return `![${label}](${baseUrl}/npm/v/${pkg}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=npm&logoColor=white)`;
+                  case "pypi-downloads":
+                    return `![${label}](${baseUrl}/pypi/dm/${pkg}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=pypi&logoColor=white)`;
+                  case "pypi-version":
+                    return `![${label}](${baseUrl}/pypi/v/${pkg}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=pypi&logoColor=white)`;
+                  case "codecov":
+                    return `![${label}](${baseUrl}/codecov/c/github/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=codecov&logoColor=white)`;
+                  case "coveralls":
+                    return `![${label}](${baseUrl}/coveralls/github/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=coveralls&logoColor=white)`;
+                  case "travis-ci":
+                    return `![${label}](${baseUrl}/travis-ci/${username}/${repo}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=travis-ci&logoColor=white)`;
+                  case "github-actions":
+                    return `![${label}](${baseUrl}/github/workflows/status/${username}/${repo}/main?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=github-actions&logoColor=white)`;
+                  case "docker-pulls":
+                    return `![${label}](${baseUrl}/docker/pulls/${pkg}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=docker&logoColor=white)`;
+                  case "docker-stars":
+                    return `![${label}](${baseUrl}/docker/stars/${pkg}?style=flat-square&label=${encodeURIComponent(
+                      label
+                    )}&logo=docker&logoColor=white)`;
+
+                  default:
+                    return "";
+                }
+              }
+            })
+            .filter(Boolean)
             .join(" ");
 
           if (align === "center") {
-            return `<div align="center">\n\n${badgeMarkdown}\n\n</div>`;
+            return `<div align="center">\n\n${badgesMarkdown}\n\n</div>`;
           } else if (align === "right") {
-            return `<div align="right">\n\n${badgeMarkdown}\n\n</div>`;
+            return `<div align="right">\n\n${badgesMarkdown}\n\n</div>`;
           }
-          return badgeMarkdown;
+          return badgesMarkdown;
         }
         case "skill-icons": {
           const icons = block.icons || "js,html,css";
@@ -127,6 +354,83 @@ const blocksToMarkdown = (blocks) => {
             return `<div align="right">\n\n${markdown}\n\n</div>`;
           }
           return markdown;
+        }
+        case "typing-svg": {
+          const lines = block.lines || ["Hi there! I'm a developer 👋"];
+          const font = block.font || "Fira Code";
+          const size = block.size || "28";
+          const duration = block.duration || "3000";
+          const pause = block.pause || "1000";
+          const color = block.color || "00FFB3";
+          const center = block.center !== false;
+          const vCenter = block.vCenter !== false;
+          const width = block.width || "900";
+          const height = block.height || "80";
+
+          const baseUrl = "https://readme-typing-svg.herokuapp.com";
+          const params = new URLSearchParams();
+
+          params.append("font", font);
+          params.append("size", size);
+          params.append("duration", duration);
+          params.append("pause", pause);
+          params.append("color", color.replace("#", ""));
+          params.append("center", center.toString());
+          params.append("vCenter", vCenter.toString());
+          params.append("width", width);
+          params.append("height", height);
+
+          // Join lines with semicolon separator as a single parameter
+          const filteredLines = lines.filter((line) => line.trim() !== "");
+          if (filteredLines.length > 0) {
+            params.append("lines", filteredLines.join(";"));
+          }
+
+          const typingSvgUrl = `${baseUrl}?${params.toString()}`;
+          return `![Typing SVG](${typingSvgUrl})`;
+        }
+        case "github-profile-cards": {
+          const username = block.username || "";
+          const cards = block.cards || [];
+          const align = block.align || "left";
+
+          if (!username.trim() || cards.length === 0) {
+            return "";
+          }
+
+          const baseUrl = "http://github-profile-summary-cards.vercel.app/api/cards";
+
+          const cardMarkdown = cards
+            .map((card) => {
+              let url = `${baseUrl}/${card.cardType}?username=${username}&theme=${card.theme}`;
+
+              // Add utcOffset only for productive-time card
+              if (card.cardType === "productive-time") {
+                url += `&utcOffset=${card.utcOffset}`;
+              }
+
+              // Use HTML img tag if height or width is specified
+              if (card.height || card.width) {
+                const attributes = [];
+                if (card.height) attributes.push(`height="${card.height}"`);
+                if (card.width) attributes.push(`width="${card.width}"`);
+                return `<img ${attributes.join(" ")} src="${url}" />`;
+              }
+
+              return `![GitHub ${card.cardType}](${url})`;
+            })
+            .join(" ");
+
+          // Apply alignment
+          if (align === "center") {
+            return `<div align="center">\n\n  ${cardMarkdown}\n\n</div>`;
+          } else if (align === "right") {
+            return `<div align="right">\n\n  ${cardMarkdown}\n\n</div>`;
+          } else if (align === "left") {
+            return `<div align="left">\n\n  ${cardMarkdown}\n\n</div>`;
+          }
+
+          return cardMarkdown;
         }
         default:
           return block.content;
@@ -343,11 +647,37 @@ const markdownToBlocks = (markdown) => {
         content: line.slice(7),
       });
     } else if (line.startsWith("> ")) {
-      blocks.push({
-        id: generateUniqueId(),
-        type: "blockquote",
-        content: line.slice(2),
-      });
+      // Check if it's an alert (GitHub-flavored markdown alert)
+      const alertMatch = line.match(/^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
+      if (alertMatch) {
+        const alertType = alertMatch[1].toLowerCase();
+        const alertContent = [];
+
+        // Collect all subsequent lines that start with >
+        i++;
+        while (i < lines.length && lines[i].startsWith(">")) {
+          const contentLine = lines[i].slice(1).trim();
+          if (contentLine) {
+            alertContent.push(contentLine);
+          }
+          i++;
+        }
+        i--; // Step back one line since the loop will increment
+
+        blocks.push({
+          id: generateUniqueId(),
+          type: "alert",
+          alertType: alertType,
+          content: alertContent.join("\n"),
+        });
+      } else {
+        // Regular blockquote
+        blocks.push({
+          id: generateUniqueId(),
+          type: "blockquote",
+          content: line.slice(2),
+        });
+      }
     } else if (line === "---") {
       blocks.push({ id: generateUniqueId(), type: "separator", content: "" });
     } else if (line.match(/^<img\s+[^>]*>/)) {
@@ -493,26 +823,29 @@ export default function Raw({ blocks = [], onBlocksChange }) {
   };
 
   return (
-    <div className="w-full min-h-[500px] rounded-lg p-4">
-      <div className="flex items-center justify-end gap-2 mb-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={copyMarkdown}
-          aria-label="Copy markdown to clipboard"
-          className="flex items-center gap-2"
-        >
-          {isCopied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
-          <span className="text-sm">{isCopied ? "Copied" : "Copy to Clipboard"}</span>
-        </Button>
+    <div className="w-full h-full rounded-lg transition-colors relative">
+      <div className="h-full overflow-y-auto overflow-x-hidden">
+        <div className="p-2 sm:p-4">
+          <div className="relative bg-muted rounded-lg border-0 shadow-none h-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={copyMarkdown}
+              aria-label="Copy markdown to clipboard"
+              className="absolute top-3 right-3 z-10 h-8 w-8 hover:bg-background/80 rounded-md"
+            >
+              {isCopied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+            </Button>
+            <Textarea
+              value={markdown}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="# Your markdown here..."
+              className="h-full min-h-[calc(100vh-12rem)] font-mono text-sm p-4 pr-14 resize-none bg-transparent border-0 shadow-none focus-visible:ring-1 focus-visible:ring-ring"
+            />
+          </div>
+        </div>
       </div>
-      <Textarea
-        value={markdown}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        placeholder="# Your markdown here..."
-        className="min-h-[500px] font-mono text-sm p-4 resize-none bg-muted border-0 shadow-none focus-visible:ring-1"
-      />
     </div>
   );
 }

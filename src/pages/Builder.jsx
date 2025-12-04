@@ -2,14 +2,19 @@ import {
   closestCenter,
   DndContext,
   DragOverlay,
+  KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 import {
+  AlertCircle,
   CheckSquare,
   Code,
+  Eye,
+  FileCode,
   FileDown,
   FileUp,
   Heading1,
@@ -19,125 +24,68 @@ import {
   Heading5,
   Heading6,
   Image,
+  Info,
   Link,
   List,
   ListOrdered,
+  Menu,
   Minus,
+  Moon,
+  PanelRight,
+  Pencil,
   Quote,
   RefreshCcw,
   RotateCcw,
   RotateCw,
+  Save,
   Shield,
   Sparkles,
+  Sun,
   Table,
   Type,
   Video,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { motion } from "motion/react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import AIAssistantSheet from "@/components/blocks/BuilderPage/AIAssistantSheet";
 import AppSidebar from "@/components/blocks/BuilderPage/AppSidebar";
 import DashboardHome from "@/components/blocks/BuilderPage/DashboardHome";
-import { ModeToggle } from "@/components/ModeToggle";
+import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/context/AuthContext";
+import { useBuilderTour } from "@/hooks/useBuilderTour";
+import { blocksToMarkdown, exportToHTML, exportToMarkdown, exportToPDF } from "@/lib/exportUtils";
+import { createMarkdown, getMarkdownById, updateMarkdown } from "@/lib/storage";
 
-const blocksToMarkdown = (blocks) => {
-  return blocks
-    .map((block) => {
-      switch (block.type) {
-        case "h1":
-          return `# ${block.content}`;
-        case "h2":
-          return `## ${block.content}`;
-        case "h3":
-          return `### ${block.content}`;
-        case "h4":
-          return `#### ${block.content}`;
-        case "h5":
-          return `##### ${block.content}`;
-        case "h6":
-          return `###### ${block.content}`;
-        case "paragraph":
-          return block.content;
-        case "blockquote":
-          return `> ${block.content}`;
-        case "code":
-          return block.content;
-        case "html":
-          return block.content;
-        case "ul":
-          return block.content;
-        case "ol":
-          return block.content;
-        case "task-list":
-          return block.content;
-        case "separator":
-          return "---";
-        case "image": {
-          const align = block.align || "left";
-          let imageMarkdown;
-
-          // If width or height is specified, use HTML img tag
-          if (block.width || block.height) {
-            const attrs = [`src="${block.content}"`];
-            if (block.alt) attrs.push(`alt="${block.alt}"`);
-            if (block.width) attrs.push(`width="${block.width}"`);
-            if (block.height) attrs.push(`height="${block.height}"`);
-            imageMarkdown = `<img ${attrs.join(" ")} />`;
-          } else {
-            imageMarkdown = `![${block.alt || ""}](${block.content})`;
-          }
-
-          // Wrap with alignment p tag if not left
-          if (align === "center") {
-            return `<p align="center">\n\n${imageMarkdown}\n\n</p>`;
-          } else if (align === "right") {
-            return `<p align="right">\n\n${imageMarkdown}\n\n</p>`;
-          }
-          return imageMarkdown;
-        }
-        case "link":
-          return `[${block.content}](${block.url || ""})`;
-        case "table":
-          return block.content;
-        case "shield-badge": {
-          const label = block.label || "label";
-          const message = block.message || "message";
-          const color = block.badgeColor || "blue";
-          let url = `https://img.shields.io/badge/${encodeURIComponent(label)}-${encodeURIComponent(message)}-${color}`;
-          const params = [];
-          if (block.style && block.style !== "flat") {
-            params.push(`style=${block.style}`);
-          }
-          if (block.logo) {
-            params.push(`logo=${encodeURIComponent(block.logo)}`);
-          }
-          if (params.length > 0) {
-            url += `?${params.join("&")}`;
-          }
-          return `![${label}: ${message}](${url})`;
-        }
-        case "skill-icons": {
-          const icons = block.icons || "js,html,css";
-          let url = `https://skillicons.dev/icons?i=${icons}`;
-          if (block.theme && block.theme !== "dark") {
-            url += `&theme=${block.theme}`;
-          }
-          if (block.perLine && block.perLine !== "15") {
-            url += `&perline=${block.perLine}`;
-          }
-          return `![Skill Icons](${url})`;
-        }
-        default:
-          return block.content;
-      }
-    })
-    .join("\n\n");
-};
-
-export default function Dashboard() {
+export default function Builder() {
+  const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { startTour } = useBuilderTour();
   const [activeTab, setActiveTab] = useState("editor");
   const [blocks, setBlocks] = useState(() => {
     const saved = localStorage.getItem("markdown-blocks");
@@ -147,37 +95,63 @@ export default function Dashboard() {
   const [history, setHistory] = useState([[]]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [activeId, setActiveId] = useState(null);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveTitle, setSaveTitle] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [currentDocumentId, setCurrentDocumentId] = useState(null);
+  const [lastSavedContent, setLastSavedContent] = useState("");
+  const [showSparkleDialog, setShowSparkleDialog] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportFormat, setExportFormat] = useState("md");
+  const [includeAttribution, setIncludeAttribution] = useState(true);
 
   useEffect(() => {
     localStorage.setItem("markdown-blocks", JSON.stringify(blocks));
   }, [blocks]);
 
+  // Load document from URL parameter on mount
   useEffect(() => {
-    const handleKeyDown = (event) => {
-      // Detect Ctrl+Z (Windows) or Command+Z (Mac) for Undo
-      if ((event.ctrlKey || event.metaKey) && event.key === "z" && !event.shiftKey) {
-        event.preventDefault();
-        handleUndo();
-      }
-      // Detect Ctrl+Y (Windows) or Command+Y (Mac) for Redo
-      else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
-        event.preventDefault();
-        handleRedo();
+    const loadDocumentFromUrl = async () => {
+      if (id && user) {
+        try {
+          const document = await getMarkdownById(id);
+          if (document && document.user_id === user.id) {
+            const parsedBlocks = JSON.parse(document.content);
+            setBlocks(parsedBlocks);
+            setCurrentDocumentId(document.id);
+            setSaveTitle(document.title);
+            setLastSavedContent(document.content);
+            setHistory([parsedBlocks]);
+            setHistoryIndex(0);
+            toast.success(`Loaded "${document.title}"`);
+          } else {
+            toast.error("Document not found or access denied");
+            navigate("/builder");
+          }
+        } catch (error) {
+          console.error("Error loading document:", error);
+          toast.error("Failed to load document");
+          navigate("/builder");
+        }
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [history, historyIndex]);
+    loadDocumentFromUrl();
+  }, [id, user, navigate]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 3,
+        distance: 8,
       },
-    })
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 100,
+        tolerance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
   );
 
   const getBlockIcon = (blockType) => {
@@ -190,6 +164,7 @@ export default function Dashboard() {
       h6: Heading6,
       paragraph: Type,
       blockquote: Quote,
+      alert: AlertCircle,
       code: Code,
       ul: List,
       ol: ListOrdered,
@@ -215,8 +190,8 @@ export default function Dashboard() {
       h6: "Heading 6",
       paragraph: "Paragraph",
       blockquote: "Blockquote",
+      alert: "Alert",
       code: "Code Block",
-      html: "HTML Block",
       ul: "Bullet List",
       ol: "Numbered List",
       "task-list": "Task List",
@@ -231,12 +206,15 @@ export default function Dashboard() {
     return labels[blockType] || blockType;
   };
 
-  const saveToHistory = (newBlocks) => {
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push(newBlocks);
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  };
+  const saveToHistory = useCallback(
+    (newBlocks) => {
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push(newBlocks);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+    },
+    [history, historyIndex]
+  );
 
   const handleReset = () => {
     setBlocks([]);
@@ -244,33 +222,121 @@ export default function Dashboard() {
     toast.success("Editor reset");
   };
 
-  const handleUndo = () => {
+  const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
       setBlocks(history[historyIndex - 1]);
     }
-  };
+  }, [historyIndex, history]);
 
-  const handleRedo = () => {
+  const handleRedo = useCallback(() => {
     if (historyIndex < history.length - 1) {
       setHistoryIndex(historyIndex + 1);
       setBlocks(history[historyIndex + 1]);
     }
+  }, [historyIndex, history]);
+
+  const handleSave = useCallback(async () => {
+    if (!user) {
+      toast.error("Please log in to save your document");
+      navigate("/login");
+      return;
+    }
+
+    if (blocks.length === 0) {
+      toast.error("Cannot save an empty document");
+      return;
+    }
+
+    if (currentDocumentId && saveTitle) {
+      setIsSaving(true);
+      try {
+        const content = JSON.stringify(blocks);
+        await updateMarkdown(currentDocumentId, {
+          title: saveTitle,
+          content: content,
+        });
+        setLastSavedContent(content);
+        toast.success("Document updated successfully!");
+      } catch (error) {
+        console.error("Save error:", error);
+        toast.error("Failed to save document. Please try again.");
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+
+    if (!saveTitle) {
+      const firstHeading = blocks.find(
+        (block) => ["h1", "h2", "h3", "h4", "h5", "h6"].includes(block.type) && block.content.trim()
+      );
+      if (firstHeading) {
+        setSaveTitle(firstHeading.content.trim());
+      }
+    }
+
+    setShowSaveDialog(true);
+  }, [user, navigate, blocks, saveTitle, currentDocumentId]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        handleUndo();
+      } else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
+        event.preventDefault();
+        handleRedo();
+      } else if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+        event.preventDefault();
+        handleSave();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleUndo, handleRedo, handleSave]);
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const handleExport = (format) => {
-    const markdown = blocksToMarkdown(blocks);
-    if (format === "md") {
-      const blob = new Blob([markdown], { type: "text/markdown" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "document.md";
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success("Markdown exported!");
-    } else {
-      toast.info(`${format.toUpperCase()} export coming soon!`);
+  const openExportDialog = (format) => {
+    if (blocks.length === 0) {
+      toast.error("No content to export");
+      return;
+    }
+    setExportFormat(format);
+    setShowExportDialog(true);
+  };
+
+  const handleExport = async () => {
+    const timestamp = new Date().toISOString().split("T")[0];
+    const filename = `markdrop-document-${timestamp}`;
+
+    try {
+      switch (exportFormat) {
+        case "md":
+          exportToMarkdown(blocks, `${filename}.md`, includeAttribution);
+          toast.success("Markdown exported!");
+          break;
+        case "html":
+          exportToHTML(blocks, `${filename}.html`, includeAttribution);
+          toast.success("HTML exported!");
+          break;
+        case "pdf":
+          await exportToPDF(blocks, `${filename}.pdf`, includeAttribution);
+          toast.success("PDF exported!");
+          break;
+        default:
+          toast.error(`Unsupported format: ${exportFormat}`);
+      }
+      setShowExportDialog(false);
+    } catch (error) {
+      console.error(`Export error for ${exportFormat}:`, error);
+      toast.error(`Failed to export ${exportFormat.toUpperCase()}`);
     }
   };
 
@@ -289,15 +355,71 @@ export default function Dashboard() {
         setBlocks(newBlocks);
         saveToHistory(newBlocks);
         toast.success("Markdown imported!");
-      } catch (error) {
+      } catch {
         toast.error("Failed to import file");
-        console.log(error);
       } finally {
         setIsImporting(false);
       }
     };
     input.click();
   };
+
+  const handleSaveConfirm = async () => {
+    if (!saveTitle.trim()) {
+      toast.error("Please enter a title for your document");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const content = JSON.stringify(blocks);
+
+      // Create new document (existing documents are handled directly in handleSave)
+      const newDoc = await createMarkdown(user.id, saveTitle.trim(), content);
+      setCurrentDocumentId(newDoc.id);
+      setLastSavedContent(content);
+      toast.success("Document saved successfully!");
+
+      setShowSaveDialog(false);
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("Failed to save document. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveCancel = () => {
+    setShowSaveDialog(false);
+    if (!currentDocumentId) {
+      setSaveTitle("");
+    }
+  };
+
+  const loadDocument = useCallback(
+    (document) => {
+      try {
+        const parsedBlocks = JSON.parse(document.content);
+        setBlocks(parsedBlocks);
+        setCurrentDocumentId(document.id);
+        setSaveTitle(document.title);
+        setLastSavedContent(document.content);
+        saveToHistory(parsedBlocks);
+        toast.success(`Loaded "${document.title}"`);
+      } catch (error) {
+        console.error("Error loading document:", error);
+        toast.error("Failed to load document");
+      }
+    },
+    [saveToHistory]
+  );
+
+  useEffect(() => {
+    window.loadDocument = loadDocument;
+    return () => {
+      delete window.loadDocument;
+    };
+  }, [loadDocument]);
 
   const markdownToBlocks = (markdown) => {
     const lines = markdown.split("\n");
@@ -306,7 +428,7 @@ export default function Dashboard() {
     let blockCounter = 0;
 
     const generateUniqueId = () => {
-      return `${Date.now()}-${blockCounter++}-${Math.random().toString(36).substr(2, 9)}`;
+      return `${Date.now()}-${blockCounter++}-${Math.random().toString(36).substring(2, 11)}`;
     };
 
     while (i < lines.length) {
@@ -327,7 +449,6 @@ export default function Dashboard() {
         });
         i++;
       } else if (line.match(/^<img\s+[^>]*>/)) {
-        // Parse img tag with attributes
         const srcMatch = line.match(/src=["']([^"']+)["']/);
         const altMatch = line.match(/alt=["']([^"']+)["']/);
         const widthMatch = line.match(/width=["']([^"']+)["']/);
@@ -343,38 +464,6 @@ export default function Dashboard() {
           align: "left",
         });
         i++;
-      } else if (line.match(/^<(\w+)[^>]*>/)) {
-        const tagMatch = line.match(/^<(\w+)[^>]*>/);
-        const tagName = tagMatch[1];
-        const closingTag = `</${tagName}>`;
-
-        if (line.includes(closingTag)) {
-          blocks.push({
-            id: generateUniqueId(),
-            type: "html",
-            content: line,
-          });
-          i++;
-        } else {
-          const htmlLines = [line];
-          i++;
-
-          while (i < lines.length && !lines[i].includes(closingTag)) {
-            htmlLines.push(lines[i]);
-            i++;
-          }
-
-          if (i < lines.length && lines[i].includes(closingTag)) {
-            htmlLines.push(lines[i]);
-            i++;
-          }
-
-          blocks.push({
-            id: generateUniqueId(),
-            type: "html",
-            content: htmlLines.join("\n"),
-          });
-        }
       } else if (line.startsWith("# ")) {
         blocks.push({
           id: generateUniqueId(),
@@ -446,20 +535,17 @@ export default function Dashboard() {
     setActiveId(event.active.id);
   };
 
-  const handleDragOver = (event) => {
-    // Just for visual feedback - don't update state here
-  };
+  // biome-ignore lint/suspicious/noEmptyBlockStatements: for responsiveness
+  const handleDragOver = () => {};
 
   const handleDragEnd = (event) => {
     const { over, active } = event;
     setActiveId(null);
 
-    // If no drop target or dropped back on sidebar, do nothing
     if (!over || over.id === "sidebar") {
       return;
     }
 
-    // Handle reordering existing blocks
     if (over && active.id !== over.id && blocks.find((b) => b.id === active.id)) {
       const oldIndex = blocks.findIndex((b) => b.id === active.id);
       const newIndex = blocks.findIndex((b) => b.id === over.id);
@@ -472,7 +558,6 @@ export default function Dashboard() {
       return;
     }
 
-    // Handle adding new blocks from sidebar
     if (over) {
       const isExistingBlock = blocks.find((b) => b.id === active.id);
       if (!isExistingBlock) {
@@ -487,8 +572,8 @@ export default function Dashboard() {
           h6: "Heading 6",
           paragraph: "",
           blockquote: "",
+          alert: "Useful information that users should know, even when skimming content.",
           code: "```javascript\n// Your code here\n```",
-          html: "",
           ul: "- Item 1\n- Item 2\n- Item 3",
           ol: "1. First item\n2. Second item\n3. Third item",
           "task-list": "- [ ] Task 1\n- [x] Task 2\n- [ ] Task 3",
@@ -506,29 +591,44 @@ export default function Dashboard() {
           id: Date.now().toString(),
           type: blockType,
           content: defaultContent[blockType] || "",
-          ...(blockType === "image" && { alt: "", width: "", height: "", align: "left" }),
+          ...(blockType === "image" && {
+            alt: "",
+            width: "",
+            height: "",
+            align: "left",
+          }),
           ...(blockType === "video" && { title: "" }),
           ...(blockType === "link" && { url: "" }),
           ...(blockType === "shield-badge" && {
-            label: "build",
-            message: "passing",
-            badgeColor: "brightgreen",
-            style: "flat",
-            logo: "",
+            badges: [
+              {
+                type: "custom",
+                label: "build",
+                message: "passing",
+                color: "brightgreen",
+                style: "flat",
+                logo: "",
+                username: "",
+                repo: "",
+                package: "",
+              },
+            ],
+            align: "left",
           }),
           ...(blockType === "skill-icons" && {
             icons: "js,html,css",
             theme: "dark",
             perLine: "15",
           }),
+          ...(blockType === "alert" && {
+            alertType: "note",
+          }),
         };
 
         let newBlocks;
-        // If dropped on editor-dropzone or no specific block, add to end
         if (over.id === "editor-dropzone" || !blocks.find((b) => b.id === over.id)) {
           newBlocks = [...blocks, newBlock];
         } else {
-          // Insert at the position of the block it was dropped on
           const overIndex = blocks.findIndex((b) => b.id === over.id);
           newBlocks = [...blocks.slice(0, overIndex + 1), newBlock, ...blocks.slice(overIndex + 1)];
         }
@@ -560,6 +660,33 @@ export default function Dashboard() {
     saveToHistory(newBlocks);
   };
 
+  const handleBlockAdd = (afterBlockId = null, customBlock = null) => {
+    const newBlock = customBlock || {
+      id: Date.now().toString(),
+      type: "paragraph",
+      content: "",
+    };
+
+    if (!newBlock.id) {
+      newBlock.id = Date.now().toString();
+    }
+
+    let newBlocks;
+    if (afterBlockId) {
+      const afterIndex = blocks.findIndex((b) => b.id === afterBlockId);
+      if (afterIndex !== -1) {
+        newBlocks = [...blocks.slice(0, afterIndex + 1), newBlock, ...blocks.slice(afterIndex + 1)];
+      } else {
+        newBlocks = [...blocks, newBlock];
+      }
+    } else {
+      newBlocks = [...blocks, newBlock];
+    }
+
+    setBlocks(newBlocks);
+    saveToHistory(newBlocks);
+  };
+
   const getStats = () => {
     const markdown = blocksToMarkdown(blocks);
     const words = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
@@ -570,8 +697,13 @@ export default function Dashboard() {
 
   const stats = getStats();
 
+  const hasUnsavedChanges = () => {
+    const currentContent = JSON.stringify(blocks);
+    return currentContent !== lastSavedContent && blocks.length > 0;
+  };
+
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -580,14 +712,23 @@ export default function Dashboard() {
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <AppSidebar />
+        <AppSidebar onBlockAdd={handleBlockAdd} />
 
         <SidebarInset>
-          <header className="relative flex h-16 shrink-0 items-center justify-between px-4 border-b">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="h-4" />
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <motion.header
+            className="flex h-16 shrink-0 items-center px-2 sm:px-4 border-b relative"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <SidebarTrigger id="builder-sidebar-trigger" className="-ml-1" />
+              <Separator orientation="vertical" className="h-4 hidden sm:block" />
+
+              <div
+                id="builder-stats"
+                className="hidden lg:flex items-center gap-3 text-sm text-muted-foreground"
+              >
                 <span>
                   <span className="font-semibold text-foreground">{stats.readingTime}</span> min
                   read
@@ -601,117 +742,310 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Center: Tabs */}
-            <div className="absolute left-1/2 transform -translate-x-1/2">
+            <div className="absolute left-1/2 -translate-x-1/2 px-2">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList>
-                  <TabsTrigger value="editor">Editor</TabsTrigger>
-                  <TabsTrigger value="raw">Raw</TabsTrigger>
-                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                <TabsList
+                  id="builder-tabs"
+                  className="grid w-full grid-cols-3 max-w-[280px] sm:max-w-[300px] bg-muted/50 p-1"
+                >
+                  <TabsTrigger
+                    value="editor"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    <span className="hidden sm:inline">Editor</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="raw"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5"
+                  >
+                    <FileCode className="h-4 w-4" />
+                    <span className="hidden sm:inline">Raw</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="preview"
+                    className="text-xs sm:text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-200 flex items-center justify-center gap-1.5"
+                  >
+                    <Eye className="h-4 w-4" />
+                    <span className="hidden sm:inline">Preview</span>
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
-            {/* Right: Actions */}
-            <div className="flex items-center gap-2 ml-auto">
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Reset"
-                onClick={handleReset}
-                disabled={blocks.length === 0}
-              >
-                <RefreshCcw className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Undo"
-                onClick={handleUndo}
-                disabled={historyIndex === 0}
-              >
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Redo"
-                onClick={handleRedo}
-                disabled={historyIndex === history.length - 1}
-              >
-                <RotateCw className="h-4 w-4" />
-              </Button>
-
-              <Separator orientation="vertical" className="h-4" />
-
-              <Button variant="outline" size="sm" onClick={handleImport} className="gap-1.5">
-                <FileUp className="w-4 h-4" /> Import
-              </Button>
-
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-2 flex-1 justify-end">
+              <div id="builder-undo-btn" className="hidden xl:flex items-center gap-2">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => handleExport("md")}
-                  disabled={blocks.length === 0}
-                  className="gap-1.5"
+                  title="Undo"
+                  onClick={handleUndo}
+                  disabled={historyIndex === 0}
+                  className="px-2"
                 >
-                  <FileDown className="w-4 h-4" /> .md
+                  <RotateCcw className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => handleExport("pdf")}
-                  disabled={blocks.length === 0}
-                  className="gap-1.5"
+                  title="Redo"
+                  onClick={handleRedo}
+                  disabled={historyIndex === history.length - 1}
+                  className="px-2"
                 >
-                  <FileDown className="w-4 h-4" /> .pdf
+                  <RotateCw className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleExport("html")}
-                  disabled={blocks.length === 0}
-                  className="gap-1.5"
-                >
-                  <FileDown className="w-4 h-4" /> .html
-                </Button>
+                <Separator orientation="vertical" className="h-4" />
               </div>
 
-              <Separator orientation="vertical" className="h-4" />
-              <ModeToggle />
-            </div>
-          </header>
+              <Button
+                id="builder-import-btn"
+                variant="outline"
+                size="sm"
+                onClick={handleImport}
+                className="hidden lg:flex gap-1.5"
+              >
+                <FileUp className="w-4 h-4" />
+                <span className="hidden lg:inline">Import</span>
+              </Button>
 
-          {/* Main Content */}
-          <div className="flex flex-1 flex-col pt-0 gap-4">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+              <Button
+                id="builder-save-btn"
+                variant="outline"
+                size="sm"
+                onClick={handleSave}
+                className="hidden md:flex gap-1.5 relative"
+              >
+                <Save className="w-4 h-4" />
+                <span className="hidden lg:inline">Save</span>
+                {hasUnsavedChanges() && (
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full" />
+                )}
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button id="builder-menu-btn" variant="ghost" size="sm" className="px-2">
+                    <Menu className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="lg:hidden px-2 py-2 text-xs text-muted-foreground bg-muted/50 rounded-sm mb-2">
+                    <div className="font-medium mb-1">Document Stats</div>
+                    <div className="space-y-0.5">
+                      <div>
+                        {stats.readingTime} min read • {stats.words} words
+                      </div>
+                      <div>{stats.characters} characters</div>
+                    </div>
+                  </div>
+
+                  <DropdownMenuItem onClick={handleImport} className="lg:hidden">
+                    <FileUp className="w-4 h-4 mr-2" />
+                    Import File
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={handleSave} className="md:hidden">
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Document
+                    {hasUnsavedChanges() && (
+                      <div className="ml-auto w-2 h-2 bg-orange-500 rounded-full" />
+                    )}
+                  </DropdownMenuItem>
+
+                  <div className="xl:hidden">
+                    {(historyIndex > 0 || historyIndex < history.length - 1) && (
+                      <>
+                        <DropdownMenuItem onClick={handleUndo} disabled={historyIndex === 0}>
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Undo
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={handleRedo}
+                          disabled={historyIndex === history.length - 1}
+                        >
+                          <RotateCw className="w-4 h-4 mr-2" />
+                          Redo
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                  </div>
+
+                  <DropdownMenuItem
+                    onClick={() => openExportDialog("md")}
+                    disabled={blocks.length === 0}
+                  >
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export Markdown
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => openExportDialog("pdf")}
+                    disabled={blocks.length === 0}
+                  >
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export as PDF
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => openExportDialog("html")}
+                    disabled={blocks.length === 0}
+                  >
+                    <FileDown className="w-4 h-4 mr-2" />
+                    Export as HTML
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem onClick={startTour}>
+                    <Info className="w-4 h-4 mr-2" />
+                    Show Tutorial
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={toggleTheme}>
+                    {theme === "dark" ? (
+                      <Sun className="w-4 h-4 mr-2" />
+                    ) : (
+                      <Moon className="w-4 h-4 mr-2" />
+                    )}
+                    Switch to {theme === "dark" ? "Light" : "Dark"}
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={handleReset}
+                    disabled={blocks.length === 0}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <RefreshCcw className="w-4 h-4 mr-2" />
+                    Reset Editor
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button
+                id="builder-right-sidebar-trigger"
+                variant="ghost"
+                size="sm"
+                className="px-2"
+                onClick={() => setShowSparkleDialog(true)}
+                title="AI Assistant"
+              >
+                <Sparkles className="h-4 w-4" />
+              </Button>
+            </div>
+          </motion.header>
+
+          <motion.div
+            className="flex flex-1 flex-col p-4 gap-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <div id="builder-content-area" className="flex-1 w-full max-w-none">
               <DashboardHome
                 activeTab={activeTab}
                 blocks={blocks}
                 onBlocksChange={handleBlocksChange}
                 onBlockUpdate={handleBlockUpdate}
                 onBlockDelete={handleBlockDelete}
+                onBlockAdd={handleBlockAdd}
               />
             </div>
-          </div>
+          </motion.div>
         </SidebarInset>
+
+        <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Save Document</DialogTitle>
+              <DialogDescription>Enter a title for your markdown document.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Document Title</Label>
+                <Input
+                  id="title"
+                  placeholder="Enter document title..."
+                  value={saveTitle}
+                  onChange={(e) => setSaveTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSaveConfirm();
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleSaveCancel} disabled={isSaving}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveConfirm} disabled={isSaving || !saveTitle.trim()}>
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Export Document</DialogTitle>
+              <DialogDescription>
+                Choose your export options for {exportFormat.toUpperCase()} format.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="attribution"
+                  checked={includeAttribution}
+                  onCheckedChange={setIncludeAttribution}
+                />
+                <Label
+                  htmlFor="attribution"
+                  className="text-sm font-normal cursor-pointer leading-relaxed"
+                >
+                  Include attribution footer (Created with Markdrop)
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2 ml-6">
+                Help us grow by keeping the attribution link
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleExport}>Export</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <AIAssistantSheet open={showSparkleDialog} onOpenChange={setShowSparkleDialog} />
+
         {isImporting && (
           <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-t-transparent border-primary"></div>
-            <span className="ml-3 font-medium">Importing...</span>
+            <div className="flex items-center gap-3 bg-background/90 rounded-lg px-4 py-3 shadow-lg border">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-t-transparent border-primary"></div>
+              <span className="font-medium text-sm sm:text-base">Importing...</span>
+            </div>
           </div>
         )}
 
         <DragOverlay>
           {activeId ? (
-            <div className="bg-background border border-border rounded-md px-3 py-2 shadow-lg cursor-grabbing min-w-[200px]">
+            <div className="bg-background border border-border rounded-md px-2 sm:px-3 py-2 shadow-lg cursor-grabbing min-w-[150px] sm:min-w-[200px]">
               <div className="flex items-center gap-2">
                 {(() => {
                   const Icon = getBlockIcon(activeId);
-                  return <Icon className="h-4 w-4 text-muted-foreground" />;
+                  return <Icon className="h-4 w-4 text-muted-foreground shrink-0" />;
                 })()}
-                <span className="text-sm font-medium text-foreground">
+                <span className="text-xs sm:text-sm font-medium text-foreground truncate">
                   {blocks.find((b) => b.id === activeId)
                     ? "Moving block..."
                     : getBlockLabel(activeId)}

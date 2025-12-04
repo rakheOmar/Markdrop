@@ -1,3 +1,4 @@
+import { FileCode2, Terminal } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Select,
@@ -13,9 +14,7 @@ const parseCodeBlock = (content) => {
 
   const match = content.match(/^```(\w*)\n([\s\S]*?)\n```$/);
   if (match) {
-    const language = match[1] || "plaintext";
-    const code = match[2];
-    return { language, code };
+    return { language: match[1] || "plaintext", code: match[2] };
   }
 
   return { language: "plaintext", code: content };
@@ -25,91 +24,94 @@ const generateMarkdown = (language, code) => {
   return `\`\`\`${language}\n${code}\n\`\`\``;
 };
 
+const LANGUAGES = [
+  { value: "plaintext", label: "Plain Text" },
+  { value: "javascript", label: "JavaScript" },
+  { value: "typescript", label: "TypeScript" },
+  { value: "jsx", label: "JSX" },
+  { value: "tsx", label: "TSX" },
+  { value: "python", label: "Python" },
+  { value: "java", label: "Java" },
+  { value: "c", label: "C" },
+  { value: "cpp", label: "C++" },
+  { value: "csharp", label: "C#" },
+  { value: "go", label: "Go" },
+  { value: "rust", label: "Rust" },
+  { value: "php", label: "PHP" },
+  { value: "ruby", label: "Ruby" },
+  { value: "swift", label: "Swift" },
+  { value: "kotlin", label: "Kotlin" },
+  { value: "html", label: "HTML" },
+  { value: "css", label: "CSS" },
+  { value: "scss", label: "SCSS" },
+  { value: "json", label: "JSON" },
+  { value: "yaml", label: "YAML" },
+  { value: "xml", label: "XML" },
+  { value: "markdown", label: "Markdown" },
+  { value: "sql", label: "SQL" },
+  { value: "bash", label: "Bash" },
+  { value: "shell", label: "Shell" },
+  { value: "powershell", label: "PowerShell" },
+  { value: "dockerfile", label: "Dockerfile" },
+  { value: "graphql", label: "GraphQL" },
+];
+
 export default function CodeBlock({ block, onUpdate }) {
   const [parsed, setParsed] = useState(() => parseCodeBlock(block.content));
-  const [isUpdating, setIsUpdating] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: needed here
   useEffect(() => {
-    if (isUpdating) {
-      setIsUpdating(false);
-      return;
-    }
     const newParsed = parseCodeBlock(block.content);
     if (newParsed.language !== parsed.language || newParsed.code !== parsed.code) {
       setParsed(newParsed);
     }
-  }, [block.content, isUpdating, parsed.code, parsed.language]);
+  }, [block.content]);
 
-  const handleCodeChange = (value) => {
-    const markdown = generateMarkdown(parsed.language, value);
-    setParsed({ ...parsed, code: value });
-    setIsUpdating(true);
+  const updateBlock = (newState) => {
+    setParsed(newState);
+    const markdown = generateMarkdown(newState.language, newState.code);
     onUpdate(block.id, { ...block, content: markdown });
   };
-
-  const handleLanguageChange = (language) => {
-    const markdown = generateMarkdown(language, parsed.code);
-    setParsed({ ...parsed, language });
-    setIsUpdating(true);
-    onUpdate(block.id, { ...block, content: markdown });
-  };
-
-  const languages = [
-    { value: "plaintext", label: "Plain Text" },
-    { value: "javascript", label: "JavaScript" },
-    { value: "typescript", label: "TypeScript" },
-    { value: "jsx", label: "JSX" },
-    { value: "tsx", label: "TSX" },
-    { value: "python", label: "Python" },
-    { value: "java", label: "Java" },
-    { value: "c", label: "C" },
-    { value: "cpp", label: "C++" },
-    { value: "csharp", label: "C#" },
-    { value: "go", label: "Go" },
-    { value: "rust", label: "Rust" },
-    { value: "php", label: "PHP" },
-    { value: "ruby", label: "Ruby" },
-    { value: "swift", label: "Swift" },
-    { value: "kotlin", label: "Kotlin" },
-    { value: "html", label: "HTML" },
-    { value: "css", label: "CSS" },
-    { value: "scss", label: "SCSS" },
-    { value: "json", label: "JSON" },
-    { value: "yaml", label: "YAML" },
-    { value: "xml", label: "XML" },
-    { value: "markdown", label: "Markdown" },
-    { value: "sql", label: "SQL" },
-    { value: "bash", label: "Bash" },
-    { value: "shell", label: "Shell" },
-    { value: "powershell", label: "PowerShell" },
-    { value: "dockerfile", label: "Dockerfile" },
-    { value: "graphql", label: "GraphQL" },
-  ];
 
   return (
-    <div className="rounded-lg border border-border overflow-hidden bg-muted/50">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted">
-        <Select value={parsed.language} onValueChange={handleLanguageChange}>
-          <SelectTrigger className="w-[180px] h-8 text-xs">
-            <SelectValue placeholder="Select language" />
+    <div className="group relative rounded-md border border-border bg-background transition-all hover:border-ring/50 focus-within:border-ring">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/40">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <Terminal className="h-3.5 w-3.5" />
+          <span>Snippet</span>
+        </div>
+
+        <Select
+          value={parsed.language}
+          onValueChange={(val) => updateBlock({ ...parsed, language: val })}
+        >
+          <SelectTrigger className="h-6 w-fit gap-2 border-none bg-transparent px-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:text-primary focus:ring-0">
+            <FileCode2 className="h-3 w-3 opacity-50" />
+            <SelectValue placeholder="Language" />
           </SelectTrigger>
-          <SelectContent>
-            {languages.map((lang) => (
+          <SelectContent className="max-h-[200px]">
+            {LANGUAGES.map((lang) => (
               <SelectItem key={lang.value} value={lang.value} className="text-xs">
                 {lang.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <span className="text-xs text-muted-foreground">Code Block</span>
       </div>
-      <Textarea
-        value={parsed.code}
-        onChange={(e) => handleCodeChange(e.target.value)}
-        placeholder="// Your code here"
-        className="font-mono text-sm p-3 resize-y border-none shadow-none focus-visible:ring-1 bg-transparent rounded-none"
-        rows={Math.max(3, parsed.code.split("\n").length + 1)}
-      />
+
+      <div className="relative">
+        <Textarea
+          value={parsed.code}
+          onChange={(e) => updateBlock({ ...parsed, code: e.target.value })}
+          placeholder="// Enter code here..."
+          className="min-h-[100px] w-full resize-y border-0 bg-transparent p-3 font-mono text-sm leading-relaxed focus-visible:ring-0"
+          spellCheck={false}
+        />
+      </div>
+
+      <div className="absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="text-[10px] text-muted-foreground/50 font-mono">```{parsed.language}</span>
+      </div>
     </div>
   );
 }

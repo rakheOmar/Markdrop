@@ -1,39 +1,59 @@
-import { Bold, Code, Italic, Strikethrough } from "lucide-react";
+import { Bold, Code, Italic, Link as LinkIcon, Pilcrow, Strikethrough } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function ParagraphBlock({ block, onUpdate }) {
-  const [showToolbar, setShowToolbar] = useState(false);
-  const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
   const textareaRef = useRef(null);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("https://");
+  const [linkSelection, setLinkSelection] = useState(null);
 
   const handleChange = (value) => {
     onUpdate(block.id, { ...block, content: value });
   };
 
-  const handleSelect = (e) => {
-    const textarea = e.target;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
+  const getTrimmedSelection = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return null;
 
-    if (start !== end) {
-      const rect = textarea.getBoundingClientRect();
-      setToolbarPosition({
-        top: rect.top - 45,
-        left: rect.left + rect.width / 2 - 100,
-      });
-      setShowToolbar(true);
-    } else {
-      setShowToolbar(false);
+    let start = textarea.selectionStart;
+    let end = textarea.selectionEnd;
+    const text = block.content;
+
+    while (start < end && /\s/.test(text[start])) {
+      start++;
     }
+
+    while (end > start && /\s/.test(text[end - 1])) {
+      end--;
+    }
+
+    if (start === end) return null;
+
+    return {
+      start,
+      end,
+      selectedText: text.substring(start, end),
+    };
   };
 
-  const wrapSelection = (prefix, suffix = prefix) => {
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = block.content.substring(start, end);
+  const applyFormatting = (prefix, suffix = prefix) => {
+    const selection = getTrimmedSelection();
+    if (!selection) return;
+
+    const { start, end, selectedText } = selection;
+
     const newText =
       block.content.substring(0, start) +
       prefix +
@@ -42,28 +62,70 @@ export default function ParagraphBlock({ block, onUpdate }) {
       block.content.substring(end);
 
     handleChange(newText);
-    setShowToolbar(false);
 
     setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+      const textarea = textareaRef.current;
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+      }
     }, 0);
   };
 
-  const lineCount = block.content ? block.content.split("\n").length : 1;
+  const applyLink = () => {
+    const selection = getTrimmedSelection();
+    if (!selection) return;
+
+    setLinkSelection(selection);
+    setLinkUrl("https://");
+    setLinkDialogOpen(true);
+  };
+
+  const handleApplyLink = () => {
+    if (!linkSelection || !linkUrl) return;
+
+    const { start, end, selectedText } = linkSelection;
+    const newText =
+      block.content.substring(0, start) +
+      `[${selectedText}](${linkUrl})` +
+      block.content.substring(end);
+
+    handleChange(newText);
+    setLinkDialogOpen(false);
+
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      const textarea = textareaRef.current;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newText = block.content.substring(0, start) + "\n\n" + block.content.substring(end);
+      handleChange(newText);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 2;
+      }, 0);
+    }
+  };
 
   return (
-    <>
-      {showToolbar && (
-        <div
-          className="fixed z-50 flex items-center gap-1 bg-popover border border-border rounded-md shadow-lg p-1"
-          style={{ top: `${toolbarPosition.top}px`, left: `${toolbarPosition.left}px` }}
-        >
+    <div className="group relative rounded-md border border-border bg-background transition-all hover:border-ring/50 focus-within:border-ring">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-muted/10">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <Pilcrow className="h-3.5 w-3.5" />
+          <span>Text</span>
+        </div>
+
+        <ButtonGroup>
           <Button
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => wrapSelection("**")}
+            onClick={() => applyFormatting("**")}
             title="Bold"
           >
             <Bold className="h-3.5 w-3.5" />
@@ -72,7 +134,7 @@ export default function ParagraphBlock({ block, onUpdate }) {
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => wrapSelection("*")}
+            onClick={() => applyFormatting("*")}
             title="Italic"
           >
             <Italic className="h-3.5 w-3.5" />
@@ -81,32 +143,71 @@ export default function ParagraphBlock({ block, onUpdate }) {
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => wrapSelection("~~")}
+            onClick={() => applyFormatting("~~")}
             title="Strikethrough"
           >
             <Strikethrough className="h-3.5 w-3.5" />
           </Button>
+
+          <ButtonGroupSeparator />
+
           <Button
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => wrapSelection("`")}
+            onClick={() => applyFormatting("`")}
             title="Inline Code"
           >
             <Code className="h-3.5 w-3.5" />
           </Button>
-        </div>
-      )}
+
+          <ButtonGroupSeparator />
+
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={applyLink} title="Link">
+            <LinkIcon className="h-3.5 w-3.5" />
+          </Button>
+        </ButtonGroup>
+      </div>
+
       <Textarea
         ref={textareaRef}
         value={block.content}
         onChange={(e) => handleChange(e.target.value)}
-        onSelect={handleSelect}
-        onBlur={() => setTimeout(() => setShowToolbar(false), 200)}
-        placeholder="Write your paragraph here..."
-        className="border-none shadow-none focus-visible:ring-0 px-3 py-2 resize-y text-base leading-relaxed"
-        rows={Math.max(1, lineCount)}
+        onKeyDown={handleKeyDown}
+        placeholder="Write something..."
+        className="min-h-[100px] w-full resize-y border-0 bg-transparent p-3 text-sm leading-relaxed focus-visible:ring-0"
       />
-    </>
+
+      <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Insert Link</DialogTitle>
+            <DialogDescription>Add a URL for the selected text.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-2">
+              <Label htmlFor="url" className="text-xs">
+                URL
+              </Label>
+              <Input
+                id="url"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                className="h-8 text-sm"
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setLinkDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleApplyLink}>
+                Save
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

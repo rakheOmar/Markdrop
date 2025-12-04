@@ -20,7 +20,6 @@ const Squares = ({
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // Detect dark mode
     const isDarkMode = () => document.documentElement.classList.contains("dark");
 
     const resizeCanvas = () => {
