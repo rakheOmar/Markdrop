@@ -73,7 +73,7 @@
     "html2canvas": "^1.4.1",
     "hugeicons-react": "^0.3.0",
     "input-otp": "^1.4.2",
-    "jspdf": "^3.0.4",
+    "jspdf": "^4.0.0",
     "katex": "^0.16.26",
     "lucide-react": "^0.556.0",
     "marked": "^17.0.1",
